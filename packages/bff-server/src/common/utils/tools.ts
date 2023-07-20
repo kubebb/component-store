@@ -1,17 +1,16 @@
-import { dumpYaml } from '@kubernetes/client-node';
+import { dumpYaml, loadYaml } from '@kubernetes/client-node';
 import * as crypto from 'crypto';
 import { readFileSync } from 'fs';
 import * as jwt from 'jsonwebtoken';
 import { Jwt } from 'jsonwebtoken';
 import { customAlphabet } from 'nanoid';
 import { lowercase, numbers } from 'nanoid-dictionary';
-import { parse } from 'yaml';
 import type { JwtAuth, K8s, Request } from '../../types';
 import { TokenException } from './errors';
 
 export const getConfigByPath = (configPath: string) => {
   const fileContent = readFileSync(configPath);
-  return parse(fileContent.toString()) as Record<string, any>;
+  return loadYaml<Record<string, any>>(fileContent.toString());
 };
 
 /**

@@ -1,7 +1,6 @@
 import { GraphQLClient } from 'graphql-request';
 import type { RequestConfig, RequestMiddleware, Response } from 'graphql-request/src/types';
 import type { RequestInit } from 'graphql-request/src/types.dom';
-import qs from 'query-string';
 import { useMemo } from 'react';
 import { errorsHandler } from './errors';
 import { getSdk, getSdkWithHooks } from './sdk';
