@@ -2,7 +2,7 @@
   "name": "component-store-portal",
   "version": "0.1.0",
   "private": true,
-  "description": "Component store to list, view and deploy various components.",
+  "description": "Portal for component-store.",
   "scripts": {
     "analyze": "cross-env ANALYZE=1 UMI_ENV=prod max build",
     "build": "cross-env UMI_ENV=prod max build --max_old_space_size=4096 && npm run build:menu",

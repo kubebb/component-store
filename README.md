@@ -32,7 +32,33 @@ ni
 
 ```bash
 # 开发 portal
-nr start:portal
+nr dev:portal
+
+# 开发 server
+nr dev:server
+```
+
+### 构建
+
+#### 仅构建静态文件
+
+```bash
+nr build
+```
+
+#### 构建镜像
+
+执行以下命令可在本地构建镜像：
+
+```bash
+chmod +x ./build.sh ./update_base_image.sh
+./build.sh
+```
+
+运行镜像：
+
+```bash
+docker run -d -p 8066:8066 172.22.50.223/dev-branch/component-store:main
 ```
 
 ### 代码风格检查

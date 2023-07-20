@@ -1,0 +1,13 @@
+schema: http://localhost:8066/bff
+documents: 'src/**/*.gql'
+generates:
+  ../bff-client/src/sdk.ts:
+    plugins:
+      - typescript
+      - typescript-operations
+      - typescript-graphql-request
+      - plugin-typescript-swr
+config:
+  autogenSWRKey: true
+  # useSWRInfinite:
+  #   - getPageCommits

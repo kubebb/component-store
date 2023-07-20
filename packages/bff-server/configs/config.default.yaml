@@ -1,0 +1,22 @@
+# 当前 server 的默认配置
+# ⚠⚠ 修改不会实时生效，需要重启 server，开发时也一样 ⚠⚠
+web:
+  # server 端口
+  port: 8066
+# 日志配置
+log:
+  # 支持 log,error,warn,debug,verbose 5 个日志等级的组合
+  levels: log,error,warn
+# 请求体解析器配置
+# 详见 https://github.com/expressjs/body-parser#bodyparserjsonoptions
+bodyParser:
+  json:
+    inflate: true
+    limit: 5mb
+k8s:
+  cluster:
+    name: kube-oidc-proxy
+    server: https://k8s.172.22.96.209.nip.io
+    skipTLSVerify: true
+  # bff-server 自己的 service account token，仅开发时使用，生产环境时会从 k8s 注入的 sa 文件中读取
+  bffSaToken: ''

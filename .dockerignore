@@ -3,3 +3,4 @@ logs
 *.out
 *.log
 mock
+dist

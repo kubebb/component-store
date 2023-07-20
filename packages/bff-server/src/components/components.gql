@@ -1,0 +1,6 @@
+# 获取组件列表
+query getComponents {
+  components {
+    name
+  }
+}

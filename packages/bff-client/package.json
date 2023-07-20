@@ -1,0 +1,43 @@
+{
+  "name": "@tenx-ui/component-store-bff-client",
+  "version": "0.0.1",
+  "description": "client for component-store-bff-server api",
+  "keywords": [],
+  "main": "dist/cjs/index.js",
+  "module": "dist/esm/index.js",
+  "types": "dist/esm/index.d.ts",
+  "files": [
+    "dist",
+    "compiled"
+  ],
+  "scripts": {
+    "build": "father build",
+    "build:deps": "father prebundle",
+    "dev": "father dev",
+    "prepublishOnly": "father doctor && npm run build",
+    "pub": "npm run prepublishOnly && npm publish --registry http://dev-npm.tenxcloud.net"
+  },
+  "dependencies": {
+    "graphql": "^16.6.0",
+    "graphql-request": "^5.2.0",
+    "graphql-tag": "^2.12.6",
+    "query-string": "^8.1.0"
+  },
+  "devDependencies": {
+    "@tenx-ui/materials": "^1.1.1",
+    "@types/react": "^18.0.0",
+    "antd": "^5.4.0",
+    "father": "^4.2.3",
+    "react": "^18.0.0",
+    "swr": "^2.1.2"
+  },
+  "peerDependencies": {
+    "@tenx-ui/materials": ">=1.1.1",
+    "antd": ">=5.4.0",
+    "react": ">=16.9.0",
+    "swr": ">=2.0.0"
+  },
+  "authors": [
+    "zhangpc <zhang.pengcheng3@neolink.com>"
+  ]
+}

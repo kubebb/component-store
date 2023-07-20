@@ -1,0 +1,7 @@
+# 当前 server 的运行时配置，配置后会将配置项覆盖到默认配置 config.default.yaml 上
+# 注意：新增配置都应在 config.default.yaml 中进行，这个文件的主要用途是在实际运行时
+#      可以通过挂载 configMap 的方式来进行配置自定义
+
+log:
+  # 支持 log,error,warn,debug,verbose 5 个日志等级的组合
+  levels: log,error,warn,debug,verbose

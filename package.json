@@ -1,6 +1,6 @@
 {
   "name": "component-store",
-  "version": "1.0.0",
+  "version": "0.1.0",
   "description": "Component store to list, view and deploy various components.",
   "keywords": [
     "kubebb",
@@ -10,10 +10,14 @@
   ],
   "license": "ISC",
   "scripts": {
+    "build": "pnpm build:server && pnpm build:portal",
+    "build:portal": "pnpm --filter '*-portal' build",
+    "build:server": "pnpm --filter '*-server' build",
+    "dev:portal": "pnpm --filter '*-portal' dev",
+    "dev:server": "pnpm --filter '*-server' start:dev",
     "lint-staged": "lint-staged",
     "prepare": "husky install",
-    "start": "pnpm start:portal & pnpm start:server",
-    "start:portal": "pnpm --filter '*-portal' start",
+    "start": "pnpm start:portal",
     "start:server": "pnpm --filter '*-server' start",
     "test": "echo \"Error: no test specified\" && exit 1"
   },
@@ -41,7 +45,7 @@
     "eslint-config-tenx": "^4.0.0",
     "husky": "^8.0.0",
     "lint-staged": "^13.2.3",
-    "prettier": "^3.0.0",
+    "prettier": "^2.8.0",
     "prettier-plugin-organize-imports": "^3.2.3",
     "prettier-plugin-packagejson": "^2.4.5",
     "stylelint": "^13.3.3",
