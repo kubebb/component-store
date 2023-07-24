@@ -1,6 +1,7 @@
 import { GraphQLClient } from 'graphql-request';
 import type { RequestConfig, RequestMiddleware, Response } from 'graphql-request/src/types';
 import type { RequestInit } from 'graphql-request/src/types.dom';
+import qs from 'query-string';
 import { useMemo } from 'react';
 import { errorsHandler } from './errors';
 import { getSdk, getSdkWithHooks } from './sdk';
@@ -16,9 +17,18 @@ export interface RequestOptions extends RequestInit {
 }
 
 export const requestMiddleware: RequestMiddleware<any> = request => {
+  const { url, operationName, ...otherRequest } = request;
+  const [host, search] = url.split('?');
+  const query = qs.parse(search);
+  // query 中增加操作名，便于定位问题
+  if (operationName) {
+    query.o = operationName;
+  }
   return {
+    url: `${host}?${qs.stringify(query)}`,
+    operationName,
     credentials: 'include',
-    ...request,
+    ...otherRequest,
   };
 };
 
@@ -29,8 +39,8 @@ export const responseMiddleware = (response: Response<unknown> | Error) => {
   }
 };
 
-const devEndpoint = '/yunti/bff';
-const prodEndpoint = '/bff';
+const devEndpoint = '/components/bff';
+const prodEndpoint = '/components/bff';
 const endpoint = isProd ? prodEndpoint : devEndpoint;
 
 export const client = new GraphQLClient(endpoint, {
@@ -51,10 +61,35 @@ interface SdkBaseOptions {
 
 export type SdkOptions = Pick<SdkBaseOptions, 'url' | 'requestConfig'>;
 
+/**
+ * 初始化 GraphQL client 实例
+ *
+ * @param {string} url api 地址，默认为 `'/bff'`
+ * @param {RequestConfig} [requestConfig] 请求配置项
+ * @return {GraphQLClient} GraphQL client 实例
+ */
+export const initGraphQLClient = (url?: string, requestConfig?: RequestConfig) => {
+  if (!requestConfig) {
+    requestConfig = {};
+  }
+  if (!requestConfig.requestMiddleware) {
+    requestConfig.requestMiddleware = requestMiddleware;
+  } else {
+    requestConfig.requestMiddleware = async request => {
+      const newReq = await requestConfig!.requestMiddleware!(request);
+      return requestMiddleware(newReq);
+    };
+  }
+  if (!requestConfig.responseMiddleware) {
+    requestConfig.responseMiddleware = responseMiddleware;
+  }
+  return new GraphQLClient(url || endpoint, requestConfig);
+};
+
 const initSdkBase = (options: SdkBaseOptions = {}) => {
   const { url, withHooks, requestConfig } = options;
 
-  const _client = new GraphQLClient(url || endpoint, requestConfig);
+  const _client = initGraphQLClient(url, requestConfig);
   const _sdk = withHooks ? getSdkWithHooks(_client) : getSdk(_client);
   return _sdk;
 };

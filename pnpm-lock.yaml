@@ -53,6 +53,9 @@ importers:
       graphql-tag:
         specifier: ^2.12.6
         version: 2.12.6(graphql@16.6.0)
+      query-string:
+        specifier: ^8.1.0
+        version: 8.1.0
     devDependencies:
       '@tenx-ui/materials':
         specifier: ^1.1.1
