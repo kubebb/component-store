@@ -10,6 +10,38 @@ type Component {
   name: ID!
 }
 
+input CreateRepositoryInput {
+  """证书内容(base64)"""
+  certData: String
+
+  """组件过滤"""
+  filter: [RepositoryFilterInput!]
+
+  """镜像仓库替换"""
+  imageOverride: [RepositoryImageOverrideInput!]
+
+  """https验证"""
+  insecure: Boolean
+
+  """名称，规则：小写字母、数字、“-”，开头和结尾只能是字母或数字`（[a-z0-9]([-a-z0-9]*[a-z0-9])?）`"""
+  name: String!
+
+  """密码(base64)"""
+  password: String
+
+  """组件更新"""
+  pullStategy: RepositoryPullStategyInput
+
+  """类型"""
+  repositoryType: String!
+
+  """URL"""
+  url: String!
+
+  """用户名(base64)"""
+  username: String
+}
+
 """Date custom scalar type"""
 scalar Date
 
@@ -17,7 +49,232 @@ scalar JSON
 
 scalar JSONObject
 
+type Mutation {
+  repositoryCreate(repository: CreateRepositoryInput!): Repository!
+
+  """删除组件仓库"""
+  repositoryRemove(name: String!): Boolean!
+  repositoryUpdate(name: String!, repository: UpdateRepositoryInput!): Repository!
+}
+
+"""分页"""
+type PaginatedRepository {
+  edges: [RepositoryEdge!]
+  hasNextPage: Boolean!
+  nodes: [Repository!]
+  page: Int!
+  pageSize: Int!
+  totalCount: Int!
+}
+
 type Query {
   """组件列表"""
   components: [Component!]!
+
+  """组件仓库列表"""
+  repositories(
+    """组件仓库名称"""
+    name: String
+
+    """页码"""
+    page: Float = 1
+
+    """每页数量"""
+    pageSize: Float = 20
+  ): PaginatedRepository!
+
+  """组件仓库详情"""
+  repository(name: String!): Repository!
+}
+
+type Repository {
+  """更新时间"""
+  creationTimestamp: String!
+
+  """组件过滤"""
+  filter: [RepositoryFilter!]
+
+  """镜像仓库替换"""
+  imageOverride: [RepositoryImageOverride!]
+
+  """https验证"""
+  insecure: Boolean
+
+  """最近同步时间"""
+  lastSuccessfulTime: String
+
+  """name"""
+  name: ID!
+
+  """密码(base64)"""
+  password: String
+
+  """组件更新"""
+  pullStategy: RepositoryPullStategy
+
+  """类型"""
+  repositoryType: String
+
+  """当前状态"""
+  status: RepositoryStatus!
+
+  """URL"""
+  url: String!
+
+  """用户名(base64)"""
+  username: String
+}
+
+type RepositoryEdge {
+  cursor: String!
+  node: Repository!
+}
+
+"""组件过滤"""
+type RepositoryFilter {
+  """保留废弃版本"""
+  keepDeprecated: Boolean
+
+  """组件名称"""
+  name: String
+
+  """操作意向"""
+  operation: RepositoryFilterOperation
+
+  """正则"""
+  regexp: String
+
+  """版本表达式"""
+  versionConstraint: String
+
+  """版本号"""
+  versions: [String!]
+}
+
+"""组件过滤"""
+input RepositoryFilterInput {
+  """保留废弃版本"""
+  keepDeprecated: Boolean
+
+  """组件名称"""
+  name: String
+
+  """操作意向"""
+  operation: RepositoryFilterOperation
+
+  """正则"""
+  regexp: String
+
+  """版本表达式"""
+  versionConstraint: String
+
+  """版本号"""
+  versions: [String!]
+}
+
+"""组件仓库状态"""
+enum RepositoryFilterOperation {
+  """全部过滤"""
+  ignore_all
+
+  """精确过滤"""
+  ignore_exact
+
+  """精确保留"""
+  keep_exact
+}
+
+"""镜像仓库替换"""
+type RepositoryImageOverride {
+  """新仓库组"""
+  newPath: String
+
+  """新域名"""
+  newRegistry: String
+
+  """原仓库组"""
+  path: String
+
+  """原域名"""
+  registry: String
+}
+
+"""镜像仓库替换"""
+input RepositoryImageOverrideInput {
+  """新仓库组"""
+  newPath: String
+
+  """新域名"""
+  newRegistry: String
+
+  """原仓库组"""
+  path: String
+
+  """原域名"""
+  registry: String
+}
+
+"""组件更新"""
+type RepositoryPullStategy {
+  """间隔时间"""
+  intervalSeconds: Float
+
+  """重试次数"""
+  retry: Float
+
+  """超时时间"""
+  timeoutSeconds: Float
+}
+
+"""组件更新"""
+input RepositoryPullStategyInput {
+  """间隔时间"""
+  intervalSeconds: Float
+
+  """重试次数"""
+  retry: Float
+
+  """超时时间"""
+  timeoutSeconds: Float
+}
+
+"""组件仓库状态"""
+enum RepositoryStatus {
+  """获取Chart包异常"""
+  ready_false
+
+  """创建中"""
+  ready_true
+
+  """同步失败"""
+  synced_false
+
+  """同步成功"""
+  synced_true
+
+  """未知"""
+  unknown
+}
+
+input UpdateRepositoryInput {
+  """证书内容(base64)"""
+  certData: String
+
+  """组件过滤"""
+  filter: [RepositoryFilterInput!]
+
+  """镜像仓库替换"""
+  imageOverride: [RepositoryImageOverrideInput!]
+
+  """https验证"""
+  insecure: Boolean
+
+  """密码(base64)"""
+  password: String
+
+  """组件更新"""
+  pullStategy: RepositoryPullStategyInput
+
+  """用户名(base64)"""
+  username: String
 }

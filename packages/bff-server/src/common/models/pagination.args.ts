@@ -1,7 +1,7 @@
-import { InputType } from '@nestjs/graphql';
+import { ArgsType } from '@nestjs/graphql';
 import { IsInt, IsOptional, Max, Min } from 'class-validator';
 
-@InputType({ description: '分页参数' })
+@ArgsType()
 export class PaginationArgs {
   /** 页码 */
   @IsOptional()

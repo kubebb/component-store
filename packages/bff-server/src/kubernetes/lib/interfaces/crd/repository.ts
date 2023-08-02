@@ -36,7 +36,7 @@ export interface Repository {
       /**
        * If True, the current version will be retained even if it is deprecated.
        */
-      deprecated?: boolean;
+      keepDeprecated?: boolean;
       /**
        * Name of the component
        */
@@ -65,9 +65,38 @@ export interface Repository {
       };
       [k: string]: any;
     }[];
+    /**
+     * ImageOverride means replaced images rules for this repository
+     */
+    imageOverride?: {
+      /**
+       * NewRegistry means replaced one
+       */
+      newRegistry?: string;
+      /**
+       * PathOverride means replaced path
+       */
+      pathOverride?: {
+        newPath?: string;
+        /**
+         * The path consists of slash-separated components. Each component may contain lowercase letters, digits and separators. A separator is defined as a period, one or two underscores, or one or more hyphens. A component may not start or end with a separator. While the OCI Distribution Specification supports more than two slash-separated components, most registries only support two slash-separated components. For Docker’s public registry, the path format is as follows: [NAMESPACE/]REPOSITORY: The first, optional component is typically a user’s or an organization’s namespace. The second, mandatory component is the repository name. When the namespace is not present, Docker uses library as the default namespace.
+         */
+        path?: string;
+        [k: string]: any;
+      };
+      /**
+       * Registry include host and port number, like `registry-1.docker.io` or `registry-1.docker.io:5000`
+       */
+      registry?: string;
+      [k: string]: any;
+    }[];
     insecure?: boolean;
     /**
-     * PullStategy pullStategy for this repository
+     * KeywordLenLimit the keyword array length limit
+     */
+    keywordLenLimit?: number;
+    /**
+     * PullStategy for this repository
      */
     pullStategy?: {
       /**
@@ -99,6 +128,10 @@ export interface Repository {
      * Conditions of the resource.
      */
     conditions?: {
+      /**
+       * LastSuccessfulTime is repository Last Successful Update Time
+       */
+      lastSuccessfulTime?: string;
       /**
        * LastTransitionTime is the last time this condition transitioned from one status to another.
        */

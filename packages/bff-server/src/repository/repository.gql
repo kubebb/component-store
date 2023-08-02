@@ -1,0 +1,78 @@
+# 组件仓库列表
+query getRepositories($page: Float = 1, $pageSize: Float = 20, $name: String){
+  repositories(page: $page, pageSize: $pageSize, name: $name){
+    nodes {
+      name
+      repositoryType
+      status
+      url
+      creationTimestamp
+      lastSuccessfulTime
+    }
+    totalCount
+    hasNextPage
+  }
+}
+
+# 组件仓库详情
+query getRepository($name: String!) {
+  repository(name: $name) {
+    name
+    repositoryType
+    status
+    url
+    creationTimestamp
+    lastSuccessfulTime
+    insecure
+    password
+    username
+    pullStategy {
+      intervalSeconds
+      retry
+      timeoutSeconds
+    }
+    filter {
+      name
+      operation
+      keepDeprecated
+      regexp
+      versionConstraint
+      versions
+    }
+    imageOverride {
+      newPath
+      path
+      registry
+      newRegistry
+    }
+  }
+}
+
+# 创建组件仓库
+mutation createRepository($repository: CreateRepositoryInput!){
+  repositoryCreate(repository: $repository) {
+    name
+    repositoryType
+    status
+    url
+    creationTimestamp
+    lastSuccessfulTime
+  }
+}
+
+# 更新组件仓库
+mutation updateRepository($name: String!, $repository: UpdateRepositoryInput!) {
+  repositoryUpdate(name: $name, repository: $repository){
+    name
+    repositoryType
+    status
+    url
+    creationTimestamp
+    lastSuccessfulTime
+  }
+}
+
+# 删除组件仓库
+mutation removeRepository($name: String!){
+  repositoryRemove(name: $name)
+}

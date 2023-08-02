@@ -270,7 +270,7 @@ export class Component {
       { headers }
     ) as Promise<{
       response: http.IncomingMessage;
-      body: K8s.V1Status;
+      body: CRD.ComponentList;
     }>;
   }
 
