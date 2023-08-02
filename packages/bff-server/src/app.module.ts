@@ -20,6 +20,8 @@ import { GRAPHQL_PATH } from './common/utils';
 import { ComponentsModule } from './components/components.module';
 import serverConfig from './config/server.config';
 import { KubernetesModule } from './kubernetes/kubernetes.module';
+import { RepositoryModule } from './repository/repository.module';
+import { SecretModule } from './secret/secret.module';
 
 @Module({
   imports: [
@@ -80,6 +82,8 @@ import { KubernetesModule } from './kubernetes/kubernetes.module';
     }),
     KubernetesModule,
     ComponentsModule,
+    RepositoryModule,
+    SecretModule,
   ],
   controllers: [AppController],
   providers: [
