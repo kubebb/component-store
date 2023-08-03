@@ -20,6 +20,6 @@ k8s:
     skipTLSVerify: true
   # bff-server 自己的 service account token，仅开发时使用，生产环境时会从 k8s 注入的 sa 文件中读取
   bffSaToken: ''
-  # kubebb/core 的部署NS
 kubebb:
+  # kubebb/core 的部署的 namespace
   namespace: kubebb-system

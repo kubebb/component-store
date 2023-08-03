@@ -4,3 +4,7 @@ logs
 *.log
 mock
 dist
+packages/portal/dist
+packages/portal/node_modules
+packages/bff-server/dist
+packages/bff-server/node_modules
