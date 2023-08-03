@@ -34,10 +34,233 @@ export type Component = {
   name: Scalars['ID']['output'];
 };
 
+export type CreateRepositoryInput = {
+  /** 证书内容(base64) */
+  certData?: InputMaybe<Scalars['String']['input']>;
+  /** 组件过滤 */
+  filter?: InputMaybe<Array<RepositoryFilterInput>>;
+  /** 镜像仓库替换 */
+  imageOverride?: InputMaybe<Array<RepositoryImageOverrideInput>>;
+  /** https验证 */
+  insecure?: InputMaybe<Scalars['Boolean']['input']>;
+  /** 名称，规则：小写字母、数字、“-”，开头和结尾只能是字母或数字`（[a-z0-9]([-a-z0-9]*[a-z0-9])?）` */
+  name: Scalars['String']['input'];
+  /** 密码(base64) */
+  password?: InputMaybe<Scalars['String']['input']>;
+  /** 组件更新 */
+  pullStategy?: InputMaybe<RepositoryPullStategyInput>;
+  /** 类型 */
+  repositoryType: Scalars['String']['input'];
+  /** URL */
+  url: Scalars['String']['input'];
+  /** 用户名(base64) */
+  username?: InputMaybe<Scalars['String']['input']>;
+};
+
+export type Mutation = {
+  __typename?: 'Mutation';
+  repositoryCreate: Repository;
+  /** 删除组件仓库 */
+  repositoryRemove: Scalars['Boolean']['output'];
+  repositoryUpdate: Repository;
+};
+
+export type MutationRepositoryCreateArgs = {
+  repository: CreateRepositoryInput;
+};
+
+export type MutationRepositoryRemoveArgs = {
+  name: Scalars['String']['input'];
+};
+
+export type MutationRepositoryUpdateArgs = {
+  name: Scalars['String']['input'];
+  repository: UpdateRepositoryInput;
+};
+
+/** 分页 */
+export type PaginatedRepository = {
+  __typename?: 'PaginatedRepository';
+  edges?: Maybe<Array<RepositoryEdge>>;
+  hasNextPage: Scalars['Boolean']['output'];
+  nodes?: Maybe<Array<Repository>>;
+  page: Scalars['Int']['output'];
+  pageSize: Scalars['Int']['output'];
+  totalCount: Scalars['Int']['output'];
+};
+
 export type Query = {
   __typename?: 'Query';
   /** 组件列表 */
   components: Array<Component>;
+  /** 组件仓库列表 */
+  repositories: PaginatedRepository;
+  /** 组件仓库详情 */
+  repository: Repository;
+};
+
+export type QueryRepositoriesArgs = {
+  name?: InputMaybe<Scalars['String']['input']>;
+  page?: InputMaybe<Scalars['Float']['input']>;
+  pageSize?: InputMaybe<Scalars['Float']['input']>;
+};
+
+export type QueryRepositoryArgs = {
+  name: Scalars['String']['input'];
+};
+
+export type Repository = {
+  __typename?: 'Repository';
+  /** 更新时间 */
+  creationTimestamp: Scalars['String']['output'];
+  /** 组件过滤 */
+  filter?: Maybe<Array<RepositoryFilter>>;
+  /** 镜像仓库替换 */
+  imageOverride?: Maybe<Array<RepositoryImageOverride>>;
+  /** https验证 */
+  insecure?: Maybe<Scalars['Boolean']['output']>;
+  /** 最近同步时间 */
+  lastSuccessfulTime?: Maybe<Scalars['String']['output']>;
+  /** name */
+  name: Scalars['ID']['output'];
+  /** 密码(base64) */
+  password?: Maybe<Scalars['String']['output']>;
+  /** 组件更新 */
+  pullStategy?: Maybe<RepositoryPullStategy>;
+  /** 类型 */
+  repositoryType?: Maybe<Scalars['String']['output']>;
+  /** 当前状态 */
+  status: RepositoryStatus;
+  /** URL */
+  url: Scalars['String']['output'];
+  /** 用户名(base64) */
+  username?: Maybe<Scalars['String']['output']>;
+};
+
+export type RepositoryEdge = {
+  __typename?: 'RepositoryEdge';
+  cursor: Scalars['String']['output'];
+  node: Repository;
+};
+
+/** 组件过滤 */
+export type RepositoryFilter = {
+  __typename?: 'RepositoryFilter';
+  /** 保留废弃版本 */
+  keepDeprecated?: Maybe<Scalars['Boolean']['output']>;
+  /** 组件名称 */
+  name?: Maybe<Scalars['String']['output']>;
+  /** 操作意向 */
+  operation?: Maybe<RepositoryFilterOperation>;
+  /** 正则 */
+  regexp?: Maybe<Scalars['String']['output']>;
+  /** 版本表达式 */
+  versionConstraint?: Maybe<Scalars['String']['output']>;
+  /** 版本号 */
+  versions?: Maybe<Array<Scalars['String']['output']>>;
+};
+
+/** 组件过滤 */
+export type RepositoryFilterInput = {
+  /** 保留废弃版本 */
+  keepDeprecated?: InputMaybe<Scalars['Boolean']['input']>;
+  /** 组件名称 */
+  name?: InputMaybe<Scalars['String']['input']>;
+  /** 操作意向 */
+  operation?: InputMaybe<RepositoryFilterOperation>;
+  /** 正则 */
+  regexp?: InputMaybe<Scalars['String']['input']>;
+  /** 版本表达式 */
+  versionConstraint?: InputMaybe<Scalars['String']['input']>;
+  /** 版本号 */
+  versions?: InputMaybe<Array<Scalars['String']['input']>>;
+};
+
+/** 组件仓库状态 */
+export enum RepositoryFilterOperation {
+  /** 全部过滤 */
+  IgnoreAll = 'ignore_all',
+  /** 精确过滤 */
+  IgnoreExact = 'ignore_exact',
+  /** 精确保留 */
+  KeepExact = 'keep_exact',
+}
+
+/** 镜像仓库替换 */
+export type RepositoryImageOverride = {
+  __typename?: 'RepositoryImageOverride';
+  /** 新仓库组 */
+  newPath?: Maybe<Scalars['String']['output']>;
+  /** 新域名 */
+  newRegistry?: Maybe<Scalars['String']['output']>;
+  /** 原仓库组 */
+  path?: Maybe<Scalars['String']['output']>;
+  /** 原域名 */
+  registry?: Maybe<Scalars['String']['output']>;
+};
+
+/** 镜像仓库替换 */
+export type RepositoryImageOverrideInput = {
+  /** 新仓库组 */
+  newPath?: InputMaybe<Scalars['String']['input']>;
+  /** 新域名 */
+  newRegistry?: InputMaybe<Scalars['String']['input']>;
+  /** 原仓库组 */
+  path?: InputMaybe<Scalars['String']['input']>;
+  /** 原域名 */
+  registry?: InputMaybe<Scalars['String']['input']>;
+};
+
+/** 组件更新 */
+export type RepositoryPullStategy = {
+  __typename?: 'RepositoryPullStategy';
+  /** 间隔时间 */
+  intervalSeconds?: Maybe<Scalars['Float']['output']>;
+  /** 重试次数 */
+  retry?: Maybe<Scalars['Float']['output']>;
+  /** 超时时间 */
+  timeoutSeconds?: Maybe<Scalars['Float']['output']>;
+};
+
+/** 组件更新 */
+export type RepositoryPullStategyInput = {
+  /** 间隔时间 */
+  intervalSeconds?: InputMaybe<Scalars['Float']['input']>;
+  /** 重试次数 */
+  retry?: InputMaybe<Scalars['Float']['input']>;
+  /** 超时时间 */
+  timeoutSeconds?: InputMaybe<Scalars['Float']['input']>;
+};
+
+/** 组件仓库状态 */
+export enum RepositoryStatus {
+  /** 获取Chart包异常 */
+  ReadyFalse = 'ready_false',
+  /** 创建中 */
+  ReadyTrue = 'ready_true',
+  /** 同步失败 */
+  SyncedFalse = 'synced_false',
+  /** 同步成功 */
+  SyncedTrue = 'synced_true',
+  /** 未知 */
+  Unknown = 'unknown',
+}
+
+export type UpdateRepositoryInput = {
+  /** 证书内容(base64) */
+  certData?: InputMaybe<Scalars['String']['input']>;
+  /** 组件过滤 */
+  filter?: InputMaybe<Array<RepositoryFilterInput>>;
+  /** 镜像仓库替换 */
+  imageOverride?: InputMaybe<Array<RepositoryImageOverrideInput>>;
+  /** https验证 */
+  insecure?: InputMaybe<Scalars['Boolean']['input']>;
+  /** 密码(base64) */
+  password?: InputMaybe<Scalars['String']['input']>;
+  /** 组件更新 */
+  pullStategy?: InputMaybe<RepositoryPullStategyInput>;
+  /** 用户名(base64) */
+  username?: InputMaybe<Scalars['String']['input']>;
 };
 
 export type GetComponentsQueryVariables = Exact<{ [key: string]: never }>;
@@ -47,11 +270,197 @@ export type GetComponentsQuery = {
   components: Array<{ __typename?: 'Component'; name: string }>;
 };
 
+export type GetRepositoriesQueryVariables = Exact<{
+  page?: InputMaybe<Scalars['Float']['input']>;
+  pageSize?: InputMaybe<Scalars['Float']['input']>;
+  name?: InputMaybe<Scalars['String']['input']>;
+}>;
+
+export type GetRepositoriesQuery = {
+  __typename?: 'Query';
+  repositories: {
+    __typename?: 'PaginatedRepository';
+    totalCount: number;
+    hasNextPage: boolean;
+    nodes?: Array<{
+      __typename?: 'Repository';
+      name: string;
+      repositoryType?: string | null;
+      status: RepositoryStatus;
+      url: string;
+      creationTimestamp: string;
+      lastSuccessfulTime?: string | null;
+    }> | null;
+  };
+};
+
+export type GetRepositoryQueryVariables = Exact<{
+  name: Scalars['String']['input'];
+}>;
+
+export type GetRepositoryQuery = {
+  __typename?: 'Query';
+  repository: {
+    __typename?: 'Repository';
+    name: string;
+    repositoryType?: string | null;
+    status: RepositoryStatus;
+    url: string;
+    creationTimestamp: string;
+    lastSuccessfulTime?: string | null;
+    insecure?: boolean | null;
+    password?: string | null;
+    username?: string | null;
+    pullStategy?: {
+      __typename?: 'RepositoryPullStategy';
+      intervalSeconds?: number | null;
+      retry?: number | null;
+      timeoutSeconds?: number | null;
+    } | null;
+    filter?: Array<{
+      __typename?: 'RepositoryFilter';
+      name?: string | null;
+      operation?: RepositoryFilterOperation | null;
+      keepDeprecated?: boolean | null;
+      regexp?: string | null;
+      versionConstraint?: string | null;
+      versions?: Array<string> | null;
+    }> | null;
+    imageOverride?: Array<{
+      __typename?: 'RepositoryImageOverride';
+      newPath?: string | null;
+      path?: string | null;
+      registry?: string | null;
+      newRegistry?: string | null;
+    }> | null;
+  };
+};
+
+export type CreateRepositoryMutationVariables = Exact<{
+  repository: CreateRepositoryInput;
+}>;
+
+export type CreateRepositoryMutation = {
+  __typename?: 'Mutation';
+  repositoryCreate: {
+    __typename?: 'Repository';
+    name: string;
+    repositoryType?: string | null;
+    status: RepositoryStatus;
+    url: string;
+    creationTimestamp: string;
+    lastSuccessfulTime?: string | null;
+  };
+};
+
+export type UpdateRepositoryMutationVariables = Exact<{
+  name: Scalars['String']['input'];
+  repository: UpdateRepositoryInput;
+}>;
+
+export type UpdateRepositoryMutation = {
+  __typename?: 'Mutation';
+  repositoryUpdate: {
+    __typename?: 'Repository';
+    name: string;
+    repositoryType?: string | null;
+    status: RepositoryStatus;
+    url: string;
+    creationTimestamp: string;
+    lastSuccessfulTime?: string | null;
+  };
+};
+
+export type RemoveRepositoryMutationVariables = Exact<{
+  name: Scalars['String']['input'];
+}>;
+
+export type RemoveRepositoryMutation = { __typename?: 'Mutation'; repositoryRemove: boolean };
+
 export const GetComponentsDocument = gql`
   query getComponents {
     components {
       name
     }
+  }
+`;
+export const GetRepositoriesDocument = gql`
+  query getRepositories($page: Float = 1, $pageSize: Float = 20, $name: String) {
+    repositories(page: $page, pageSize: $pageSize, name: $name) {
+      nodes {
+        name
+        repositoryType
+        status
+        url
+        creationTimestamp
+        lastSuccessfulTime
+      }
+      totalCount
+      hasNextPage
+    }
+  }
+`;
+export const GetRepositoryDocument = gql`
+  query getRepository($name: String!) {
+    repository(name: $name) {
+      name
+      repositoryType
+      status
+      url
+      creationTimestamp
+      lastSuccessfulTime
+      insecure
+      password
+      username
+      pullStategy {
+        intervalSeconds
+        retry
+        timeoutSeconds
+      }
+      filter {
+        name
+        operation
+        keepDeprecated
+        regexp
+        versionConstraint
+        versions
+      }
+      imageOverride {
+        newPath
+        path
+        registry
+        newRegistry
+      }
+    }
+  }
+`;
+export const CreateRepositoryDocument = gql`
+  mutation createRepository($repository: CreateRepositoryInput!) {
+    repositoryCreate(repository: $repository) {
+      name
+      repositoryType
+      status
+      url
+      creationTimestamp
+      lastSuccessfulTime
+    }
+  }
+`;
+export const UpdateRepositoryDocument = gql`
+  mutation updateRepository($name: String!, $repository: UpdateRepositoryInput!) {
+    repositoryUpdate(name: $name, repository: $repository) {
+      name
+      repositoryType
+      status
+      url
+      creationTimestamp
+      lastSuccessfulTime
+    }
+  }
+`;
+export const RemoveRepositoryDocument = gql`
+  mutation removeRepository($name: String!) {
+    repositoryRemove(name: $name)
   }
 `;
 
@@ -77,6 +486,76 @@ export function getSdk(client: GraphQLClient, withWrapper: SdkFunctionWrapper = 
           }),
         'getComponents',
         'query'
+      );
+    },
+    getRepositories(
+      variables?: GetRepositoriesQueryVariables,
+      requestHeaders?: GraphQLClientRequestHeaders
+    ): Promise<GetRepositoriesQuery> {
+      return withWrapper(
+        wrappedRequestHeaders =>
+          client.request<GetRepositoriesQuery>(GetRepositoriesDocument, variables, {
+            ...requestHeaders,
+            ...wrappedRequestHeaders,
+          }),
+        'getRepositories',
+        'query'
+      );
+    },
+    getRepository(
+      variables: GetRepositoryQueryVariables,
+      requestHeaders?: GraphQLClientRequestHeaders
+    ): Promise<GetRepositoryQuery> {
+      return withWrapper(
+        wrappedRequestHeaders =>
+          client.request<GetRepositoryQuery>(GetRepositoryDocument, variables, {
+            ...requestHeaders,
+            ...wrappedRequestHeaders,
+          }),
+        'getRepository',
+        'query'
+      );
+    },
+    createRepository(
+      variables: CreateRepositoryMutationVariables,
+      requestHeaders?: GraphQLClientRequestHeaders
+    ): Promise<CreateRepositoryMutation> {
+      return withWrapper(
+        wrappedRequestHeaders =>
+          client.request<CreateRepositoryMutation>(CreateRepositoryDocument, variables, {
+            ...requestHeaders,
+            ...wrappedRequestHeaders,
+          }),
+        'createRepository',
+        'mutation'
+      );
+    },
+    updateRepository(
+      variables: UpdateRepositoryMutationVariables,
+      requestHeaders?: GraphQLClientRequestHeaders
+    ): Promise<UpdateRepositoryMutation> {
+      return withWrapper(
+        wrappedRequestHeaders =>
+          client.request<UpdateRepositoryMutation>(UpdateRepositoryDocument, variables, {
+            ...requestHeaders,
+            ...wrappedRequestHeaders,
+          }),
+        'updateRepository',
+        'mutation'
+      );
+    },
+    removeRepository(
+      variables: RemoveRepositoryMutationVariables,
+      requestHeaders?: GraphQLClientRequestHeaders
+    ): Promise<RemoveRepositoryMutation> {
+      return withWrapper(
+        wrappedRequestHeaders =>
+          client.request<RemoveRepositoryMutation>(RemoveRepositoryDocument, variables, {
+            ...requestHeaders,
+            ...wrappedRequestHeaders,
+          }),
+        'removeRepository',
+        'mutation'
       );
     },
   };
@@ -105,6 +584,26 @@ export function getSdkWithHooks(
       return useSWR<GetComponentsQuery, ClientError>(
         genKey<GetComponentsQueryVariables>('GetComponents', variables),
         () => sdk.getComponents(variables),
+        config
+      );
+    },
+    useGetRepositories(
+      variables?: GetRepositoriesQueryVariables,
+      config?: SWRConfigInterface<GetRepositoriesQuery, ClientError>
+    ) {
+      return useSWR<GetRepositoriesQuery, ClientError>(
+        genKey<GetRepositoriesQueryVariables>('GetRepositories', variables),
+        () => sdk.getRepositories(variables),
+        config
+      );
+    },
+    useGetRepository(
+      variables: GetRepositoryQueryVariables,
+      config?: SWRConfigInterface<GetRepositoryQuery, ClientError>
+    ) {
+      return useSWR<GetRepositoryQuery, ClientError>(
+        genKey<GetRepositoryQueryVariables>('GetRepository', variables),
+        () => sdk.getRepository(variables),
         config
       );
     },

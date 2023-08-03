@@ -6,6 +6,7 @@ ENV NODE_ENV production
 ADD packages/bff-server /usr/src/app/packages/bff-server
 ADD packages/portal /usr/src/app/packages/portal
 
+WORKDIR /usr/src/app
 # package files
 RUN nr build
 

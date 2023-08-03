@@ -1,4 +1,3 @@
-import * as React from 'react'
 // ⚠️ import 时候需要指定扩展名，即加上 .js
 import BaasMain from "@tenx-ui/icon/lib/BaasMain.js";
 import BaasOrganization from "@tenx-ui/icon/lib/BaasOrganization.js";
