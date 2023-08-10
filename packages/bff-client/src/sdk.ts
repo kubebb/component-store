@@ -3,6 +3,7 @@ import { GraphQLClientRequestHeaders } from 'graphql-request/build/cjs/types';
 import { ClientError } from 'graphql-request/src/types';
 import gql from 'graphql-tag';
 import { Key as SWRKeyInterface, SWRConfiguration as SWRConfigInterface } from 'swr';
+import useSWRInfinite, { SWRInfiniteConfiguration } from 'swr/infinite';
 import useSWR from './useSWR';
 export type Maybe<T> = T | null;
 export type InputMaybe<T> = Maybe<T>;
@@ -25,13 +26,73 @@ export type Scalars = {
   Date: { input: any; output: any };
   JSON: { input: any; output: any };
   JSONObject: { input: any; output: any };
+  Upload: { input: any; output: any };
 };
 
 /** 组件 */
 export type Component = {
   __typename?: 'Component';
+  /** 仓库名称 */
+  chartName: Scalars['String']['output'];
+  /** 创建时间 */
+  creationTimestamp?: Maybe<Scalars['String']['output']>;
+  /** 已废弃 */
+  deprecated?: Maybe<Scalars['Boolean']['output']>;
+  /** 描述 */
+  description?: Maybe<Scalars['String']['output']>;
+  /** 组件官网 */
+  home?: Maybe<Scalars['String']['output']>;
+  /** icon */
+  icon?: Maybe<Scalars['String']['output']>;
+  /** 关键词 */
+  keywords?: Maybe<Array<Scalars['String']['output']>>;
+  /** 维护者 */
+  maintainers?: Maybe<Array<ComponentMaintainer>>;
   /** 组件名称 */
   name: Scalars['ID']['output'];
+  /** 源代码 */
+  sources?: Maybe<Array<Scalars['String']['output']>>;
+  /** 版本 */
+  versions?: Maybe<Array<ComponentVersion>>;
+};
+
+export type ComponentEdge = {
+  __typename?: 'ComponentEdge';
+  cursor: Scalars['String']['output'];
+  node: Component;
+};
+
+/** 组件维护者 */
+export type ComponentMaintainer = {
+  __typename?: 'ComponentMaintainer';
+  email?: Maybe<Scalars['String']['output']>;
+  name?: Maybe<Scalars['String']['output']>;
+  url?: Maybe<Scalars['String']['output']>;
+};
+
+/** 组件版本 */
+export type ComponentVersion = {
+  __typename?: 'ComponentVersion';
+  /** 应用版本 */
+  appVersion?: Maybe<Scalars['String']['output']>;
+  /** 创建时间 */
+  createdAt?: Maybe<Scalars['String']['output']>;
+  /** 已废弃 */
+  deprecated?: Maybe<Scalars['Boolean']['output']>;
+  /** digest */
+  digest?: Maybe<Scalars['String']['output']>;
+  /** 更新时间 */
+  updatedAt?: Maybe<Scalars['String']['output']>;
+  /** Chart版本 */
+  version?: Maybe<Scalars['String']['output']>;
+};
+
+/** 上传组件 */
+export type CreateComponentInput = {
+  /** 组件helm包 */
+  file: Scalars['Upload']['input'];
+  /** 组件仓库 */
+  repository: Scalars['String']['input'];
 };
 
 export type CreateRepositoryInput = {
@@ -57,12 +118,34 @@ export type CreateRepositoryInput = {
   username?: InputMaybe<Scalars['String']['input']>;
 };
 
+/** 删除组件 */
+export type DeleteComponentInput = {
+  /** Chart名称 */
+  chartName: Scalars['String']['input'];
+  /** 组件仓库 */
+  repository: Scalars['String']['input'];
+  /** Chart版本 */
+  version: Scalars['String']['input'];
+};
+
 export type Mutation = {
   __typename?: 'Mutation';
+  /** 删除组件 */
+  componentDelete: Scalars['Boolean']['output'];
+  /** 发布组件 */
+  componentUpload: Scalars['Boolean']['output'];
   repositoryCreate: Repository;
   /** 删除组件仓库 */
   repositoryRemove: Scalars['Boolean']['output'];
   repositoryUpdate: Repository;
+};
+
+export type MutationComponentDeleteArgs = {
+  chart: DeleteComponentInput;
+};
+
+export type MutationComponentUploadArgs = {
+  chart: CreateComponentInput;
 };
 
 export type MutationRepositoryCreateArgs = {
@@ -79,6 +162,17 @@ export type MutationRepositoryUpdateArgs = {
 };
 
 /** 分页 */
+export type PaginatedComponent = {
+  __typename?: 'PaginatedComponent';
+  edges?: Maybe<Array<ComponentEdge>>;
+  hasNextPage: Scalars['Boolean']['output'];
+  nodes?: Maybe<Array<Component>>;
+  page: Scalars['Int']['output'];
+  pageSize: Scalars['Int']['output'];
+  totalCount: Scalars['Int']['output'];
+};
+
+/** 分页 */
 export type PaginatedRepository = {
   __typename?: 'PaginatedRepository';
   edges?: Maybe<Array<RepositoryEdge>>;
@@ -91,12 +185,25 @@ export type PaginatedRepository = {
 
 export type Query = {
   __typename?: 'Query';
+  /** 组件详情 */
+  component: Component;
   /** 组件列表 */
-  components: Array<Component>;
+  components: PaginatedComponent;
   /** 组件仓库列表 */
   repositories: PaginatedRepository;
   /** 组件仓库详情 */
   repository: Repository;
+};
+
+export type QueryComponentArgs = {
+  name: Scalars['String']['input'];
+};
+
+export type QueryComponentsArgs = {
+  chartName?: InputMaybe<Scalars['String']['input']>;
+  name?: InputMaybe<Scalars['String']['input']>;
+  page?: InputMaybe<Scalars['Float']['input']>;
+  pageSize?: InputMaybe<Scalars['Float']['input']>;
 };
 
 export type QueryRepositoriesArgs = {
@@ -263,12 +370,88 @@ export type UpdateRepositoryInput = {
   username?: InputMaybe<Scalars['String']['input']>;
 };
 
-export type GetComponentsQueryVariables = Exact<{ [key: string]: never }>;
+export type GetComponentsQueryVariables = Exact<{
+  page?: InputMaybe<Scalars['Float']['input']>;
+  pageSize?: InputMaybe<Scalars['Float']['input']>;
+  name?: InputMaybe<Scalars['String']['input']>;
+  chartName?: InputMaybe<Scalars['String']['input']>;
+}>;
 
 export type GetComponentsQuery = {
   __typename?: 'Query';
-  components: Array<{ __typename?: 'Component'; name: string }>;
+  components: {
+    __typename?: 'PaginatedComponent';
+    totalCount: number;
+    hasNextPage: boolean;
+    nodes?: Array<{
+      __typename?: 'Component';
+      name: string;
+      chartName: string;
+      description?: string | null;
+      creationTimestamp?: string | null;
+      deprecated?: boolean | null;
+      icon?: string | null;
+      keywords?: Array<string> | null;
+      sources?: Array<string> | null;
+      home?: string | null;
+      versions?: Array<{
+        __typename?: 'ComponentVersion';
+        createdAt?: string | null;
+        updatedAt?: string | null;
+        appVersion?: string | null;
+        version?: string | null;
+      }> | null;
+    }> | null;
+  };
 };
+
+export type GetComponentQueryVariables = Exact<{
+  name: Scalars['String']['input'];
+}>;
+
+export type GetComponentQuery = {
+  __typename?: 'Query';
+  component: {
+    __typename?: 'Component';
+    name: string;
+    chartName: string;
+    description?: string | null;
+    creationTimestamp?: string | null;
+    deprecated?: boolean | null;
+    icon?: string | null;
+    keywords?: Array<string> | null;
+    sources?: Array<string> | null;
+    home?: string | null;
+    versions?: Array<{
+      __typename?: 'ComponentVersion';
+      createdAt?: string | null;
+      updatedAt?: string | null;
+      appVersion?: string | null;
+      version?: string | null;
+      deprecated?: boolean | null;
+      digest?: string | null;
+    }> | null;
+    maintainers?: Array<{
+      __typename?: 'ComponentMaintainer';
+      email?: string | null;
+      name?: string | null;
+      url?: string | null;
+    }> | null;
+  };
+};
+
+export type UploadComponentMutationVariables = Exact<{
+  repository: Scalars['String']['input'];
+  file: Scalars['Upload']['input'];
+}>;
+
+export type UploadComponentMutation = { __typename?: 'Mutation'; componentUpload: boolean };
+
+export type DeleteComponentMutationVariables = Exact<{
+  chart: DeleteComponentInput;
+}>;
+
+export type DeleteComponentMutation = { __typename?: 'Mutation'; componentDelete: boolean };
 
 export type GetRepositoriesQueryVariables = Exact<{
   page?: InputMaybe<Scalars['Float']['input']>;
@@ -378,10 +561,66 @@ export type RemoveRepositoryMutationVariables = Exact<{
 export type RemoveRepositoryMutation = { __typename?: 'Mutation'; repositoryRemove: boolean };
 
 export const GetComponentsDocument = gql`
-  query getComponents {
-    components {
-      name
+  query getComponents($page: Float = 1, $pageSize: Float = 20, $name: String, $chartName: String) {
+    components(page: $page, pageSize: $pageSize, name: $name, chartName: $chartName) {
+      nodes {
+        name
+        chartName
+        description
+        creationTimestamp
+        deprecated
+        icon
+        keywords
+        sources
+        home
+        versions {
+          createdAt
+          updatedAt
+          appVersion
+          version
+        }
+      }
+      totalCount
+      hasNextPage
     }
+  }
+`;
+export const GetComponentDocument = gql`
+  query getComponent($name: String!) {
+    component(name: $name) {
+      name
+      chartName
+      description
+      creationTimestamp
+      deprecated
+      icon
+      keywords
+      sources
+      home
+      versions {
+        createdAt
+        updatedAt
+        appVersion
+        version
+        deprecated
+        digest
+      }
+      maintainers {
+        email
+        name
+        url
+      }
+    }
+  }
+`;
+export const UploadComponentDocument = gql`
+  mutation uploadComponent($repository: String!, $file: Upload!) {
+    componentUpload(chart: { repository: $repository, file: $file })
+  }
+`;
+export const DeleteComponentDocument = gql`
+  mutation deleteComponent($chart: DeleteComponentInput!) {
+    componentDelete(chart: $chart)
   }
 `;
 export const GetRepositoriesDocument = gql`
@@ -488,6 +727,48 @@ export function getSdk(client: GraphQLClient, withWrapper: SdkFunctionWrapper = 
         'query'
       );
     },
+    getComponent(
+      variables: GetComponentQueryVariables,
+      requestHeaders?: GraphQLClientRequestHeaders
+    ): Promise<GetComponentQuery> {
+      return withWrapper(
+        wrappedRequestHeaders =>
+          client.request<GetComponentQuery>(GetComponentDocument, variables, {
+            ...requestHeaders,
+            ...wrappedRequestHeaders,
+          }),
+        'getComponent',
+        'query'
+      );
+    },
+    uploadComponent(
+      variables: UploadComponentMutationVariables,
+      requestHeaders?: GraphQLClientRequestHeaders
+    ): Promise<UploadComponentMutation> {
+      return withWrapper(
+        wrappedRequestHeaders =>
+          client.request<UploadComponentMutation>(UploadComponentDocument, variables, {
+            ...requestHeaders,
+            ...wrappedRequestHeaders,
+          }),
+        'uploadComponent',
+        'mutation'
+      );
+    },
+    deleteComponent(
+      variables: DeleteComponentMutationVariables,
+      requestHeaders?: GraphQLClientRequestHeaders
+    ): Promise<DeleteComponentMutation> {
+      return withWrapper(
+        wrappedRequestHeaders =>
+          client.request<DeleteComponentMutation>(DeleteComponentDocument, variables, {
+            ...requestHeaders,
+            ...wrappedRequestHeaders,
+          }),
+        'deleteComponent',
+        'mutation'
+      );
+    },
     getRepositories(
       variables?: GetRepositoriesQueryVariables,
       requestHeaders?: GraphQLClientRequestHeaders
@@ -561,11 +842,37 @@ export function getSdk(client: GraphQLClient, withWrapper: SdkFunctionWrapper = 
   };
 }
 export type Sdk = ReturnType<typeof getSdk>;
+export type SWRInfiniteKeyLoader<Data = unknown, Variables = unknown> = (
+  index: number,
+  previousPageData: Data | null
+) => [keyof Variables, Variables[keyof Variables] | null] | null;
 export function getSdkWithHooks(
   client: GraphQLClient,
   withWrapper: SdkFunctionWrapper = defaultWrapper
 ) {
   const sdk = getSdk(client, withWrapper);
+  const utilsForInfinite = {
+    generateGetKey:
+      <Data = unknown, Variables = unknown>(
+        id: SWRKeyInterface,
+        getKey: SWRInfiniteKeyLoader<Data, Variables>
+      ) =>
+      (pageIndex: number, previousData: Data | null) => {
+        const key = getKey(pageIndex, previousData);
+        return key ? [id, ...key] : null;
+      },
+    generateFetcher:
+      <Query = unknown, Variables = unknown>(
+        query: (variables: Variables) => Promise<Query>,
+        variables?: Variables
+      ) =>
+      ([id, fieldName, fieldValue]: [
+        SWRKeyInterface,
+        keyof Variables,
+        Variables[keyof Variables]
+      ]) =>
+        query({ ...variables, [fieldName]: fieldValue } as Variables),
+  };
   const genKey = <V extends Record<string, unknown> = Record<string, unknown>>(
     name: string,
     object: V = {} as V
@@ -587,6 +894,33 @@ export function getSdkWithHooks(
         config
       );
     },
+    useGetComponentsInfinite(
+      getKey: SWRInfiniteKeyLoader<GetComponentsQuery, GetComponentsQueryVariables>,
+      variables?: GetComponentsQueryVariables,
+      config?: SWRInfiniteConfiguration<GetComponentsQuery, ClientError>
+    ) {
+      return useSWRInfinite<GetComponentsQuery, ClientError>(
+        utilsForInfinite.generateGetKey<GetComponentsQuery, GetComponentsQueryVariables>(
+          genKey<GetComponentsQueryVariables>('GetComponents', variables),
+          getKey
+        ),
+        utilsForInfinite.generateFetcher<GetComponentsQuery, GetComponentsQueryVariables>(
+          sdk.getComponents,
+          variables
+        ),
+        config
+      );
+    },
+    useGetComponent(
+      variables: GetComponentQueryVariables,
+      config?: SWRConfigInterface<GetComponentQuery, ClientError>
+    ) {
+      return useSWR<GetComponentQuery, ClientError>(
+        genKey<GetComponentQueryVariables>('GetComponent', variables),
+        () => sdk.getComponent(variables),
+        config
+      );
+    },
     useGetRepositories(
       variables?: GetRepositoriesQueryVariables,
       config?: SWRConfigInterface<GetRepositoriesQuery, ClientError>
@@ -594,6 +928,23 @@ export function getSdkWithHooks(
       return useSWR<GetRepositoriesQuery, ClientError>(
         genKey<GetRepositoriesQueryVariables>('GetRepositories', variables),
         () => sdk.getRepositories(variables),
+        config
+      );
+    },
+    useGetRepositoriesInfinite(
+      getKey: SWRInfiniteKeyLoader<GetRepositoriesQuery, GetRepositoriesQueryVariables>,
+      variables?: GetRepositoriesQueryVariables,
+      config?: SWRInfiniteConfiguration<GetRepositoriesQuery, ClientError>
+    ) {
+      return useSWRInfinite<GetRepositoriesQuery, ClientError>(
+        utilsForInfinite.generateGetKey<GetRepositoriesQuery, GetRepositoriesQueryVariables>(
+          genKey<GetRepositoriesQueryVariables>('GetRepositories', variables),
+          getKey
+        ),
+        utilsForInfinite.generateFetcher<GetRepositoriesQuery, GetRepositoriesQueryVariables>(
+          sdk.getRepositories,
+          variables
+        ),
         config
       );
     },

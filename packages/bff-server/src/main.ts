@@ -2,12 +2,13 @@ import { NestFactory } from '@nestjs/core';
 import { NestExpressApplication } from '@nestjs/platform-express';
 import { WsAdapter } from '@nestjs/platform-ws';
 import { json } from 'body-parser';
+import * as graphqlUploadExpress from 'graphql-upload/graphqlUploadExpress.js';
 import helmet from 'helmet';
 import { join } from 'path';
 import { AppModule } from './app.module';
 import { JwtMiddleware } from './common/middleware/jwt.middleware';
 import { LoggerMiddleware } from './common/middleware/logger.middleware';
-import { IS_PROD } from './common/utils';
+import { GRAPHQL_PATH, IS_PROD } from './common/utils';
 import { serverConfig } from './config/server.config';
 import ejs = require('ejs');
 
@@ -45,6 +46,8 @@ async function bootstrap() {
 
   app.use(JwtMiddleware);
   app.use(LoggerMiddleware);
+
+  app.use(GRAPHQL_PATH, graphqlUploadExpress({ maxFileSize: 1000000, maxFiles: 100 }));
 
   await app.listen(serverConfig.web.port);
 

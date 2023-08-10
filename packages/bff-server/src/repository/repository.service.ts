@@ -71,9 +71,7 @@ export class RepositoryService {
       repositoryType: repository.spec?.repositoryType,
       url: repository.spec?.url,
       creationTimestamp: new Date(repository.metadata.creationTimestamp).toISOString(),
-      lastSuccessfulTime: lastSuccessfulTime
-        ? new Date(repository.metadata.creationTimestamp).toISOString()
-        : null,
+      lastSuccessfulTime: lastSuccessfulTime ? new Date(lastSuccessfulTime).toISOString() : null,
       status,
       pullStategy: repository.spec?.pullStategy,
       filter,

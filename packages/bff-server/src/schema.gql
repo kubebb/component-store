@@ -6,8 +6,80 @@ directive @upper on FIELD_DEFINITION
 
 """组件"""
 type Component {
+  """仓库名称"""
+  chartName: String!
+
+  """创建时间"""
+  creationTimestamp: String
+
+  """已废弃"""
+  deprecated: Boolean
+
+  """描述"""
+  description: String
+
+  """组件官网"""
+  home: String
+
+  """icon"""
+  icon: String
+
+  """关键词"""
+  keywords: [String!]
+
+  """维护者"""
+  maintainers: [ComponentMaintainer!]
+
   """组件名称"""
   name: ID!
+
+  """源代码"""
+  sources: [String!]
+
+  """版本"""
+  versions: [ComponentVersion!]
+}
+
+type ComponentEdge {
+  cursor: String!
+  node: Component!
+}
+
+"""组件维护者"""
+type ComponentMaintainer {
+  email: String
+  name: String
+  url: String
+}
+
+"""组件版本"""
+type ComponentVersion {
+  """应用版本"""
+  appVersion: String
+
+  """创建时间"""
+  createdAt: String
+
+  """已废弃"""
+  deprecated: Boolean
+
+  """digest"""
+  digest: String
+
+  """更新时间"""
+  updatedAt: String
+
+  """Chart版本"""
+  version: String
+}
+
+"""上传组件"""
+input CreateComponentInput {
+  """组件helm包"""
+  file: Upload!
+
+  """组件仓库"""
+  repository: String!
 }
 
 input CreateRepositoryInput {
@@ -45,16 +117,43 @@ input CreateRepositoryInput {
 """Date custom scalar type"""
 scalar Date
 
+"""删除组件"""
+input DeleteComponentInput {
+  """Chart名称"""
+  chartName: String!
+
+  """组件仓库"""
+  repository: String!
+
+  """Chart版本"""
+  version: String!
+}
+
 scalar JSON
 
 scalar JSONObject
 
 type Mutation {
+  """删除组件"""
+  componentDelete(chart: DeleteComponentInput!): Boolean!
+
+  """发布组件"""
+  componentUpload(chart: CreateComponentInput!): Boolean!
   repositoryCreate(repository: CreateRepositoryInput!): Repository!
 
   """删除组件仓库"""
   repositoryRemove(name: String!): Boolean!
   repositoryUpdate(name: String!, repository: UpdateRepositoryInput!): Repository!
+}
+
+"""分页"""
+type PaginatedComponent {
+  edges: [ComponentEdge!]
+  hasNextPage: Boolean!
+  nodes: [Component!]
+  page: Int!
+  pageSize: Int!
+  totalCount: Int!
 }
 
 """分页"""
@@ -68,8 +167,23 @@ type PaginatedRepository {
 }
 
 type Query {
+  """组件详情"""
+  component(name: String!): Component!
+
   """组件列表"""
-  components: [Component!]!
+  components(
+    """Chart名称"""
+    chartName: String
+
+    """组件名称"""
+    name: String
+
+    """页码"""
+    page: Float = 1
+
+    """每页数量"""
+    pageSize: Float = 20
+  ): PaginatedComponent!
 
   """组件仓库列表"""
   repositories(
@@ -278,3 +392,6 @@ input UpdateRepositoryInput {
   """用户名(base64)"""
   username: String
 }
+
+"""The `Upload` scalar type represents a file upload."""
+scalar Upload
