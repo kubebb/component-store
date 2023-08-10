@@ -5,6 +5,7 @@ import { RepositoryService } from './repository.service';
 
 @Module({
   providers: [RepositoryResolver, RepositoryService],
+  exports: [RepositoryService],
   imports: [SecretModule],
 })
 export class RepositoryModule {}

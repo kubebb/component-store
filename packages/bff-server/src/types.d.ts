@@ -59,3 +59,10 @@ export interface MyContext {
     [paramKey: string]: KeyArrayStringMap | KeyArrayStringMapNested;
   };
 }
+
+export interface FileUpload {
+  filename: string;
+  mimetype: string;
+  encoding: string;
+  createReadStream: () => Readable;
+}

@@ -1,6 +1,62 @@
 # 获取组件列表
-query getComponents {
-  components {
-    name
+query getComponents($page: Float = 1, $pageSize: Float = 20, $name: String, $chartName: String) {
+  components(page: $page, pageSize: $pageSize, name: $name, chartName: $chartName) {
+    nodes {
+      name
+      chartName
+      description
+      creationTimestamp
+      deprecated
+      icon
+      keywords
+      sources
+      home
+      versions {
+        createdAt
+        updatedAt
+        appVersion
+        version
+      }
+    }
+    totalCount
+    hasNextPage
   }
+}
+
+# 组件详情
+query getComponent($name: String!){
+  component(name: $name) {
+    name
+    chartName
+    description
+    creationTimestamp
+    deprecated
+    icon
+    keywords
+    sources
+    home
+    versions {
+      createdAt
+      updatedAt
+      appVersion
+      version
+      deprecated
+      digest
+    }
+    maintainers {
+      email
+      name
+      url
+    }
+  }
+}
+
+# 发布组件
+mutation uploadComponent($repository: String!, $file: Upload!) {
+  componentUpload(chart: { repository: $repository, file: $file })
+}
+
+# 删除组件
+mutation deleteComponent($chart: DeleteComponentInput!){
+  componentDelete(chart: $chart)
 }

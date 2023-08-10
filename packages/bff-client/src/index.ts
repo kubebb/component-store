@@ -11,6 +11,16 @@ export * from './errors';
 export * from './sdk';
 
 const isProd = process.env.NODE_ENV === 'production';
+const AUTH_DATA = 'authData';
+const getAuthData = () => {
+  try {
+    const authData = JSON.parse(window.localStorage.getItem(AUTH_DATA) || '{}');
+    return authData;
+  } catch (error) {
+    console.warn('getAuthData failed', error);
+    return {};
+  }
+};
 
 export interface RequestOptions extends RequestInit {
   url: string;
@@ -24,11 +34,15 @@ export const requestMiddleware: RequestMiddleware<any> = request => {
   if (operationName) {
     query.o = operationName;
   }
+  const authData = getAuthData();
+  const { token_type, id_token } = authData.token || {};
+  const Authorization = token_type && id_token && `${token_type} ${id_token}`;
   return {
     url: `${host}?${qs.stringify(query)}`,
     operationName,
     credentials: 'include',
     ...otherRequest,
+    headers: Authorization ? { ...request.headers, Authorization } : { ...request.headers },
   };
 };
 
@@ -39,8 +53,8 @@ export const responseMiddleware = (response: Response<unknown> | Error) => {
   }
 };
 
-const devEndpoint = '/components/bff';
-const prodEndpoint = '/components/bff';
+const devEndpoint = '/component-store-apis/bff';
+const prodEndpoint = '/component-store-apis/bff';
 const endpoint = isProd ? prodEndpoint : devEndpoint;
 
 export const client = new GraphQLClient(endpoint, {

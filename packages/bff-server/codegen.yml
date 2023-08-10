@@ -9,5 +9,6 @@ generates:
       - plugin-typescript-swr
 config:
   autogenSWRKey: true
-  # useSWRInfinite:
-  #   - getPageCommits
+  useSWRInfinite:
+    - getRepositories
+    - getComponents

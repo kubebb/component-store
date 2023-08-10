@@ -2,7 +2,7 @@ import { defineConfig } from 'father';
 
 export default defineConfig({
   umd: {
-    name: 'YuntiBffClient',
+    name: 'ComponentStoreBffClient',
     entry: 'src',
     sourcemap: true,
     externals: {
