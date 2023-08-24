@@ -1,6 +1,6 @@
 # 组件仓库列表
-query getRepositories($page: Float = 1, $pageSize: Float = 20, $name: String){
-  repositories(page: $page, pageSize: $pageSize, name: $name){
+query getRepositories($page: Float = 1, $pageSize: Float = 20, $name: String, $repositoryTypes: [String!], $statuses: [String!]){
+  repositories(page: $page, pageSize: $pageSize, name: $name, repositoryTypes: $repositoryTypes, statuses: $statuses){
     nodes {
       name
       repositoryType
@@ -57,6 +57,28 @@ mutation createRepository($repository: CreateRepositoryInput!){
     url
     creationTimestamp
     lastSuccessfulTime
+    insecure
+    password
+    username
+    pullStategy {
+      intervalSeconds
+      retry
+      timeoutSeconds
+    }
+    filter {
+      name
+      operation
+      keepDeprecated
+      regexp
+      versionConstraint
+      versions
+    }
+    imageOverride {
+      newPath
+      path
+      registry
+      newRegistry
+    }
   }
 }
 
@@ -69,6 +91,28 @@ mutation updateRepository($name: String!, $repository: UpdateRepositoryInput!) {
     url
     creationTimestamp
     lastSuccessfulTime
+    insecure
+    password
+    username
+    pullStategy {
+      intervalSeconds
+      retry
+      timeoutSeconds
+    }
+    filter {
+      name
+      operation
+      keepDeprecated
+      regexp
+      versionConstraint
+      versions
+    }
+    imageOverride {
+      newPath
+      path
+      registry
+      newRegistry
+    }
   }
 }
 

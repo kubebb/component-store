@@ -84,13 +84,18 @@ export class RepositoryService {
   }
 
   async getRepositoriesPaged(auth: JwtAuth, args: RepostoryArgs): Promise<PaginatedRepository> {
-    const { page = 1, pageSize = 20, name } = args;
+    const { page = 1, pageSize = 20, name, statuses, repositoryTypes } = args;
     const res = await this.getRepositories(auth, { name });
-    const totalCount = res.length;
+    const filteredRes = res?.filter(
+      r =>
+        (!statuses || statuses?.includes(r.status)) &&
+        (!repositoryTypes || repositoryTypes?.includes(r.repositoryType))
+    );
+    const totalCount = filteredRes?.length;
     return {
       totalCount,
       hasNextPage: page * pageSize < totalCount,
-      nodes: res.slice((page - 1) * pageSize, page * pageSize),
+      nodes: filteredRes?.slice((page - 1) * pageSize, page * pageSize),
     };
   }
 
@@ -192,15 +197,27 @@ export class RepositoryService {
       repository;
     const { specFilter, specImgOver } = this.parseSpec({ filter, imageOverride });
     const { url, repositoryType, authSecret } = await this.getRepository(auth, name);
-
+    let secretName = authSecret;
     // TODO: update secret with cert
     if (certData || username || password) {
-      await this.secretService.updateSecret(auth, authSecret, this.kubebbNS, {
-        data: {
-          username,
-          password,
-        },
-      });
+      if (authSecret) {
+        await this.secretService.updateSecret(auth, authSecret, this.kubebbNS, {
+          data: {
+            username,
+            password,
+          },
+        });
+      } else {
+        secretName = genNanoid('repository');
+        await this.secretService.createSecret(auth, {
+          name: secretName,
+          namespace: this.kubebbNS,
+          data: {
+            username,
+            password,
+          },
+        });
+      }
     }
 
     const k8s = await this.k8sService.getClient(auth);
@@ -209,6 +226,7 @@ export class RepositoryService {
         url,
         repositoryType,
         insecure,
+        authSecret: secretName,
         pullStategy,
         imageOverride: specImgOver,
         filter: specFilter,
