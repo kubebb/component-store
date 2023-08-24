@@ -210,6 +210,8 @@ export type QueryRepositoriesArgs = {
   name?: InputMaybe<Scalars['String']['input']>;
   page?: InputMaybe<Scalars['Float']['input']>;
   pageSize?: InputMaybe<Scalars['Float']['input']>;
+  repositoryTypes?: InputMaybe<Array<Scalars['String']['input']>>;
+  statuses?: InputMaybe<Array<Scalars['String']['input']>>;
 };
 
 export type QueryRepositoryArgs = {
@@ -457,6 +459,8 @@ export type GetRepositoriesQueryVariables = Exact<{
   page?: InputMaybe<Scalars['Float']['input']>;
   pageSize?: InputMaybe<Scalars['Float']['input']>;
   name?: InputMaybe<Scalars['String']['input']>;
+  repositoryTypes?: InputMaybe<Array<Scalars['String']['input']> | Scalars['String']['input']>;
+  statuses?: InputMaybe<Array<Scalars['String']['input']> | Scalars['String']['input']>;
 }>;
 
 export type GetRepositoriesQuery = {
@@ -533,6 +537,31 @@ export type CreateRepositoryMutation = {
     url: string;
     creationTimestamp: string;
     lastSuccessfulTime?: string | null;
+    insecure?: boolean | null;
+    password?: string | null;
+    username?: string | null;
+    pullStategy?: {
+      __typename?: 'RepositoryPullStategy';
+      intervalSeconds?: number | null;
+      retry?: number | null;
+      timeoutSeconds?: number | null;
+    } | null;
+    filter?: Array<{
+      __typename?: 'RepositoryFilter';
+      name?: string | null;
+      operation?: RepositoryFilterOperation | null;
+      keepDeprecated?: boolean | null;
+      regexp?: string | null;
+      versionConstraint?: string | null;
+      versions?: Array<string> | null;
+    }> | null;
+    imageOverride?: Array<{
+      __typename?: 'RepositoryImageOverride';
+      newPath?: string | null;
+      path?: string | null;
+      registry?: string | null;
+      newRegistry?: string | null;
+    }> | null;
   };
 };
 
@@ -551,6 +580,31 @@ export type UpdateRepositoryMutation = {
     url: string;
     creationTimestamp: string;
     lastSuccessfulTime?: string | null;
+    insecure?: boolean | null;
+    password?: string | null;
+    username?: string | null;
+    pullStategy?: {
+      __typename?: 'RepositoryPullStategy';
+      intervalSeconds?: number | null;
+      retry?: number | null;
+      timeoutSeconds?: number | null;
+    } | null;
+    filter?: Array<{
+      __typename?: 'RepositoryFilter';
+      name?: string | null;
+      operation?: RepositoryFilterOperation | null;
+      keepDeprecated?: boolean | null;
+      regexp?: string | null;
+      versionConstraint?: string | null;
+      versions?: Array<string> | null;
+    }> | null;
+    imageOverride?: Array<{
+      __typename?: 'RepositoryImageOverride';
+      newPath?: string | null;
+      path?: string | null;
+      registry?: string | null;
+      newRegistry?: string | null;
+    }> | null;
   };
 };
 
@@ -624,8 +678,20 @@ export const DeleteComponentDocument = gql`
   }
 `;
 export const GetRepositoriesDocument = gql`
-  query getRepositories($page: Float = 1, $pageSize: Float = 20, $name: String) {
-    repositories(page: $page, pageSize: $pageSize, name: $name) {
+  query getRepositories(
+    $page: Float = 1
+    $pageSize: Float = 20
+    $name: String
+    $repositoryTypes: [String!]
+    $statuses: [String!]
+  ) {
+    repositories(
+      page: $page
+      pageSize: $pageSize
+      name: $name
+      repositoryTypes: $repositoryTypes
+      statuses: $statuses
+    ) {
       nodes {
         name
         repositoryType
@@ -682,6 +748,28 @@ export const CreateRepositoryDocument = gql`
       url
       creationTimestamp
       lastSuccessfulTime
+      insecure
+      password
+      username
+      pullStategy {
+        intervalSeconds
+        retry
+        timeoutSeconds
+      }
+      filter {
+        name
+        operation
+        keepDeprecated
+        regexp
+        versionConstraint
+        versions
+      }
+      imageOverride {
+        newPath
+        path
+        registry
+        newRegistry
+      }
     }
   }
 `;
@@ -694,6 +782,28 @@ export const UpdateRepositoryDocument = gql`
       url
       creationTimestamp
       lastSuccessfulTime
+      insecure
+      password
+      username
+      pullStategy {
+        intervalSeconds
+        retry
+        timeoutSeconds
+      }
+      filter {
+        name
+        operation
+        keepDeprecated
+        regexp
+        versionConstraint
+        versions
+      }
+      imageOverride {
+        newPath
+        path
+        registry
+        newRegistry
+      }
     }
   }
 `;

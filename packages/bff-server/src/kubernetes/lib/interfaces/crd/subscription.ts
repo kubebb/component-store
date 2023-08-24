@@ -33,6 +33,10 @@ export interface Subscription {
      */
     atomic?: boolean;
     /**
+     * CleanupOnFail is pass to helm upgrade --cleanup-on-fail allow deletion of new resources created in this upgrade when upgrade fails
+     */
+    cleanupOnFail?: boolean;
+    /**
      * ComponentRef is a reference to the Component
      */
     component: {
@@ -71,6 +75,10 @@ export interface Subscription {
      */
     componentPlanInstallMethod?: string;
     /**
+     * creator is the name of crd creator, filled by webhook
+     */
+    creator?: string;
+    /**
      * DependencyUpdate is pass to helm install/upgrade --dependency-update update dependencies if they are missing before installing the chart
      */
     dependencyUpdate?: boolean;
@@ -79,9 +87,9 @@ export interface Subscription {
      */
     description?: string;
     /**
-     * Devel is pass to helm install/upgrade --devel use development versions, too. Equivalent to version '>0.0.0-0'. If --version is set, this is ignored
+     * DisableHooks is pass to helm install/upgrade --no-hooks if set, prevent hooks from running during install and disable pre/post upgrade hooks
      */
-    devel?: boolean;
+    disableHooks?: boolean;
     /**
      * DisableOpenAPIValidation is pass to helm install/upgrade --disable-openapi-validation if set, the installation process will not validate rendered templates against the Kubernetes OpenAPI Schema
      */
@@ -91,9 +99,17 @@ export interface Subscription {
      */
     enableDNS?: boolean;
     /**
-     * FIXME reconsider there config because we will use helm template not helm install Force is pass to helm install/upgrade --force force resource updates through a replacement strategy
+     * Force is passed to helm upgrade --force force resource updates through a replacement strategy
      */
     force?: boolean;
+    /**
+     * MaxHistory is pass to helm upgrade --history-max limit the maximum number of revisions saved per release. Use 0 for no limit
+     */
+    historyMax?: number;
+    /**
+     * KeepHistory is paas to helm uninstall --keep-history remove all associated resources and mark the release as deleted, but retain the release history.
+     */
+    keepHistory?: boolean;
     /**
      * MaxRetry
      */
@@ -101,49 +117,71 @@ export interface Subscription {
     /**
      * Name is pass to helm install <chart> <name>, name arg
      */
-    name?: string;
+    name: string;
     /**
-     * NameTemplate is pass to helm install --name-template FIXME add logic
-     */
-    nameTemplate?: string;
-    /**
-     * Override defines the override settings for the component FIXME fix comment
+     * Override defines the override settings for the component
      */
     override?: {
       /**
-       * Set is passed to helm install --set set values on the command line (can specify multiple or separate values with commas: key1=val1,key2=val2)
+       * Images for replace old image see https://kubectl.docs.kubernetes.io/references/kustomize/kustomization/images
+       */
+      images?: {
+        /**
+         * Digest is the value used to replace the original image tag. If digest is present NewTag value is ignored.
+         */
+        digest?: string;
+        /**
+         * Name is a tag-less image name.
+         */
+        name?: string;
+        /**
+         * NewName is the value used to replace the original name.
+         */
+        newName?: string;
+        /**
+         * NewTag is the value used to replace the original tag.
+         */
+        newTag?: string;
+        [k: string]: any;
+      }[];
+      /**
+       * Set is passed to helm install --set can specify multiple or separate values with commas: key1=val1,key2=val2 Helm also provides other set options, such as --set-json or --set-literal, which can be replaced by values or valuesFrom fields.
        */
       set?: string[];
       /**
-       * SetFile is passed to helm install --set-file set values from respective files specified via the command line (can specify multiple or separate values with commas: key1=path1,key2=path2) https://github.com/helm/helm/pull/3758
-       */
-      'set-file'?: string[];
-      /**
-       * SetJSON is passed to helm install --set-json set JSON values on the command line (can specify multiple or separate values with commas: key1=jsonval1,key2=jsonval2) https://github.com/helm/helm/pull/10693
-       */
-      'set-json'?: string[];
-      /**
-       * SetLiteral is passed to helm install --set-literal set a literal STRING value on the command line https://github.com/helm/helm/pull/9182
-       */
-      'set-literal'?: string[];
-      /**
-       * SetString is passed to helm install --set-string set STRING values on the command line (can specify multiple or separate values with commas: key1=val1,key2=val2) https://github.com/helm/helm/pull/3599
+       * SetString is passed to helm install --set-string set STRING values on the command line (can specify multiple or separate values with commas: key1=val1,key2=val2) https://github.com/helm/helm/pull/3599 Helm also provides other set options, such as --set-json or --set-literal, which can be replaced by values or valuesFrom fields.
        */
       'set-string'?: string[];
       /**
-       * Values is passed to helm install --values or -f specify values in a YAML file or a URL (can specify multiple)
+       * Values holds the values for this Helm release.
        */
-      values?: string[];
+      values?: {
+        [k: string]: any;
+      };
+      /**
+       * Values is passed to helm install --values or -f specify values in a YAML file or a URL (can specify multiple) ValuesFrom holds references to resources containing Helm values for this HelmRelease, and information about how they should be merged.
+       */
+      valuesFrom?: {
+        /**
+         * Kind of the values referent, valid values are ('Secret', 'ConfigMap').
+         */
+        kind: 'Secret' | 'ConfigMap';
+        /**
+         * Name of the values' referent. Should reside in the same namespace as the referring resource.
+         */
+        name: string;
+        /**
+         * TargetPath is the YAML dot notation path the value should be merged at. When set, the ValuesKey is expected to be a single flat value. Defaults to 'None', which results in the values getting merged at the root.
+         */
+        targetPath?: string;
+        /**
+         * ValuesKey is the data key where the values.yaml or a specific value can be found at. Defaults to 'values.yaml'. When set, must be a valid Data Key, consisting of alphanumeric characters, '-', '_' or '.'.
+         */
+        valuesKey?: string;
+        [k: string]: any;
+      }[];
       [k: string]: any;
     };
-    /**
-     * Recreate is pass to helm upgrade --recreate-pods performs pods restart for the resource if applicable
-     */
-    'recreate-pods'?: boolean;
-    /**
-     * Replace is pass to helm install --replace re-use the given name, only if that name is a deleted release which remains in the history. This is unsafe in production
-     */
-    replace?: boolean;
     /**
      * RepositoryRef is a reference to the Repository
      */
@@ -205,6 +243,10 @@ export interface Subscription {
      */
     conditions?: {
       /**
+       * LastSuccessfulTime is repository Last Successful Update Time
+       */
+      lastSuccessfulTime?: string;
+      /**
        * LastTransitionTime is the last time this condition transitioned from one status to another.
        */
       lastTransitionTime: string;
@@ -227,7 +269,7 @@ export interface Subscription {
       [k: string]: any;
     }[];
     /**
-     * Installed records all componentplans installed, ordered by install time.
+     * Installed records all componentplans installed, ordered by installation time.
      */
     installed?: {
       /**
