@@ -138,15 +138,38 @@ scalar JSONObject
 
 type Mutation {
   """删除组件"""
-  componentDelete(chart: DeleteComponentInput!): Boolean!
+  componentDelete(
+    chart: DeleteComponentInput!
+
+    """集群下的资源，不传则为默认集群"""
+    cluster: String
+  ): Boolean!
 
   """发布组件"""
-  componentUpload(chart: CreateComponentInput!): Boolean!
-  repositoryCreate(repository: CreateRepositoryInput!): Repository!
+  componentUpload(
+    chart: CreateComponentInput!
+
+    """集群下的资源，不传则为默认集群"""
+    cluster: String
+  ): Boolean!
+  repositoryCreate(
+    """集群下的资源，不传则为默认集群"""
+    cluster: String
+    repository: CreateRepositoryInput!
+  ): Repository!
 
   """删除组件仓库"""
-  repositoryRemove(name: String!): Boolean!
-  repositoryUpdate(name: String!, repository: UpdateRepositoryInput!): Repository!
+  repositoryRemove(
+    """集群下的资源，不传则为默认集群"""
+    cluster: String
+    name: String!
+  ): Boolean!
+  repositoryUpdate(
+    """集群下的资源，不传则为默认集群"""
+    cluster: String
+    name: String!
+    repository: UpdateRepositoryInput!
+  ): Repository!
 }
 
 """分页"""
@@ -171,12 +194,19 @@ type PaginatedRepository {
 
 type Query {
   """组件详情"""
-  component(name: String!): Component!
+  component(
+    """集群下的资源，不传则为默认集群"""
+    cluster: String
+    name: String!
+  ): Component!
 
   """组件列表"""
   components(
     """Chart名称"""
     chartName: String
+
+    """集群（不传则为默认集群）"""
+    cluster: String
 
     """关键词"""
     keyword: String
@@ -199,6 +229,9 @@ type Query {
 
   """组件仓库列表"""
   repositories(
+    """集群（不传则为默认集群）"""
+    cluster: String
+
     """组件仓库名称"""
     name: String
 
@@ -216,7 +249,11 @@ type Query {
   ): PaginatedRepository!
 
   """组件仓库详情"""
-  repository(name: String!): Repository!
+  repository(
+    """集群下的资源，不传则为默认集群"""
+    cluster: String
+    name: String!
+  ): Repository!
 }
 
 type Repository {

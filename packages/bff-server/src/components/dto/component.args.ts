@@ -25,4 +25,7 @@ export class ComponentArgs extends PaginationArgs {
   /** 排序字段 */
   @Field(() => String, { description: '排序字段' })
   sortField?: 'updatedAt';
+
+  /** 集群（不传则为默认集群） */
+  cluster?: string;
 }

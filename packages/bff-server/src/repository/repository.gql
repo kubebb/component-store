@@ -1,6 +1,6 @@
 # 组件仓库列表
-query getRepositories($page: Float = 1, $pageSize: Float = 20, $name: String, $repositoryTypes: [String!], $statuses: [String!]){
-  repositories(page: $page, pageSize: $pageSize, name: $name, repositoryTypes: $repositoryTypes, statuses: $statuses){
+query getRepositories($page: Float = 1, $pageSize: Float = 20, $name: String, $repositoryTypes: [String!], $statuses: [String!], $cluster: String){
+  repositories(page: $page, pageSize: $pageSize, name: $name, repositoryTypes: $repositoryTypes, statuses: $statuses, cluster: $cluster){
     nodes {
       name
       repositoryType
@@ -15,8 +15,8 @@ query getRepositories($page: Float = 1, $pageSize: Float = 20, $name: String, $r
 }
 
 # 组件仓库详情
-query getRepository($name: String!) {
-  repository(name: $name) {
+query getRepository($name: String!, $cluster: String) {
+  repository(name: $name, cluster: $cluster) {
     name
     repositoryType
     status
@@ -49,8 +49,8 @@ query getRepository($name: String!) {
 }
 
 # 创建组件仓库
-mutation createRepository($repository: CreateRepositoryInput!){
-  repositoryCreate(repository: $repository) {
+mutation createRepository($repository: CreateRepositoryInput!, $cluster: String){
+  repositoryCreate(repository: $repository, cluster: $cluster) {
     name
     repositoryType
     status
@@ -83,8 +83,8 @@ mutation createRepository($repository: CreateRepositoryInput!){
 }
 
 # 更新组件仓库
-mutation updateRepository($name: String!, $repository: UpdateRepositoryInput!) {
-  repositoryUpdate(name: $name, repository: $repository){
+mutation updateRepository($name: String!, $repository: UpdateRepositoryInput!, $cluster: String) {
+  repositoryUpdate(name: $name, repository: $repository, cluster: $cluster){
     name
     repositoryType
     status
@@ -117,6 +117,6 @@ mutation updateRepository($name: String!, $repository: UpdateRepositoryInput!) {
 }
 
 # 删除组件仓库
-mutation removeRepository($name: String!){
-  repositoryRemove(name: $name)
+mutation removeRepository($name: String!, $cluster: String){
+  repositoryRemove(name: $name, cluster: $cluster)
 }

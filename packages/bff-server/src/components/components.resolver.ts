@@ -20,23 +20,41 @@ export class ComponentsResolver {
   }
 
   @Query(() => Component, { description: '组件详情' })
-  async component(@Auth() auth: JwtAuth, @Args('name') name: string): Promise<Component> {
-    return this.componentsService.getComponent(auth, name);
+  async component(
+    @Auth() auth: JwtAuth,
+    @Args('name') name: string,
+    @Args('cluster', {
+      nullable: true,
+      description: '集群下的资源，不传则为默认集群',
+    })
+    cluster: string
+  ): Promise<Component> {
+    return this.componentsService.getComponent(auth, name, cluster);
   }
 
   @Mutation(() => Boolean, { description: '发布组件' })
   async componentUpload(
     @Auth() auth: JwtAuth,
-    @Args('chart') chart: CreateComponentInput
+    @Args('chart') chart: CreateComponentInput,
+    @Args('cluster', {
+      nullable: true,
+      description: '集群下的资源，不传则为默认集群',
+    })
+    cluster: string
   ): Promise<boolean> {
-    return this.componentsService.uploadChart(auth, chart);
+    return this.componentsService.uploadChart(auth, chart, cluster);
   }
 
   @Mutation(() => Boolean, { description: '删除组件' })
   async componentDelete(
     @Auth() auth: JwtAuth,
-    @Args('chart') chart: DeleteComponentInput
+    @Args('chart') chart: DeleteComponentInput,
+    @Args('cluster', {
+      nullable: true,
+      description: '集群下的资源，不传则为默认集群',
+    })
+    cluster: string
   ): Promise<boolean> {
-    return this.componentsService.deleteChart(auth, chart);
+    return this.componentsService.deleteChart(auth, chart, cluster);
   }
 }

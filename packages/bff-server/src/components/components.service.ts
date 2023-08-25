@@ -43,8 +43,8 @@ export class ComponentsService {
     };
   }
 
-  async listComponents(auth: JwtAuth): Promise<Component[]> {
-    const k8s = await this.k8sService.getClient(auth);
+  async listComponents(auth: JwtAuth, cluster?: string): Promise<Component[]> {
+    const k8s = await this.k8sService.getClient(auth, { cluster });
     const { body } = await k8s.component.list(this.kubebbNS);
     return body.items
       ?.map(t => this.formatComponent(t))
@@ -54,8 +54,8 @@ export class ComponentsService {
   }
 
   async getComponentsPaged(auth: JwtAuth, args: ComponentArgs): Promise<PaginatedComponent> {
-    const { page, pageSize, name, chartName, keyword, sortDirection, sortField } = args;
-    const res = await this.listComponents(auth);
+    const { page, pageSize, name, chartName, keyword, sortDirection, sortField, cluster } = args;
+    const res = await this.listComponents(auth, cluster);
     const filteredRes = res?.filter(
       t =>
         (!name || t.name?.includes(name)) &&
@@ -78,8 +78,8 @@ export class ComponentsService {
     };
   }
 
-  async getComponent(auth: JwtAuth, name: string): Promise<Component> {
-    const k8s = await this.k8sService.getClient(auth);
+  async getComponent(auth: JwtAuth, name: string, cluster?: string): Promise<Component> {
+    const k8s = await this.k8sService.getClient(auth, { cluster });
     const { body } = await k8s.component.read(name, this.kubebbNS);
     return this.formatComponent(body);
   }
@@ -88,10 +88,14 @@ export class ComponentsService {
    * 通过「POST /api/charts - upload a new chart version」创建 Component
    * 参考 https://github.com/helm/chartmuseum
    */
-  async uploadChart(auth: JwtAuth, chart: CreateComponentInput): Promise<boolean> {
+  async uploadChart(
+    auth: JwtAuth,
+    chart: CreateComponentInput,
+    cluster?: string
+  ): Promise<boolean> {
     const { repository, file } = chart;
     const { createReadStream } = await file;
-    const { url } = await this.repositoryService.getRepository(auth, repository);
+    const { url } = await this.repositoryService.getRepository(auth, repository, cluster);
     // TODO: username password
     await this.callChartMuseum(`${url}/api/charts`, {
       method: 'POST',
@@ -103,9 +107,13 @@ export class ComponentsService {
   /**
    * 通过「DELETE /api/charts/<name>/<version> - delete a chart version (and corresponding provenance file)」删除 Component
    */
-  async deleteChart(auth: JwtAuth, chart: DeleteComponentInput): Promise<boolean> {
+  async deleteChart(
+    auth: JwtAuth,
+    chart: DeleteComponentInput,
+    cluster?: string
+  ): Promise<boolean> {
     const { repository, chartName, version } = chart;
-    const { url } = await this.repositoryService.getRepository(auth, repository);
+    const { url } = await this.repositoryService.getRepository(auth, repository, cluster);
     // TODO: username password
     await this.callChartMuseum(`${url}/api/charts/${chartName}/${version}`, {
       method: 'DELETE',
