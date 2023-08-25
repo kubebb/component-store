@@ -52,6 +52,8 @@ export type Component = {
   name: Scalars['ID']['output'];
   /** 源代码 */
   sources?: Maybe<Array<Scalars['String']['output']>>;
+  /** 最近更新时间 */
+  updatedAt?: Maybe<Scalars['String']['output']>;
   /** 版本 */
   versions?: Maybe<Array<ComponentVersion>>;
 };
@@ -201,9 +203,12 @@ export type QueryComponentArgs = {
 
 export type QueryComponentsArgs = {
   chartName?: InputMaybe<Scalars['String']['input']>;
+  keyword?: InputMaybe<Scalars['String']['input']>;
   name?: InputMaybe<Scalars['String']['input']>;
   page?: InputMaybe<Scalars['Float']['input']>;
   pageSize?: InputMaybe<Scalars['Float']['input']>;
+  sortDirection?: InputMaybe<SortDirection>;
+  sortField?: InputMaybe<Scalars['String']['input']>;
 };
 
 export type QueryRepositoriesArgs = {
@@ -355,6 +360,14 @@ export enum RepositoryStatus {
   Unknown = 'unknown',
 }
 
+/** 排序方向 */
+export enum SortDirection {
+  /** 生序 */
+  Ascend = 'ascend',
+  /** 降序 */
+  Descend = 'descend',
+}
+
 export type UpdateRepositoryInput = {
   /** 证书内容(base64) */
   certData?: InputMaybe<Scalars['String']['input']>;
@@ -377,6 +390,9 @@ export type GetComponentsQueryVariables = Exact<{
   pageSize?: InputMaybe<Scalars['Float']['input']>;
   name?: InputMaybe<Scalars['String']['input']>;
   chartName?: InputMaybe<Scalars['String']['input']>;
+  keyword?: InputMaybe<Scalars['String']['input']>;
+  sortDirection?: InputMaybe<SortDirection>;
+  sortField?: InputMaybe<Scalars['String']['input']>;
 }>;
 
 export type GetComponentsQuery = {
@@ -396,6 +412,7 @@ export type GetComponentsQuery = {
       keywords?: Array<string> | null;
       sources?: Array<string> | null;
       home?: string | null;
+      updatedAt?: string | null;
       versions?: Array<{
         __typename?: 'ComponentVersion';
         createdAt?: string | null;
@@ -424,6 +441,7 @@ export type GetComponentQuery = {
     keywords?: Array<string> | null;
     sources?: Array<string> | null;
     home?: string | null;
+    updatedAt?: string | null;
     versions?: Array<{
       __typename?: 'ComponentVersion';
       createdAt?: string | null;
@@ -615,8 +633,24 @@ export type RemoveRepositoryMutationVariables = Exact<{
 export type RemoveRepositoryMutation = { __typename?: 'Mutation'; repositoryRemove: boolean };
 
 export const GetComponentsDocument = gql`
-  query getComponents($page: Float = 1, $pageSize: Float = 20, $name: String, $chartName: String) {
-    components(page: $page, pageSize: $pageSize, name: $name, chartName: $chartName) {
+  query getComponents(
+    $page: Float = 1
+    $pageSize: Float = 20
+    $name: String
+    $chartName: String
+    $keyword: String
+    $sortDirection: SortDirection
+    $sortField: String
+  ) {
+    components(
+      page: $page
+      pageSize: $pageSize
+      name: $name
+      chartName: $chartName
+      keyword: $keyword
+      sortDirection: $sortDirection
+      sortField: $sortField
+    ) {
       nodes {
         name
         chartName
@@ -627,6 +661,7 @@ export const GetComponentsDocument = gql`
         keywords
         sources
         home
+        updatedAt
         versions {
           createdAt
           updatedAt
@@ -651,6 +686,7 @@ export const GetComponentDocument = gql`
       keywords
       sources
       home
+      updatedAt
       versions {
         createdAt
         updatedAt

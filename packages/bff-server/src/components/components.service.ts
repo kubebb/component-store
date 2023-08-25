@@ -1,3 +1,4 @@
+import { SortDirection } from '@/common/models/sort-direction.enum';
 import serverConfig from '@/config/server.config';
 import { KubernetesService } from '@/kubernetes/kubernetes.service';
 import { RepositoryService } from '@/repository/repository.service';
@@ -25,6 +26,7 @@ export class ComponentsService {
   private kubebbNS = this.config.kubebb.namespace;
 
   formatComponent(c: CRD.Component): Component {
+    const latestVersion = c.status?.versions?.[0];
     return {
       name: c.metadata?.name,
       chartName: c.status?.name,
@@ -37,6 +39,7 @@ export class ComponentsService {
       versions: c.status?.versions,
       maintainers: c.status?.maintainers,
       creationTimestamp: new Date(c.metadata?.creationTimestamp).toISOString(),
+      updatedAt: latestVersion?.updatedAt ? new Date(latestVersion?.updatedAt).toISOString() : null,
     };
   }
 
@@ -51,11 +54,22 @@ export class ComponentsService {
   }
 
   async getComponentsPaged(auth: JwtAuth, args: ComponentArgs): Promise<PaginatedComponent> {
-    const { page, pageSize, name, chartName } = args;
+    const { page, pageSize, name, chartName, keyword, sortDirection, sortField } = args;
     const res = await this.listComponents(auth);
     const filteredRes = res?.filter(
-      t => (!name || t.name?.includes(name)) && (!chartName || t.chartName?.includes(chartName))
+      t =>
+        (!name || t.name?.includes(name)) &&
+        (!chartName || t.chartName?.includes(chartName)) &&
+        (!keyword || t.keywords?.includes(keyword))
     );
+    if (sortField && sortDirection) {
+      filteredRes?.sort((a, b) => {
+        if (sortField === 'updatedAt') {
+          const [aT, bT] = [new Date(a.updatedAt).valueOf(), new Date(b.updatedAt).valueOf()];
+          return sortDirection === SortDirection.ascend ? aT - bT : bT - aT;
+        }
+      });
+    }
     const totalCount = filteredRes.length;
     return {
       totalCount,
