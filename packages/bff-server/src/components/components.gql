@@ -1,6 +1,6 @@
 # 获取组件列表
-query getComponents($page: Float = 1, $pageSize: Float = 20, $name: String, $chartName: String, $keyword: String, $sortDirection: SortDirection, $sortField: String) {
-  components(page: $page, pageSize: $pageSize, name: $name, chartName: $chartName, keyword: $keyword, sortDirection: $sortDirection, sortField: $sortField) {
+query getComponents($page: Float = 1, $pageSize: Float = 20, $name: String, $chartName: String, $keyword: String, $sortDirection: SortDirection, $sortField: String, $cluster: String) {
+  components(page: $page, pageSize: $pageSize, name: $name, chartName: $chartName, keyword: $keyword, sortDirection: $sortDirection, sortField: $sortField, cluster: $cluster) {
     nodes {
       name
       chartName
@@ -25,8 +25,8 @@ query getComponents($page: Float = 1, $pageSize: Float = 20, $name: String, $cha
 }
 
 # 组件详情
-query getComponent($name: String!){
-  component(name: $name) {
+query getComponent($name: String!, $cluster: String){
+  component(name: $name, cluster: $cluster) {
     name
     chartName
     description
@@ -54,11 +54,11 @@ query getComponent($name: String!){
 }
 
 # 发布组件
-mutation uploadComponent($repository: String!, $file: Upload!) {
-  componentUpload(chart: { repository: $repository, file: $file })
+mutation uploadComponent($repository: String!, $file: Upload!, $cluster: String) {
+  componentUpload(chart: { repository: $repository, file: $file }, cluster: $cluster)
 }
 
 # 删除组件
-mutation deleteComponent($chart: DeleteComponentInput!){
-  componentDelete(chart: $chart)
+mutation deleteComponent($chart: DeleteComponentInput!, $cluster: String){
+  componentDelete(chart: $chart, cluster: $cluster)
 }

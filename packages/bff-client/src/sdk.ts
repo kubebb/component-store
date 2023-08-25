@@ -144,21 +144,26 @@ export type Mutation = {
 
 export type MutationComponentDeleteArgs = {
   chart: DeleteComponentInput;
+  cluster?: InputMaybe<Scalars['String']['input']>;
 };
 
 export type MutationComponentUploadArgs = {
   chart: CreateComponentInput;
+  cluster?: InputMaybe<Scalars['String']['input']>;
 };
 
 export type MutationRepositoryCreateArgs = {
+  cluster?: InputMaybe<Scalars['String']['input']>;
   repository: CreateRepositoryInput;
 };
 
 export type MutationRepositoryRemoveArgs = {
+  cluster?: InputMaybe<Scalars['String']['input']>;
   name: Scalars['String']['input'];
 };
 
 export type MutationRepositoryUpdateArgs = {
+  cluster?: InputMaybe<Scalars['String']['input']>;
   name: Scalars['String']['input'];
   repository: UpdateRepositoryInput;
 };
@@ -198,11 +203,13 @@ export type Query = {
 };
 
 export type QueryComponentArgs = {
+  cluster?: InputMaybe<Scalars['String']['input']>;
   name: Scalars['String']['input'];
 };
 
 export type QueryComponentsArgs = {
   chartName?: InputMaybe<Scalars['String']['input']>;
+  cluster?: InputMaybe<Scalars['String']['input']>;
   keyword?: InputMaybe<Scalars['String']['input']>;
   name?: InputMaybe<Scalars['String']['input']>;
   page?: InputMaybe<Scalars['Float']['input']>;
@@ -212,6 +219,7 @@ export type QueryComponentsArgs = {
 };
 
 export type QueryRepositoriesArgs = {
+  cluster?: InputMaybe<Scalars['String']['input']>;
   name?: InputMaybe<Scalars['String']['input']>;
   page?: InputMaybe<Scalars['Float']['input']>;
   pageSize?: InputMaybe<Scalars['Float']['input']>;
@@ -220,6 +228,7 @@ export type QueryRepositoriesArgs = {
 };
 
 export type QueryRepositoryArgs = {
+  cluster?: InputMaybe<Scalars['String']['input']>;
   name: Scalars['String']['input'];
 };
 
@@ -393,6 +402,7 @@ export type GetComponentsQueryVariables = Exact<{
   keyword?: InputMaybe<Scalars['String']['input']>;
   sortDirection?: InputMaybe<SortDirection>;
   sortField?: InputMaybe<Scalars['String']['input']>;
+  cluster?: InputMaybe<Scalars['String']['input']>;
 }>;
 
 export type GetComponentsQuery = {
@@ -426,6 +436,7 @@ export type GetComponentsQuery = {
 
 export type GetComponentQueryVariables = Exact<{
   name: Scalars['String']['input'];
+  cluster?: InputMaybe<Scalars['String']['input']>;
 }>;
 
 export type GetComponentQuery = {
@@ -463,12 +474,14 @@ export type GetComponentQuery = {
 export type UploadComponentMutationVariables = Exact<{
   repository: Scalars['String']['input'];
   file: Scalars['Upload']['input'];
+  cluster?: InputMaybe<Scalars['String']['input']>;
 }>;
 
 export type UploadComponentMutation = { __typename?: 'Mutation'; componentUpload: boolean };
 
 export type DeleteComponentMutationVariables = Exact<{
   chart: DeleteComponentInput;
+  cluster?: InputMaybe<Scalars['String']['input']>;
 }>;
 
 export type DeleteComponentMutation = { __typename?: 'Mutation'; componentDelete: boolean };
@@ -479,6 +492,7 @@ export type GetRepositoriesQueryVariables = Exact<{
   name?: InputMaybe<Scalars['String']['input']>;
   repositoryTypes?: InputMaybe<Array<Scalars['String']['input']> | Scalars['String']['input']>;
   statuses?: InputMaybe<Array<Scalars['String']['input']> | Scalars['String']['input']>;
+  cluster?: InputMaybe<Scalars['String']['input']>;
 }>;
 
 export type GetRepositoriesQuery = {
@@ -501,6 +515,7 @@ export type GetRepositoriesQuery = {
 
 export type GetRepositoryQueryVariables = Exact<{
   name: Scalars['String']['input'];
+  cluster?: InputMaybe<Scalars['String']['input']>;
 }>;
 
 export type GetRepositoryQuery = {
@@ -543,6 +558,7 @@ export type GetRepositoryQuery = {
 
 export type CreateRepositoryMutationVariables = Exact<{
   repository: CreateRepositoryInput;
+  cluster?: InputMaybe<Scalars['String']['input']>;
 }>;
 
 export type CreateRepositoryMutation = {
@@ -586,6 +602,7 @@ export type CreateRepositoryMutation = {
 export type UpdateRepositoryMutationVariables = Exact<{
   name: Scalars['String']['input'];
   repository: UpdateRepositoryInput;
+  cluster?: InputMaybe<Scalars['String']['input']>;
 }>;
 
 export type UpdateRepositoryMutation = {
@@ -628,6 +645,7 @@ export type UpdateRepositoryMutation = {
 
 export type RemoveRepositoryMutationVariables = Exact<{
   name: Scalars['String']['input'];
+  cluster?: InputMaybe<Scalars['String']['input']>;
 }>;
 
 export type RemoveRepositoryMutation = { __typename?: 'Mutation'; repositoryRemove: boolean };
@@ -641,6 +659,7 @@ export const GetComponentsDocument = gql`
     $keyword: String
     $sortDirection: SortDirection
     $sortField: String
+    $cluster: String
   ) {
     components(
       page: $page
@@ -650,6 +669,7 @@ export const GetComponentsDocument = gql`
       keyword: $keyword
       sortDirection: $sortDirection
       sortField: $sortField
+      cluster: $cluster
     ) {
       nodes {
         name
@@ -675,8 +695,8 @@ export const GetComponentsDocument = gql`
   }
 `;
 export const GetComponentDocument = gql`
-  query getComponent($name: String!) {
-    component(name: $name) {
+  query getComponent($name: String!, $cluster: String) {
+    component(name: $name, cluster: $cluster) {
       name
       chartName
       description
@@ -704,13 +724,13 @@ export const GetComponentDocument = gql`
   }
 `;
 export const UploadComponentDocument = gql`
-  mutation uploadComponent($repository: String!, $file: Upload!) {
-    componentUpload(chart: { repository: $repository, file: $file })
+  mutation uploadComponent($repository: String!, $file: Upload!, $cluster: String) {
+    componentUpload(chart: { repository: $repository, file: $file }, cluster: $cluster)
   }
 `;
 export const DeleteComponentDocument = gql`
-  mutation deleteComponent($chart: DeleteComponentInput!) {
-    componentDelete(chart: $chart)
+  mutation deleteComponent($chart: DeleteComponentInput!, $cluster: String) {
+    componentDelete(chart: $chart, cluster: $cluster)
   }
 `;
 export const GetRepositoriesDocument = gql`
@@ -720,6 +740,7 @@ export const GetRepositoriesDocument = gql`
     $name: String
     $repositoryTypes: [String!]
     $statuses: [String!]
+    $cluster: String
   ) {
     repositories(
       page: $page
@@ -727,6 +748,7 @@ export const GetRepositoriesDocument = gql`
       name: $name
       repositoryTypes: $repositoryTypes
       statuses: $statuses
+      cluster: $cluster
     ) {
       nodes {
         name
@@ -742,8 +764,8 @@ export const GetRepositoriesDocument = gql`
   }
 `;
 export const GetRepositoryDocument = gql`
-  query getRepository($name: String!) {
-    repository(name: $name) {
+  query getRepository($name: String!, $cluster: String) {
+    repository(name: $name, cluster: $cluster) {
       name
       repositoryType
       status
@@ -776,8 +798,8 @@ export const GetRepositoryDocument = gql`
   }
 `;
 export const CreateRepositoryDocument = gql`
-  mutation createRepository($repository: CreateRepositoryInput!) {
-    repositoryCreate(repository: $repository) {
+  mutation createRepository($repository: CreateRepositoryInput!, $cluster: String) {
+    repositoryCreate(repository: $repository, cluster: $cluster) {
       name
       repositoryType
       status
@@ -810,8 +832,8 @@ export const CreateRepositoryDocument = gql`
   }
 `;
 export const UpdateRepositoryDocument = gql`
-  mutation updateRepository($name: String!, $repository: UpdateRepositoryInput!) {
-    repositoryUpdate(name: $name, repository: $repository) {
+  mutation updateRepository($name: String!, $repository: UpdateRepositoryInput!, $cluster: String) {
+    repositoryUpdate(name: $name, repository: $repository, cluster: $cluster) {
       name
       repositoryType
       status
@@ -844,8 +866,8 @@ export const UpdateRepositoryDocument = gql`
   }
 `;
 export const RemoveRepositoryDocument = gql`
-  mutation removeRepository($name: String!) {
-    repositoryRemove(name: $name)
+  mutation removeRepository($name: String!, $cluster: String) {
+    repositoryRemove(name: $name, cluster: $cluster)
   }
 `;
 

@@ -19,15 +19,20 @@ export class SecretService {
     };
   }
 
-  async getSecretDetail(auth: JwtAuth, name: string, namespace: string): Promise<Secret> {
-    const k8s = await this.k8sService.getClient(auth);
+  async getSecretDetail(
+    auth: JwtAuth,
+    name: string,
+    namespace: string,
+    cluster?: string
+  ): Promise<Secret> {
+    const k8s = await this.k8sService.getClient(auth, { cluster });
     const { body: secret } = await k8s.secret.read(name, namespace);
     return this.formatSecret(secret);
   }
 
-  async createSecret(auth: JwtAuth, secret: NewSecretInput): Promise<Secret> {
+  async createSecret(auth: JwtAuth, secret: NewSecretInput, cluster?: string): Promise<Secret> {
     const { name, namespace, data } = secret;
-    const k8s = await this.k8sService.getClient(auth);
+    const k8s = await this.k8sService.getClient(auth, { cluster });
     const { body } = await k8s.secret.create(namespace, {
       metadata: {
         name,
@@ -41,10 +46,11 @@ export class SecretService {
     auth: JwtAuth,
     name: string,
     namespace: string,
-    secret: UpdateSecretInput
+    secret: UpdateSecretInput,
+    cluster?: string
   ): Promise<Secret> {
     const { data } = secret;
-    const k8s = await this.k8sService.getClient(auth);
+    const k8s = await this.k8sService.getClient(auth, { cluster });
     const { body } = await k8s.secret.patchMerge(name, namespace, {
       data,
     });

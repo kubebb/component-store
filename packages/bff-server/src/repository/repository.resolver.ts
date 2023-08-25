@@ -20,29 +20,55 @@ export class RepositoryResolver {
   }
 
   @Query(() => Repository, { description: '组件仓库详情' })
-  async repository(@Auth() auth: JwtAuth, @Args('name') name: string): Promise<Repository> {
-    return this.repositoryService.getRepository(auth, name);
+  async repository(
+    @Auth() auth: JwtAuth,
+    @Args('name') name: string,
+    @Args('cluster', {
+      nullable: true,
+      description: '集群下的资源，不传则为默认集群',
+    })
+    cluster: string
+  ): Promise<Repository> {
+    return this.repositoryService.getRepository(auth, name, cluster);
   }
 
   @Mutation(() => Repository)
   async repositoryCreate(
     @Auth() auth: JwtAuth,
-    @Args('repository') repository: CreateRepositoryInput
+    @Args('repository') repository: CreateRepositoryInput,
+    @Args('cluster', {
+      nullable: true,
+      description: '集群下的资源，不传则为默认集群',
+    })
+    cluster: string
   ): Promise<Repository> {
-    return this.repositoryService.create(auth, repository);
+    return this.repositoryService.create(auth, repository, cluster);
   }
 
   @Mutation(() => Repository)
   async repositoryUpdate(
     @Auth() auth: JwtAuth,
     @Args('name') name: string,
-    @Args('repository') repository: UpdateRepositoryInput
+    @Args('repository') repository: UpdateRepositoryInput,
+    @Args('cluster', {
+      nullable: true,
+      description: '集群下的资源，不传则为默认集群',
+    })
+    cluster: string
   ) {
-    return this.repositoryService.update(auth, name, repository);
+    return this.repositoryService.update(auth, name, repository, cluster);
   }
 
   @Mutation(() => Boolean, { description: '删除组件仓库' })
-  async repositoryRemove(@Auth() auth: JwtAuth, @Args('name') name: string): Promise<boolean> {
-    return this.repositoryService.remove(auth, name);
+  async repositoryRemove(
+    @Auth() auth: JwtAuth,
+    @Args('name') name: string,
+    @Args('cluster', {
+      nullable: true,
+      description: '集群下的资源，不传则为默认集群',
+    })
+    cluster: string
+  ): Promise<boolean> {
+    return this.repositoryService.remove(auth, name, cluster);
   }
 }

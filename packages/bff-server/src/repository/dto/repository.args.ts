@@ -13,4 +13,7 @@ export class RepostoryArgs extends PaginationArgs {
   /** 状态 */
   @Field(() => [String], { description: '状态', nullable: true })
   statuses?: string[];
+
+  /** 集群（不传则为默认集群） */
+  cluster?: string;
 }

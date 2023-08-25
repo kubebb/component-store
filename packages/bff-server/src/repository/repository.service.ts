@@ -84,8 +84,8 @@ export class RepositoryService {
   }
 
   async getRepositoriesPaged(auth: JwtAuth, args: RepostoryArgs): Promise<PaginatedRepository> {
-    const { page = 1, pageSize = 20, name, statuses, repositoryTypes } = args;
-    const res = await this.getRepositories(auth, { name });
+    const { page = 1, pageSize = 20, name, statuses, repositoryTypes, cluster } = args;
+    const res = await this.getRepositories(auth, { name }, cluster);
     const filteredRes = res?.filter(
       r =>
         (!statuses || statuses?.includes(r.status)) &&
@@ -99,29 +99,38 @@ export class RepositoryService {
     };
   }
 
-  async getRepositories(auth: JwtAuth, { name }): Promise<Repository[]> {
+  async getRepositories(auth: JwtAuth, { name }, cluster?: string): Promise<Repository[]> {
     let fieldSelector: string;
     if (name) {
       fieldSelector = `metadata.name=${name}`;
     }
-    const k8s = await this.k8sService.getClient(auth);
+    const k8s = await this.k8sService.getClient(auth, { cluster });
     const { body } = await k8s.repository.list(this.kubebbNS, {
       fieldSelector,
     });
     return body.items?.map(item => this.formatRepository(item));
   }
 
-  async getRepository(auth: JwtAuth, name: string): Promise<Repository> {
-    const k8s = await this.k8sService.getClient(auth);
+  async getRepository(auth: JwtAuth, name: string, cluster?: string): Promise<Repository> {
+    const k8s = await this.k8sService.getClient(auth, { cluster });
     const { body } = await k8s.repository.read(name, this.kubebbNS);
     let secret: Secret;
     if (body.spec?.authSecret) {
-      secret = await this.secretService.getSecretDetail(auth, body.spec.authSecret, this.kubebbNS);
+      secret = await this.secretService.getSecretDetail(
+        auth,
+        body.spec.authSecret,
+        this.kubebbNS,
+        cluster
+      );
     }
     return this.formatRepository(body, secret);
   }
 
-  async create(auth: JwtAuth, repository: CreateRepositoryInput): Promise<Repository> {
+  async create(
+    auth: JwtAuth,
+    repository: CreateRepositoryInput,
+    cluster?: string
+  ): Promise<Repository> {
     const {
       name,
       url,
@@ -155,20 +164,24 @@ export class RepositoryService {
       newRegistry: m.newRegistry,
       pathOverride: { path: m.path, newPath: m.newPath },
     }));
-    const k8s = await this.k8sService.getClient(auth);
+    const k8s = await this.k8sService.getClient(auth, { cluster });
 
     // TODO: create secret with cert
     let secretName: string;
     if (username || password || certData) {
       secretName = genNanoid('repository');
-      await this.secretService.createSecret(auth, {
-        name: secretName,
-        namespace: this.kubebbNS,
-        data: {
-          username,
-          password,
+      await this.secretService.createSecret(
+        auth,
+        {
+          name: secretName,
+          namespace: this.kubebbNS,
+          data: {
+            username,
+            password,
+          },
         },
-      });
+        cluster
+      );
     }
 
     const { body } = await k8s.repository.create(this.kubebbNS, {
@@ -191,36 +204,47 @@ export class RepositoryService {
   async update(
     auth: JwtAuth,
     name: string,
-    repository: UpdateRepositoryInput
+    repository: UpdateRepositoryInput,
+    cluster?: string
   ): Promise<Repository> {
     const { insecure, pullStategy, imageOverride, filter, certData, username, password } =
       repository;
     const { specFilter, specImgOver } = this.parseSpec({ filter, imageOverride });
-    const { url, repositoryType, authSecret } = await this.getRepository(auth, name);
+    const { url, repositoryType, authSecret } = await this.getRepository(auth, name, cluster);
     let secretName = authSecret;
     // TODO: update secret with cert
     if (certData || username || password) {
       if (authSecret) {
-        await this.secretService.updateSecret(auth, authSecret, this.kubebbNS, {
-          data: {
-            username,
-            password,
+        await this.secretService.updateSecret(
+          auth,
+          authSecret,
+          this.kubebbNS,
+          {
+            data: {
+              username,
+              password,
+            },
           },
-        });
+          cluster
+        );
       } else {
         secretName = genNanoid('repository');
-        await this.secretService.createSecret(auth, {
-          name: secretName,
-          namespace: this.kubebbNS,
-          data: {
-            username,
-            password,
+        await this.secretService.createSecret(
+          auth,
+          {
+            name: secretName,
+            namespace: this.kubebbNS,
+            data: {
+              username,
+              password,
+            },
           },
-        });
+          cluster
+        );
       }
     }
 
-    const k8s = await this.k8sService.getClient(auth);
+    const k8s = await this.k8sService.getClient(auth, { cluster });
     const { body } = await k8s.repository.patchMerge(name, this.kubebbNS, {
       spec: {
         url,
@@ -235,8 +259,8 @@ export class RepositoryService {
     return this.formatRepository(body);
   }
 
-  async remove(auth: JwtAuth, name: string): Promise<boolean> {
-    const k8s = await this.k8sService.getClient(auth);
+  async remove(auth: JwtAuth, name: string, cluster?: string): Promise<boolean> {
+    const k8s = await this.k8sService.getClient(auth, { cluster });
     await k8s.repository.delete(name, this.kubebbNS);
     return true;
   }
