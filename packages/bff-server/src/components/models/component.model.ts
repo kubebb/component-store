@@ -63,6 +63,9 @@ export class Component {
 
   /** 维护者 */
   maintainers?: ComponentMaintainer[];
+
+  /** 最近更新时间 */
+  updatedAt?: string;
 }
 
 @ObjectType({ description: '分页' })

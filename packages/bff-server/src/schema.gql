@@ -36,6 +36,9 @@ type Component {
   """源代码"""
   sources: [String!]
 
+  """最近更新时间"""
+  updatedAt: String
+
   """版本"""
   versions: [ComponentVersion!]
 }
@@ -175,6 +178,9 @@ type Query {
     """Chart名称"""
     chartName: String
 
+    """关键词"""
+    keyword: String
+
     """组件名称"""
     name: String
 
@@ -183,6 +189,12 @@ type Query {
 
     """每页数量"""
     pageSize: Float = 20
+
+    """排序方向"""
+    sortDirection: SortDirection
+
+    """排序字段"""
+    sortField: String
   ): PaginatedComponent!
 
   """组件仓库列表"""
@@ -374,6 +386,15 @@ enum RepositoryStatus {
 
   """未知"""
   unknown
+}
+
+"""排序方向"""
+enum SortDirection {
+  """生序"""
+  ascend
+
+  """降序"""
+  descend
 }
 
 input UpdateRepositoryInput {
