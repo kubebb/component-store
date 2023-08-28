@@ -11,12 +11,17 @@ import { RepositoryService } from './repository.service';
 export class RepositoryResolver {
   constructor(private readonly repositoryService: RepositoryService) {}
 
-  @Query(() => PaginatedRepository, { description: '组件仓库列表' })
-  async repositories(
+  @Query(() => PaginatedRepository, { description: '组件仓库列表（分页）' })
+  async repositoriesPaged(
     @Auth() auth: JwtAuth,
     @Args() args: RepostoryArgs
   ): Promise<PaginatedRepository> {
     return this.repositoryService.getRepositoriesPaged(auth, args);
+  }
+
+  @Query(() => [Repository], { description: '组件仓库列表' })
+  async repositories(@Auth() auth: JwtAuth): Promise<Repository[]> {
+    return this.repositoryService.getRepositories(auth);
   }
 
   @Query(() => Repository, { description: '组件仓库详情' })

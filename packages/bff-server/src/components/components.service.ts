@@ -30,6 +30,7 @@ export class ComponentsService {
     return {
       name: c.metadata?.name,
       chartName: c.status?.name,
+      repository: c.status?.repository?.name,
       description: c.status?.description,
       deprecated: c.status?.deprecated,
       icon: c.status?.icon,
@@ -112,12 +113,16 @@ export class ComponentsService {
     chart: DeleteComponentInput,
     cluster?: string
   ): Promise<boolean> {
-    const { repository, chartName, version } = chart;
+    const { repository, chartName, versions } = chart;
     const { url } = await this.repositoryService.getRepository(auth, repository, cluster);
     // TODO: username password
-    await this.callChartMuseum(`${url}/api/charts/${chartName}/${version}`, {
-      method: 'DELETE',
-    });
+    await Promise.all(
+      versions?.map(version =>
+        this.callChartMuseum(`${url}/api/charts/${chartName}/${version}`, {
+          method: 'DELETE',
+        })
+      )
+    );
     return true;
   }
 

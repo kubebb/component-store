@@ -1,4 +1,4 @@
-import { InputType } from '@nestjs/graphql';
+import { Field, InputType } from '@nestjs/graphql';
 
 @InputType({ description: '删除组件' })
 export class DeleteComponentInput {
@@ -9,5 +9,6 @@ export class DeleteComponentInput {
   chartName: string;
 
   /** Chart版本 */
-  version: string;
+  @Field(() => [String], { description: '删除的版本' })
+  versions: string[];
 }

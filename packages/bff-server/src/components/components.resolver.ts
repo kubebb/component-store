@@ -11,12 +11,17 @@ import { Component, PaginatedComponent } from './models/component.model';
 export class ComponentsResolver {
   constructor(private readonly componentsService: ComponentsService) {}
 
-  @Query(() => PaginatedComponent, { description: '组件列表' })
-  async components(
+  @Query(() => PaginatedComponent, { description: '组件列表（分页）' })
+  async componentsPaged(
     @Auth() auth: JwtAuth,
     @Args() args: ComponentArgs
   ): Promise<PaginatedComponent> {
     return this.componentsService.getComponentsPaged(auth, args);
+  }
+
+  @Query(() => [Component], { description: '组件列表' })
+  async components(@Auth() auth: JwtAuth): Promise<Component[]> {
+    return this.componentsService.listComponents(auth);
   }
 
   @Query(() => Component, { description: '组件详情' })

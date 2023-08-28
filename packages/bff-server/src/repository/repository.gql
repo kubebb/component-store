@@ -1,6 +1,6 @@
-# 组件仓库列表
-query getRepositories($page: Float = 1, $pageSize: Float = 20, $name: String, $repositoryTypes: [String!], $statuses: [String!], $cluster: String){
-  repositories(page: $page, pageSize: $pageSize, name: $name, repositoryTypes: $repositoryTypes, statuses: $statuses, cluster: $cluster){
+# 组件仓库列表（分页）
+query getRepositoriesPaged($page: Float = 1, $pageSize: Float = 20, $name: String, $repositoryTypes: [String!], $statuses: [String!], $cluster: String){
+  repositoriesPaged(page: $page, pageSize: $pageSize, name: $name, repositoryTypes: $repositoryTypes, statuses: $statuses, cluster: $cluster){
     nodes {
       name
       repositoryType
@@ -11,6 +11,18 @@ query getRepositories($page: Float = 1, $pageSize: Float = 20, $name: String, $r
     }
     totalCount
     hasNextPage
+  }
+}
+
+# 组件仓库列表
+query getRepositories {
+  repositories {
+    name
+    repositoryType
+    status
+    url
+    creationTimestamp
+    lastSuccessfulTime
   }
 }
 

@@ -32,7 +32,7 @@ export type Scalars = {
 /** 组件 */
 export type Component = {
   __typename?: 'Component';
-  /** 仓库名称 */
+  /** Chart 名称 */
   chartName: Scalars['String']['output'];
   /** 创建时间 */
   creationTimestamp?: Maybe<Scalars['String']['output']>;
@@ -50,6 +50,8 @@ export type Component = {
   maintainers?: Maybe<Array<ComponentMaintainer>>;
   /** 组件名称 */
   name: Scalars['ID']['output'];
+  /** 所属仓库 */
+  repository: Scalars['String']['output'];
   /** 源代码 */
   sources?: Maybe<Array<Scalars['String']['output']>>;
   /** 最近更新时间 */
@@ -126,8 +128,8 @@ export type DeleteComponentInput = {
   chartName: Scalars['String']['input'];
   /** 组件仓库 */
   repository: Scalars['String']['input'];
-  /** Chart版本 */
-  version: Scalars['String']['input'];
+  /** 删除的版本 */
+  versions: Array<Scalars['String']['input']>;
 };
 
 export type Mutation = {
@@ -195,9 +197,13 @@ export type Query = {
   /** 组件详情 */
   component: Component;
   /** 组件列表 */
-  components: PaginatedComponent;
+  components: Array<Component>;
+  /** 组件列表（分页） */
+  componentsPaged: PaginatedComponent;
   /** 组件仓库列表 */
-  repositories: PaginatedRepository;
+  repositories: Array<Repository>;
+  /** 组件仓库列表（分页） */
+  repositoriesPaged: PaginatedRepository;
   /** 组件仓库详情 */
   repository: Repository;
 };
@@ -207,7 +213,7 @@ export type QueryComponentArgs = {
   name: Scalars['String']['input'];
 };
 
-export type QueryComponentsArgs = {
+export type QueryComponentsPagedArgs = {
   chartName?: InputMaybe<Scalars['String']['input']>;
   cluster?: InputMaybe<Scalars['String']['input']>;
   keyword?: InputMaybe<Scalars['String']['input']>;
@@ -218,7 +224,7 @@ export type QueryComponentsArgs = {
   sortField?: InputMaybe<Scalars['String']['input']>;
 };
 
-export type QueryRepositoriesArgs = {
+export type QueryRepositoriesPagedArgs = {
   cluster?: InputMaybe<Scalars['String']['input']>;
   name?: InputMaybe<Scalars['String']['input']>;
   page?: InputMaybe<Scalars['Float']['input']>;
@@ -394,7 +400,7 @@ export type UpdateRepositoryInput = {
   username?: InputMaybe<Scalars['String']['input']>;
 };
 
-export type GetComponentsQueryVariables = Exact<{
+export type GetComponentsPagedQueryVariables = Exact<{
   page?: InputMaybe<Scalars['Float']['input']>;
   pageSize?: InputMaybe<Scalars['Float']['input']>;
   name?: InputMaybe<Scalars['String']['input']>;
@@ -405,9 +411,9 @@ export type GetComponentsQueryVariables = Exact<{
   cluster?: InputMaybe<Scalars['String']['input']>;
 }>;
 
-export type GetComponentsQuery = {
+export type GetComponentsPagedQuery = {
   __typename?: 'Query';
-  components: {
+  componentsPaged: {
     __typename?: 'PaginatedComponent';
     totalCount: number;
     hasNextPage: boolean;
@@ -416,6 +422,7 @@ export type GetComponentsQuery = {
       name: string;
       chartName: string;
       description?: string | null;
+      repository: string;
       creationTimestamp?: string | null;
       deprecated?: boolean | null;
       icon?: string | null;
@@ -434,6 +441,33 @@ export type GetComponentsQuery = {
   };
 };
 
+export type GetComponentsQueryVariables = Exact<{ [key: string]: never }>;
+
+export type GetComponentsQuery = {
+  __typename?: 'Query';
+  components: Array<{
+    __typename?: 'Component';
+    name: string;
+    chartName: string;
+    description?: string | null;
+    repository: string;
+    creationTimestamp?: string | null;
+    deprecated?: boolean | null;
+    icon?: string | null;
+    keywords?: Array<string> | null;
+    sources?: Array<string> | null;
+    home?: string | null;
+    updatedAt?: string | null;
+    versions?: Array<{
+      __typename?: 'ComponentVersion';
+      createdAt?: string | null;
+      updatedAt?: string | null;
+      appVersion?: string | null;
+      version?: string | null;
+    }> | null;
+  }>;
+};
+
 export type GetComponentQueryVariables = Exact<{
   name: Scalars['String']['input'];
   cluster?: InputMaybe<Scalars['String']['input']>;
@@ -446,6 +480,7 @@ export type GetComponentQuery = {
     name: string;
     chartName: string;
     description?: string | null;
+    repository: string;
     creationTimestamp?: string | null;
     deprecated?: boolean | null;
     icon?: string | null;
@@ -486,7 +521,7 @@ export type DeleteComponentMutationVariables = Exact<{
 
 export type DeleteComponentMutation = { __typename?: 'Mutation'; componentDelete: boolean };
 
-export type GetRepositoriesQueryVariables = Exact<{
+export type GetRepositoriesPagedQueryVariables = Exact<{
   page?: InputMaybe<Scalars['Float']['input']>;
   pageSize?: InputMaybe<Scalars['Float']['input']>;
   name?: InputMaybe<Scalars['String']['input']>;
@@ -495,9 +530,9 @@ export type GetRepositoriesQueryVariables = Exact<{
   cluster?: InputMaybe<Scalars['String']['input']>;
 }>;
 
-export type GetRepositoriesQuery = {
+export type GetRepositoriesPagedQuery = {
   __typename?: 'Query';
-  repositories: {
+  repositoriesPaged: {
     __typename?: 'PaginatedRepository';
     totalCount: number;
     hasNextPage: boolean;
@@ -511,6 +546,21 @@ export type GetRepositoriesQuery = {
       lastSuccessfulTime?: string | null;
     }> | null;
   };
+};
+
+export type GetRepositoriesQueryVariables = Exact<{ [key: string]: never }>;
+
+export type GetRepositoriesQuery = {
+  __typename?: 'Query';
+  repositories: Array<{
+    __typename?: 'Repository';
+    name: string;
+    repositoryType?: string | null;
+    status: RepositoryStatus;
+    url: string;
+    creationTimestamp: string;
+    lastSuccessfulTime?: string | null;
+  }>;
 };
 
 export type GetRepositoryQueryVariables = Exact<{
@@ -650,8 +700,8 @@ export type RemoveRepositoryMutationVariables = Exact<{
 
 export type RemoveRepositoryMutation = { __typename?: 'Mutation'; repositoryRemove: boolean };
 
-export const GetComponentsDocument = gql`
-  query getComponents(
+export const GetComponentsPagedDocument = gql`
+  query getComponentsPaged(
     $page: Float = 1
     $pageSize: Float = 20
     $name: String
@@ -661,7 +711,7 @@ export const GetComponentsDocument = gql`
     $sortField: String
     $cluster: String
   ) {
-    components(
+    componentsPaged(
       page: $page
       pageSize: $pageSize
       name: $name
@@ -675,6 +725,7 @@ export const GetComponentsDocument = gql`
         name
         chartName
         description
+        repository
         creationTimestamp
         deprecated
         icon
@@ -694,12 +745,36 @@ export const GetComponentsDocument = gql`
     }
   }
 `;
+export const GetComponentsDocument = gql`
+  query getComponents {
+    components {
+      name
+      chartName
+      description
+      repository
+      creationTimestamp
+      deprecated
+      icon
+      keywords
+      sources
+      home
+      updatedAt
+      versions {
+        createdAt
+        updatedAt
+        appVersion
+        version
+      }
+    }
+  }
+`;
 export const GetComponentDocument = gql`
   query getComponent($name: String!, $cluster: String) {
     component(name: $name, cluster: $cluster) {
       name
       chartName
       description
+      repository
       creationTimestamp
       deprecated
       icon
@@ -733,8 +808,8 @@ export const DeleteComponentDocument = gql`
     componentDelete(chart: $chart, cluster: $cluster)
   }
 `;
-export const GetRepositoriesDocument = gql`
-  query getRepositories(
+export const GetRepositoriesPagedDocument = gql`
+  query getRepositoriesPaged(
     $page: Float = 1
     $pageSize: Float = 20
     $name: String
@@ -742,7 +817,7 @@ export const GetRepositoriesDocument = gql`
     $statuses: [String!]
     $cluster: String
   ) {
-    repositories(
+    repositoriesPaged(
       page: $page
       pageSize: $pageSize
       name: $name
@@ -760,6 +835,18 @@ export const GetRepositoriesDocument = gql`
       }
       totalCount
       hasNextPage
+    }
+  }
+`;
+export const GetRepositoriesDocument = gql`
+  query getRepositories {
+    repositories {
+      name
+      repositoryType
+      status
+      url
+      creationTimestamp
+      lastSuccessfulTime
     }
   }
 `;
@@ -881,6 +968,20 @@ const defaultWrapper: SdkFunctionWrapper = (action, _operationName, _operationTy
 
 export function getSdk(client: GraphQLClient, withWrapper: SdkFunctionWrapper = defaultWrapper) {
   return {
+    getComponentsPaged(
+      variables?: GetComponentsPagedQueryVariables,
+      requestHeaders?: GraphQLClientRequestHeaders
+    ): Promise<GetComponentsPagedQuery> {
+      return withWrapper(
+        wrappedRequestHeaders =>
+          client.request<GetComponentsPagedQuery>(GetComponentsPagedDocument, variables, {
+            ...requestHeaders,
+            ...wrappedRequestHeaders,
+          }),
+        'getComponentsPaged',
+        'query'
+      );
+    },
     getComponents(
       variables?: GetComponentsQueryVariables,
       requestHeaders?: GraphQLClientRequestHeaders
@@ -935,6 +1036,20 @@ export function getSdk(client: GraphQLClient, withWrapper: SdkFunctionWrapper = 
           }),
         'deleteComponent',
         'mutation'
+      );
+    },
+    getRepositoriesPaged(
+      variables?: GetRepositoriesPagedQueryVariables,
+      requestHeaders?: GraphQLClientRequestHeaders
+    ): Promise<GetRepositoriesPagedQuery> {
+      return withWrapper(
+        wrappedRequestHeaders =>
+          client.request<GetRepositoriesPagedQuery>(GetRepositoriesPagedDocument, variables, {
+            ...requestHeaders,
+            ...wrappedRequestHeaders,
+          }),
+        'getRepositoriesPaged',
+        'query'
       );
     },
     getRepositories(
@@ -1052,6 +1167,16 @@ export function getSdkWithHooks(
   ];
   return {
     ...sdk,
+    useGetComponentsPaged(
+      variables?: GetComponentsPagedQueryVariables,
+      config?: SWRConfigInterface<GetComponentsPagedQuery, ClientError>
+    ) {
+      return useSWR<GetComponentsPagedQuery, ClientError>(
+        genKey<GetComponentsPagedQueryVariables>('GetComponentsPaged', variables),
+        () => sdk.getComponentsPaged(variables),
+        config
+      );
+    },
     useGetComponents(
       variables?: GetComponentsQueryVariables,
       config?: SWRConfigInterface<GetComponentsQuery, ClientError>
@@ -1086,6 +1211,16 @@ export function getSdkWithHooks(
       return useSWR<GetComponentQuery, ClientError>(
         genKey<GetComponentQueryVariables>('GetComponent', variables),
         () => sdk.getComponent(variables),
+        config
+      );
+    },
+    useGetRepositoriesPaged(
+      variables?: GetRepositoriesPagedQueryVariables,
+      config?: SWRConfigInterface<GetRepositoriesPagedQuery, ClientError>
+    ) {
+      return useSWR<GetRepositoriesPagedQuery, ClientError>(
+        genKey<GetRepositoriesPagedQueryVariables>('GetRepositoriesPaged', variables),
+        () => sdk.getRepositoriesPaged(variables),
         config
       );
     },
