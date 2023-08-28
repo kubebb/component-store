@@ -99,10 +99,14 @@ export class RepositoryService {
     };
   }
 
-  async getRepositories(auth: JwtAuth, { name }, cluster?: string): Promise<Repository[]> {
+  async getRepositories(
+    auth: JwtAuth,
+    args?: RepostoryArgs,
+    cluster?: string
+  ): Promise<Repository[]> {
     let fieldSelector: string;
-    if (name) {
-      fieldSelector = `metadata.name=${name}`;
+    if (args?.name) {
+      fieldSelector = `metadata.name=${args.name}`;
     }
     const k8s = await this.k8sService.getClient(auth, { cluster });
     const { body } = await k8s.repository.list(this.kubebbNS, {

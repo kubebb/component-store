@@ -34,8 +34,11 @@ export class Component {
   @Field(() => ID, { description: '组件名称' })
   name: string;
 
-  /** 仓库名称 */
+  /** Chart 名称 */
   chartName: string;
+
+  /** 所属仓库 */
+  repository: string;
 
   /** 描述 */
   description?: string;

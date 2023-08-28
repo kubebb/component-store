@@ -6,7 +6,7 @@ directive @upper on FIELD_DEFINITION
 
 """组件"""
 type Component {
-  """仓库名称"""
+  """Chart 名称"""
   chartName: String!
 
   """创建时间"""
@@ -32,6 +32,9 @@ type Component {
 
   """组件名称"""
   name: ID!
+
+  """所属仓库"""
+  repository: String!
 
   """源代码"""
   sources: [String!]
@@ -128,8 +131,8 @@ input DeleteComponentInput {
   """组件仓库"""
   repository: String!
 
-  """Chart版本"""
-  version: String!
+  """删除的版本"""
+  versions: [String!]!
 }
 
 scalar JSON
@@ -201,7 +204,10 @@ type Query {
   ): Component!
 
   """组件列表"""
-  components(
+  components: [Component!]!
+
+  """组件列表（分页）"""
+  componentsPaged(
     """Chart名称"""
     chartName: String
 
@@ -228,7 +234,10 @@ type Query {
   ): PaginatedComponent!
 
   """组件仓库列表"""
-  repositories(
+  repositories: [Repository!]!
+
+  """组件仓库列表（分页）"""
+  repositoriesPaged(
     """集群（不传则为默认集群）"""
     cluster: String
 
