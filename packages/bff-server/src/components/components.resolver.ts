@@ -12,7 +12,7 @@ export class ComponentsResolver {
   constructor(private readonly componentsService: ComponentsService) {}
 
   @Query(() => PaginatedComponent, { description: '组件列表（分页）' })
-  async componentsPaged(
+  async components(
     @Auth() auth: JwtAuth,
     @Args() args: ComponentArgs
   ): Promise<PaginatedComponent> {
@@ -20,7 +20,7 @@ export class ComponentsResolver {
   }
 
   @Query(() => [Component], { description: '组件列表' })
-  async components(@Auth() auth: JwtAuth): Promise<Component[]> {
+  async componentsAll(@Auth() auth: JwtAuth): Promise<Component[]> {
     return this.componentsService.listComponents(auth);
   }
 

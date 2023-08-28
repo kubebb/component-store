@@ -12,7 +12,7 @@ export class RepositoryResolver {
   constructor(private readonly repositoryService: RepositoryService) {}
 
   @Query(() => PaginatedRepository, { description: '组件仓库列表（分页）' })
-  async repositoriesPaged(
+  async repositories(
     @Auth() auth: JwtAuth,
     @Args() args: RepostoryArgs
   ): Promise<PaginatedRepository> {
@@ -20,7 +20,7 @@ export class RepositoryResolver {
   }
 
   @Query(() => [Repository], { description: '组件仓库列表' })
-  async repositories(@Auth() auth: JwtAuth): Promise<Repository[]> {
+  async repositoriesAll(@Auth() auth: JwtAuth): Promise<Repository[]> {
     return this.repositoryService.getRepositories(auth);
   }
 

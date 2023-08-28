@@ -203,11 +203,8 @@ type Query {
     name: String!
   ): Component!
 
-  """组件列表"""
-  components: [Component!]!
-
   """组件列表（分页）"""
-  componentsPaged(
+  components(
     """Chart名称"""
     chartName: String
 
@@ -233,11 +230,11 @@ type Query {
     sortField: String
   ): PaginatedComponent!
 
-  """组件仓库列表"""
-  repositories: [Repository!]!
+  """组件列表"""
+  componentsAll: [Component!]!
 
   """组件仓库列表（分页）"""
-  repositoriesPaged(
+  repositories(
     """集群（不传则为默认集群）"""
     cluster: String
 
@@ -256,6 +253,9 @@ type Query {
     """状态"""
     statuses: [String!]
   ): PaginatedRepository!
+
+  """组件仓库列表"""
+  repositoriesAll: [Repository!]!
 
   """组件仓库详情"""
   repository(
