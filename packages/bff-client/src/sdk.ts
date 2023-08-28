@@ -196,14 +196,14 @@ export type Query = {
   __typename?: 'Query';
   /** 组件详情 */
   component: Component;
-  /** 组件列表 */
-  components: Array<Component>;
   /** 组件列表（分页） */
-  componentsPaged: PaginatedComponent;
-  /** 组件仓库列表 */
-  repositories: Array<Repository>;
+  components: PaginatedComponent;
+  /** 组件列表 */
+  componentsAll: Array<Component>;
   /** 组件仓库列表（分页） */
-  repositoriesPaged: PaginatedRepository;
+  repositories: PaginatedRepository;
+  /** 组件仓库列表 */
+  repositoriesAll: Array<Repository>;
   /** 组件仓库详情 */
   repository: Repository;
 };
@@ -213,7 +213,7 @@ export type QueryComponentArgs = {
   name: Scalars['String']['input'];
 };
 
-export type QueryComponentsPagedArgs = {
+export type QueryComponentsArgs = {
   chartName?: InputMaybe<Scalars['String']['input']>;
   cluster?: InputMaybe<Scalars['String']['input']>;
   keyword?: InputMaybe<Scalars['String']['input']>;
@@ -224,7 +224,7 @@ export type QueryComponentsPagedArgs = {
   sortField?: InputMaybe<Scalars['String']['input']>;
 };
 
-export type QueryRepositoriesPagedArgs = {
+export type QueryRepositoriesArgs = {
   cluster?: InputMaybe<Scalars['String']['input']>;
   name?: InputMaybe<Scalars['String']['input']>;
   page?: InputMaybe<Scalars['Float']['input']>;
@@ -400,7 +400,7 @@ export type UpdateRepositoryInput = {
   username?: InputMaybe<Scalars['String']['input']>;
 };
 
-export type GetComponentsPagedQueryVariables = Exact<{
+export type GetComponentsQueryVariables = Exact<{
   page?: InputMaybe<Scalars['Float']['input']>;
   pageSize?: InputMaybe<Scalars['Float']['input']>;
   name?: InputMaybe<Scalars['String']['input']>;
@@ -411,9 +411,9 @@ export type GetComponentsPagedQueryVariables = Exact<{
   cluster?: InputMaybe<Scalars['String']['input']>;
 }>;
 
-export type GetComponentsPagedQuery = {
+export type GetComponentsQuery = {
   __typename?: 'Query';
-  componentsPaged: {
+  components: {
     __typename?: 'PaginatedComponent';
     totalCount: number;
     hasNextPage: boolean;
@@ -441,11 +441,11 @@ export type GetComponentsPagedQuery = {
   };
 };
 
-export type GetComponentsQueryVariables = Exact<{ [key: string]: never }>;
+export type GetComponentsAllQueryVariables = Exact<{ [key: string]: never }>;
 
-export type GetComponentsQuery = {
+export type GetComponentsAllQuery = {
   __typename?: 'Query';
-  components: Array<{
+  componentsAll: Array<{
     __typename?: 'Component';
     name: string;
     chartName: string;
@@ -521,7 +521,7 @@ export type DeleteComponentMutationVariables = Exact<{
 
 export type DeleteComponentMutation = { __typename?: 'Mutation'; componentDelete: boolean };
 
-export type GetRepositoriesPagedQueryVariables = Exact<{
+export type GetRepositoriesQueryVariables = Exact<{
   page?: InputMaybe<Scalars['Float']['input']>;
   pageSize?: InputMaybe<Scalars['Float']['input']>;
   name?: InputMaybe<Scalars['String']['input']>;
@@ -530,9 +530,9 @@ export type GetRepositoriesPagedQueryVariables = Exact<{
   cluster?: InputMaybe<Scalars['String']['input']>;
 }>;
 
-export type GetRepositoriesPagedQuery = {
+export type GetRepositoriesQuery = {
   __typename?: 'Query';
-  repositoriesPaged: {
+  repositories: {
     __typename?: 'PaginatedRepository';
     totalCount: number;
     hasNextPage: boolean;
@@ -548,11 +548,11 @@ export type GetRepositoriesPagedQuery = {
   };
 };
 
-export type GetRepositoriesQueryVariables = Exact<{ [key: string]: never }>;
+export type GetRepositoriesAllQueryVariables = Exact<{ [key: string]: never }>;
 
-export type GetRepositoriesQuery = {
+export type GetRepositoriesAllQuery = {
   __typename?: 'Query';
-  repositories: Array<{
+  repositoriesAll: Array<{
     __typename?: 'Repository';
     name: string;
     repositoryType?: string | null;
@@ -700,8 +700,8 @@ export type RemoveRepositoryMutationVariables = Exact<{
 
 export type RemoveRepositoryMutation = { __typename?: 'Mutation'; repositoryRemove: boolean };
 
-export const GetComponentsPagedDocument = gql`
-  query getComponentsPaged(
+export const GetComponentsDocument = gql`
+  query getComponents(
     $page: Float = 1
     $pageSize: Float = 20
     $name: String
@@ -711,7 +711,7 @@ export const GetComponentsPagedDocument = gql`
     $sortField: String
     $cluster: String
   ) {
-    componentsPaged(
+    components(
       page: $page
       pageSize: $pageSize
       name: $name
@@ -745,9 +745,9 @@ export const GetComponentsPagedDocument = gql`
     }
   }
 `;
-export const GetComponentsDocument = gql`
-  query getComponents {
-    components {
+export const GetComponentsAllDocument = gql`
+  query getComponentsAll {
+    componentsAll {
       name
       chartName
       description
@@ -808,8 +808,8 @@ export const DeleteComponentDocument = gql`
     componentDelete(chart: $chart, cluster: $cluster)
   }
 `;
-export const GetRepositoriesPagedDocument = gql`
-  query getRepositoriesPaged(
+export const GetRepositoriesDocument = gql`
+  query getRepositories(
     $page: Float = 1
     $pageSize: Float = 20
     $name: String
@@ -817,7 +817,7 @@ export const GetRepositoriesPagedDocument = gql`
     $statuses: [String!]
     $cluster: String
   ) {
-    repositoriesPaged(
+    repositories(
       page: $page
       pageSize: $pageSize
       name: $name
@@ -838,9 +838,9 @@ export const GetRepositoriesPagedDocument = gql`
     }
   }
 `;
-export const GetRepositoriesDocument = gql`
-  query getRepositories {
-    repositories {
+export const GetRepositoriesAllDocument = gql`
+  query getRepositoriesAll {
+    repositoriesAll {
       name
       repositoryType
       status
@@ -968,20 +968,6 @@ const defaultWrapper: SdkFunctionWrapper = (action, _operationName, _operationTy
 
 export function getSdk(client: GraphQLClient, withWrapper: SdkFunctionWrapper = defaultWrapper) {
   return {
-    getComponentsPaged(
-      variables?: GetComponentsPagedQueryVariables,
-      requestHeaders?: GraphQLClientRequestHeaders
-    ): Promise<GetComponentsPagedQuery> {
-      return withWrapper(
-        wrappedRequestHeaders =>
-          client.request<GetComponentsPagedQuery>(GetComponentsPagedDocument, variables, {
-            ...requestHeaders,
-            ...wrappedRequestHeaders,
-          }),
-        'getComponentsPaged',
-        'query'
-      );
-    },
     getComponents(
       variables?: GetComponentsQueryVariables,
       requestHeaders?: GraphQLClientRequestHeaders
@@ -993,6 +979,20 @@ export function getSdk(client: GraphQLClient, withWrapper: SdkFunctionWrapper = 
             ...wrappedRequestHeaders,
           }),
         'getComponents',
+        'query'
+      );
+    },
+    getComponentsAll(
+      variables?: GetComponentsAllQueryVariables,
+      requestHeaders?: GraphQLClientRequestHeaders
+    ): Promise<GetComponentsAllQuery> {
+      return withWrapper(
+        wrappedRequestHeaders =>
+          client.request<GetComponentsAllQuery>(GetComponentsAllDocument, variables, {
+            ...requestHeaders,
+            ...wrappedRequestHeaders,
+          }),
+        'getComponentsAll',
         'query'
       );
     },
@@ -1038,20 +1038,6 @@ export function getSdk(client: GraphQLClient, withWrapper: SdkFunctionWrapper = 
         'mutation'
       );
     },
-    getRepositoriesPaged(
-      variables?: GetRepositoriesPagedQueryVariables,
-      requestHeaders?: GraphQLClientRequestHeaders
-    ): Promise<GetRepositoriesPagedQuery> {
-      return withWrapper(
-        wrappedRequestHeaders =>
-          client.request<GetRepositoriesPagedQuery>(GetRepositoriesPagedDocument, variables, {
-            ...requestHeaders,
-            ...wrappedRequestHeaders,
-          }),
-        'getRepositoriesPaged',
-        'query'
-      );
-    },
     getRepositories(
       variables?: GetRepositoriesQueryVariables,
       requestHeaders?: GraphQLClientRequestHeaders
@@ -1063,6 +1049,20 @@ export function getSdk(client: GraphQLClient, withWrapper: SdkFunctionWrapper = 
             ...wrappedRequestHeaders,
           }),
         'getRepositories',
+        'query'
+      );
+    },
+    getRepositoriesAll(
+      variables?: GetRepositoriesAllQueryVariables,
+      requestHeaders?: GraphQLClientRequestHeaders
+    ): Promise<GetRepositoriesAllQuery> {
+      return withWrapper(
+        wrappedRequestHeaders =>
+          client.request<GetRepositoriesAllQuery>(GetRepositoriesAllDocument, variables, {
+            ...requestHeaders,
+            ...wrappedRequestHeaders,
+          }),
+        'getRepositoriesAll',
         'query'
       );
     },
@@ -1167,16 +1167,6 @@ export function getSdkWithHooks(
   ];
   return {
     ...sdk,
-    useGetComponentsPaged(
-      variables?: GetComponentsPagedQueryVariables,
-      config?: SWRConfigInterface<GetComponentsPagedQuery, ClientError>
-    ) {
-      return useSWR<GetComponentsPagedQuery, ClientError>(
-        genKey<GetComponentsPagedQueryVariables>('GetComponentsPaged', variables),
-        () => sdk.getComponentsPaged(variables),
-        config
-      );
-    },
     useGetComponents(
       variables?: GetComponentsQueryVariables,
       config?: SWRConfigInterface<GetComponentsQuery, ClientError>
@@ -1204,6 +1194,16 @@ export function getSdkWithHooks(
         config
       );
     },
+    useGetComponentsAll(
+      variables?: GetComponentsAllQueryVariables,
+      config?: SWRConfigInterface<GetComponentsAllQuery, ClientError>
+    ) {
+      return useSWR<GetComponentsAllQuery, ClientError>(
+        genKey<GetComponentsAllQueryVariables>('GetComponentsAll', variables),
+        () => sdk.getComponentsAll(variables),
+        config
+      );
+    },
     useGetComponent(
       variables: GetComponentQueryVariables,
       config?: SWRConfigInterface<GetComponentQuery, ClientError>
@@ -1211,16 +1211,6 @@ export function getSdkWithHooks(
       return useSWR<GetComponentQuery, ClientError>(
         genKey<GetComponentQueryVariables>('GetComponent', variables),
         () => sdk.getComponent(variables),
-        config
-      );
-    },
-    useGetRepositoriesPaged(
-      variables?: GetRepositoriesPagedQueryVariables,
-      config?: SWRConfigInterface<GetRepositoriesPagedQuery, ClientError>
-    ) {
-      return useSWR<GetRepositoriesPagedQuery, ClientError>(
-        genKey<GetRepositoriesPagedQueryVariables>('GetRepositoriesPaged', variables),
-        () => sdk.getRepositoriesPaged(variables),
         config
       );
     },
@@ -1248,6 +1238,16 @@ export function getSdkWithHooks(
           sdk.getRepositories,
           variables
         ),
+        config
+      );
+    },
+    useGetRepositoriesAll(
+      variables?: GetRepositoriesAllQueryVariables,
+      config?: SWRConfigInterface<GetRepositoriesAllQuery, ClientError>
+    ) {
+      return useSWR<GetRepositoriesAllQuery, ClientError>(
+        genKey<GetRepositoriesAllQueryVariables>('GetRepositoriesAll', variables),
+        () => sdk.getRepositoriesAll(variables),
         config
       );
     },

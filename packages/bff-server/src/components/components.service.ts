@@ -48,6 +48,7 @@ export class ComponentsService {
     const k8s = await this.k8sService.getClient(auth, { cluster });
     const { body } = await k8s.component.list(this.kubebbNS);
     return body.items
+      ?.filter(t => !t.status?.deprecated)
       ?.map(t => this.formatComponent(t))
       ?.sort(
         (a, b) => new Date(b.creationTimestamp).valueOf() - new Date(a.creationTimestamp).valueOf()
