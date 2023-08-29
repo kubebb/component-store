@@ -1,5 +1,6 @@
 import { Paginated } from '@/common/models/paginated.function';
 import { Field, ID, ObjectType } from '@nestjs/graphql';
+import { ComponentStatus } from './component-status.enum';
 
 @ObjectType({ description: '组件版本' })
 class ComponentVersion {
@@ -69,6 +70,10 @@ export class Component {
 
   /** 最近更新时间 */
   updatedAt?: string;
+
+  /** 状态 */
+  @Field(() => ComponentStatus, { description: '状态' })
+  status?: string;
 }
 
 @ObjectType({ description: '分页' })

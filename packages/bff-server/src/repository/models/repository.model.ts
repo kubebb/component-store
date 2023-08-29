@@ -23,6 +23,9 @@ export class Repository {
   /** 最近同步时间 */
   lastSuccessfulTime?: string;
 
+  @HideField()
+  intervalSeconds?: number;
+
   /** https验证 */
   insecure?: boolean;
 

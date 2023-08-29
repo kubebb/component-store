@@ -13,6 +13,7 @@ query getComponents($page: Float = 1, $pageSize: Float = 20, $name: String, $cha
       sources
       home
       updatedAt
+      status
       versions {
         createdAt
         updatedAt
@@ -39,6 +40,7 @@ query getComponentsAll {
       sources
       home
       updatedAt
+      status
       versions {
         createdAt
         updatedAt
@@ -62,6 +64,7 @@ query getComponent($name: String!, $cluster: String){
     sources
     home
     updatedAt
+    status
     versions {
       createdAt
       updatedAt

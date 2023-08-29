@@ -1,10 +1,15 @@
+import { Loader } from '@/common/dataloader';
 import { Auth } from '@/common/decorators/auth.decorator';
+import { Repository } from '@/repository/models/repository.model';
+import { RepositoryLoader } from '@/repository/repository.loader';
 import { JwtAuth } from '@/types';
-import { Args, Mutation, Query, Resolver } from '@nestjs/graphql';
+import { Args, Mutation, Parent, Query, ResolveField, Resolver } from '@nestjs/graphql';
+import DataLoader from 'dataloader';
 import { ComponentsService } from './components.service';
 import { ComponentArgs } from './dto/component.args';
 import { CreateComponentInput } from './dto/create-component.input';
 import { DeleteComponentInput } from './dto/delete-component.input';
+import { ComponentStatus } from './models/component-status.enum';
 import { Component, PaginatedComponent } from './models/component.model';
 
 @Resolver(() => Component)
@@ -61,5 +66,22 @@ export class ComponentsResolver {
     cluster: string
   ): Promise<boolean> {
     return this.componentsService.deleteChart(auth, chart, cluster);
+  }
+
+  @ResolveField(() => ComponentStatus, { description: '状态' })
+  async status(
+    @Parent() component: Component,
+    @Loader(RepositoryLoader) repositoryLoader: DataLoader<Repository['name'], Repository>
+  ): Promise<string> {
+    const { repository } = component;
+    const repositoryDetail = await repositoryLoader.load(repository);
+    if (!repositoryDetail) return null;
+    const { lastSuccessfulTime, intervalSeconds } = repositoryDetail;
+    const now = Date.now();
+    const latest = new Date(lastSuccessfulTime).valueOf();
+    if (latest + intervalSeconds > now) {
+      return ComponentStatus.syncing;
+    }
+    return ComponentStatus.ready;
   }
 }
