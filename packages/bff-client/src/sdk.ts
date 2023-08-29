@@ -54,6 +54,8 @@ export type Component = {
   repository: Scalars['String']['output'];
   /** 源代码 */
   sources?: Maybe<Array<Scalars['String']['output']>>;
+  /** 状态 */
+  status?: Maybe<ComponentStatus>;
   /** 最近更新时间 */
   updatedAt?: Maybe<Scalars['String']['output']>;
   /** 版本 */
@@ -73,6 +75,14 @@ export type ComponentMaintainer = {
   name?: Maybe<Scalars['String']['output']>;
   url?: Maybe<Scalars['String']['output']>;
 };
+
+/** 组件状态 */
+export enum ComponentStatus {
+  /** 正常 */
+  Ready = 'ready',
+  /** 同步中 */
+  Syncing = 'syncing',
+}
 
 /** 组件版本 */
 export type ComponentVersion = {
@@ -430,6 +440,7 @@ export type GetComponentsQuery = {
       sources?: Array<string> | null;
       home?: string | null;
       updatedAt?: string | null;
+      status?: ComponentStatus | null;
       versions?: Array<{
         __typename?: 'ComponentVersion';
         createdAt?: string | null;
@@ -458,6 +469,7 @@ export type GetComponentsAllQuery = {
     sources?: Array<string> | null;
     home?: string | null;
     updatedAt?: string | null;
+    status?: ComponentStatus | null;
     versions?: Array<{
       __typename?: 'ComponentVersion';
       createdAt?: string | null;
@@ -488,6 +500,7 @@ export type GetComponentQuery = {
     sources?: Array<string> | null;
     home?: string | null;
     updatedAt?: string | null;
+    status?: ComponentStatus | null;
     versions?: Array<{
       __typename?: 'ComponentVersion';
       createdAt?: string | null;
@@ -733,6 +746,7 @@ export const GetComponentsDocument = gql`
         sources
         home
         updatedAt
+        status
         versions {
           createdAt
           updatedAt
@@ -759,6 +773,7 @@ export const GetComponentsAllDocument = gql`
       sources
       home
       updatedAt
+      status
       versions {
         createdAt
         updatedAt
@@ -782,6 +797,7 @@ export const GetComponentDocument = gql`
       sources
       home
       updatedAt
+      status
       versions {
         createdAt
         updatedAt

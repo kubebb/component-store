@@ -39,6 +39,9 @@ type Component {
   """源代码"""
   sources: [String!]
 
+  """状态"""
+  status: ComponentStatus
+
   """最近更新时间"""
   updatedAt: String
 
@@ -56,6 +59,15 @@ type ComponentMaintainer {
   email: String
   name: String
   url: String
+}
+
+"""组件状态"""
+enum ComponentStatus {
+  """正常"""
+  ready
+
+  """同步中"""
+  syncing
 }
 
 """组件版本"""
