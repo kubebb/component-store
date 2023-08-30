@@ -9,6 +9,7 @@ import { ComponentsService } from './components.service';
 import { ComponentArgs } from './dto/component.args';
 import { CreateComponentInput } from './dto/create-component.input';
 import { DeleteComponentInput } from './dto/delete-component.input';
+import { DownloadComponentInput } from './dto/download-component.input';
 import { ComponentSource } from './models/component-source.enum';
 import { ComponentStatus } from './models/component-status.enum';
 import { Component, PaginatedComponent } from './models/component.model';
@@ -67,6 +68,19 @@ export class ComponentsResolver {
     cluster: string
   ): Promise<boolean> {
     return this.componentsService.deleteChart(auth, chart, cluster);
+  }
+
+  @Mutation(() => String, { description: '下载组件' })
+  async componentDownload(
+    @Auth() auth: JwtAuth,
+    @Args('chart') chart: DownloadComponentInput,
+    @Args('cluster', {
+      nullable: true,
+      description: '集群下的资源，不传则为默认集群',
+    })
+    cluster: string
+  ): Promise<string> {
+    return this.componentsService.downloadChart(auth, chart, cluster);
   }
 
   @ResolveField(() => ComponentStatus, { description: '状态' })

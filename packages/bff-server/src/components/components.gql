@@ -93,3 +93,8 @@ mutation uploadComponent($repository: String!, $file: Upload!, $cluster: String)
 mutation deleteComponent($chart: DeleteComponentInput!, $cluster: String){
   componentDelete(chart: $chart, cluster: $cluster)
 }
+
+# 下载组件
+mutation downloadComponent($chart: DownloadComponentInput!, $cluster: String){
+  componentDownload(chart: $chart, cluster: $cluster)
+}
