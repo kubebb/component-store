@@ -1,4 +1,5 @@
 import { Paginated } from '@/common/models/paginated.function';
+import { AnyObj } from '@/types';
 import { Field, HideField, ID, ObjectType } from '@nestjs/graphql';
 import { RepositoryFilterOperation } from './repository-filter-operation';
 import { RepositoryStatus } from './repository-status.enum';
@@ -31,6 +32,9 @@ export class Repository {
 
   @HideField()
   authSecret?: string;
+
+  @HideField()
+  labels?: AnyObj;
 
   /** 用户名(base64) */
   username?: string;

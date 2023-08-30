@@ -1,5 +1,6 @@
 import { Paginated } from '@/common/models/paginated.function';
 import { Field, ID, ObjectType } from '@nestjs/graphql';
+import { ComponentSource } from './component-source.enum';
 import { ComponentStatus } from './component-status.enum';
 
 @ObjectType({ description: '组件版本' })
@@ -56,7 +57,7 @@ export class Component {
   /** 关键词 */
   keywords?: string[];
 
-  /** 源代码 */
+  /** 源代码地址 */
   sources?: string[];
 
   /** 组件官网 */
@@ -74,6 +75,10 @@ export class Component {
   /** 状态 */
   @Field(() => ComponentStatus, { description: '状态' })
   status?: string;
+
+  /** 代码来源 */
+  @Field(() => ComponentSource, { description: '代码来源' })
+  source?: string;
 }
 
 @ObjectType({ description: '分页' })

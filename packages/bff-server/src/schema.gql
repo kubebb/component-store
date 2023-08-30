@@ -36,7 +36,10 @@ type Component {
   """所属仓库"""
   repository: String!
 
-  """源代码"""
+  """代码来源"""
+  source: ComponentSource
+
+  """源代码地址"""
   sources: [String!]
 
   """状态"""
@@ -61,8 +64,17 @@ type ComponentMaintainer {
   url: String
 }
 
+"""组件来源"""
+enum ComponentSource {
+  """官方"""
+  official
+}
+
 """组件状态"""
 enum ComponentStatus {
+  """废弃"""
+  deprecated
+
   """正常"""
   ready
 

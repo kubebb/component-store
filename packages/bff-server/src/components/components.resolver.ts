@@ -9,6 +9,7 @@ import { ComponentsService } from './components.service';
 import { ComponentArgs } from './dto/component.args';
 import { CreateComponentInput } from './dto/create-component.input';
 import { DeleteComponentInput } from './dto/delete-component.input';
+import { ComponentSource } from './models/component-source.enum';
 import { ComponentStatus } from './models/component-status.enum';
 import { Component, PaginatedComponent } from './models/component.model';
 
@@ -73,15 +74,33 @@ export class ComponentsResolver {
     @Parent() component: Component,
     @Loader(RepositoryLoader) repositoryLoader: DataLoader<Repository['name'], Repository>
   ): Promise<string> {
-    const { repository } = component;
+    const { repository, versions } = component;
     const repositoryDetail = await repositoryLoader.load(repository);
-    if (!repositoryDetail) return null;
-    const { lastSuccessfulTime, intervalSeconds } = repositoryDetail;
-    const now = Date.now();
-    const latest = new Date(lastSuccessfulTime).valueOf();
-    if (latest + intervalSeconds > now) {
-      return ComponentStatus.syncing;
+    if (repositoryDetail) {
+      const { lastSuccessfulTime, intervalSeconds } = repositoryDetail;
+      const now = Date.now();
+      const latest = new Date(lastSuccessfulTime).valueOf();
+      if (latest + intervalSeconds > now) {
+        return ComponentStatus.syncing;
+      }
+    }
+    if (versions?.[0]?.deprecated) {
+      return ComponentStatus.deprecated;
     }
     return ComponentStatus.ready;
+  }
+
+  @ResolveField(() => ComponentSource, { description: '来源' })
+  async source(
+    @Parent() component: Component,
+    @Loader(RepositoryLoader) repositoryLoader: DataLoader<Repository['name'], Repository>
+  ): Promise<string> {
+    const { repository } = component;
+    const repositoryDetail = await repositoryLoader.load(repository);
+    const source = repositoryDetail?.labels?.['kubebb.repository.source'];
+    if (source === ComponentSource.official) {
+      return ComponentSource.official;
+    }
+    return null;
   }
 }
