@@ -152,10 +152,22 @@ export type DeleteComponentInput = {
   versions: Array<Scalars['String']['input']>;
 };
 
+/** 下载组件 */
+export type DownloadComponentInput = {
+  /** Chart名称 */
+  chartName: Scalars['String']['input'];
+  /** 组件仓库 */
+  repository: Scalars['String']['input'];
+  /** Chart版本 */
+  version: Scalars['String']['input'];
+};
+
 export type Mutation = {
   __typename?: 'Mutation';
   /** 删除组件 */
   componentDelete: Scalars['Boolean']['output'];
+  /** 下载组件 */
+  componentDownload: Scalars['String']['output'];
   /** 发布组件 */
   componentUpload: Scalars['Boolean']['output'];
   repositoryCreate: Repository;
@@ -166,6 +178,11 @@ export type Mutation = {
 
 export type MutationComponentDeleteArgs = {
   chart: DeleteComponentInput;
+  cluster?: InputMaybe<Scalars['String']['input']>;
+};
+
+export type MutationComponentDownloadArgs = {
+  chart: DownloadComponentInput;
   cluster?: InputMaybe<Scalars['String']['input']>;
 };
 
@@ -547,6 +564,13 @@ export type DeleteComponentMutationVariables = Exact<{
 
 export type DeleteComponentMutation = { __typename?: 'Mutation'; componentDelete: boolean };
 
+export type DownloadComponentMutationVariables = Exact<{
+  chart: DownloadComponentInput;
+  cluster?: InputMaybe<Scalars['String']['input']>;
+}>;
+
+export type DownloadComponentMutation = { __typename?: 'Mutation'; componentDownload: string };
+
 export type GetRepositoriesQueryVariables = Exact<{
   page?: InputMaybe<Scalars['Float']['input']>;
   pageSize?: InputMaybe<Scalars['Float']['input']>;
@@ -840,6 +864,11 @@ export const DeleteComponentDocument = gql`
     componentDelete(chart: $chart, cluster: $cluster)
   }
 `;
+export const DownloadComponentDocument = gql`
+  mutation downloadComponent($chart: DownloadComponentInput!, $cluster: String) {
+    componentDownload(chart: $chart, cluster: $cluster)
+  }
+`;
 export const GetRepositoriesDocument = gql`
   query getRepositories(
     $page: Float = 1
@@ -1067,6 +1096,20 @@ export function getSdk(client: GraphQLClient, withWrapper: SdkFunctionWrapper = 
             ...wrappedRequestHeaders,
           }),
         'deleteComponent',
+        'mutation'
+      );
+    },
+    downloadComponent(
+      variables: DownloadComponentMutationVariables,
+      requestHeaders?: GraphQLClientRequestHeaders
+    ): Promise<DownloadComponentMutation> {
+      return withWrapper(
+        wrappedRequestHeaders =>
+          client.request<DownloadComponentMutation>(DownloadComponentDocument, variables, {
+            ...requestHeaders,
+            ...wrappedRequestHeaders,
+          }),
+        'downloadComponent',
         'mutation'
       );
     },

@@ -11,6 +11,7 @@ import { RequestOptions } from 'urllib';
 import { ComponentArgs } from './dto/component.args';
 import { CreateComponentInput } from './dto/create-component.input';
 import { DeleteComponentInput } from './dto/delete-component.input';
+import { DownloadComponentInput } from './dto/download-component.input';
 import { Component, PaginatedComponent } from './models/component.model';
 
 @Injectable()
@@ -125,6 +126,16 @@ export class ComponentsService {
       )
     );
     return true;
+  }
+
+  async downloadChart(
+    auth: JwtAuth,
+    chart: DownloadComponentInput,
+    cluster?: string
+  ): Promise<string> {
+    const { repository, chartName, version } = chart;
+    const { url } = await this.repositoryService.getRepository(auth, repository, cluster);
+    return `${url}/charts/${chartName}-${version}.tgz`;
   }
 
   async callChartMuseum(endpoint: string, options?: RequestOptions) {

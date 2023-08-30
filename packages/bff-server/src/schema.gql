@@ -159,6 +159,18 @@ input DeleteComponentInput {
   versions: [String!]!
 }
 
+"""下载组件"""
+input DownloadComponentInput {
+  """Chart名称"""
+  chartName: String!
+
+  """组件仓库"""
+  repository: String!
+
+  """Chart版本"""
+  version: String!
+}
+
 scalar JSON
 
 scalar JSONObject
@@ -171,6 +183,14 @@ type Mutation {
     """集群下的资源，不传则为默认集群"""
     cluster: String
   ): Boolean!
+
+  """下载组件"""
+  componentDownload(
+    chart: DownloadComponentInput!
+
+    """集群下的资源，不传则为默认集群"""
+    cluster: String
+  ): String!
 
   """发布组件"""
   componentUpload(
