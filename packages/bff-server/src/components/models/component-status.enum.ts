@@ -3,6 +3,7 @@ import { registerEnumType } from '@nestjs/graphql';
 export enum ComponentStatus {
   ready = 'ready',
   syncing = 'syncing',
+  deprecated = 'deprecated',
 }
 
 registerEnumType(ComponentStatus, {
@@ -14,6 +15,9 @@ registerEnumType(ComponentStatus, {
     },
     syncing: {
       description: '同步中',
+    },
+    deprecated: {
+      description: '废弃',
     },
   },
 });

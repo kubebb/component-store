@@ -14,7 +14,7 @@ export class ComponentArgs extends PaginationArgs {
   keyword?: string;
 
   // TODO
-  /** 类型（多选） */
+  /** 来源（多选） */
 
   /** 当前状态（多选） */
 

@@ -52,7 +52,9 @@ export type Component = {
   name: Scalars['ID']['output'];
   /** 所属仓库 */
   repository: Scalars['String']['output'];
-  /** 源代码 */
+  /** 代码来源 */
+  source?: Maybe<ComponentSource>;
+  /** 源代码地址 */
   sources?: Maybe<Array<Scalars['String']['output']>>;
   /** 状态 */
   status?: Maybe<ComponentStatus>;
@@ -76,8 +78,16 @@ export type ComponentMaintainer = {
   url?: Maybe<Scalars['String']['output']>;
 };
 
+/** 组件来源 */
+export enum ComponentSource {
+  /** 官方 */
+  Official = 'official',
+}
+
 /** 组件状态 */
 export enum ComponentStatus {
+  /** 废弃 */
+  Deprecated = 'deprecated',
   /** 正常 */
   Ready = 'ready',
   /** 同步中 */
@@ -441,6 +451,7 @@ export type GetComponentsQuery = {
       home?: string | null;
       updatedAt?: string | null;
       status?: ComponentStatus | null;
+      source?: ComponentSource | null;
       versions?: Array<{
         __typename?: 'ComponentVersion';
         createdAt?: string | null;
@@ -470,6 +481,7 @@ export type GetComponentsAllQuery = {
     home?: string | null;
     updatedAt?: string | null;
     status?: ComponentStatus | null;
+    source?: ComponentSource | null;
     versions?: Array<{
       __typename?: 'ComponentVersion';
       createdAt?: string | null;
@@ -501,6 +513,7 @@ export type GetComponentQuery = {
     home?: string | null;
     updatedAt?: string | null;
     status?: ComponentStatus | null;
+    source?: ComponentSource | null;
     versions?: Array<{
       __typename?: 'ComponentVersion';
       createdAt?: string | null;
@@ -747,6 +760,7 @@ export const GetComponentsDocument = gql`
         home
         updatedAt
         status
+        source
         versions {
           createdAt
           updatedAt
@@ -774,6 +788,7 @@ export const GetComponentsAllDocument = gql`
       home
       updatedAt
       status
+      source
       versions {
         createdAt
         updatedAt
@@ -798,6 +813,7 @@ export const GetComponentDocument = gql`
       home
       updatedAt
       status
+      source
       versions {
         createdAt
         updatedAt

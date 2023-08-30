@@ -81,6 +81,7 @@ export class RepositoryService {
       username: secret?.data?.username,
       insecure: repository?.spec?.insecure,
       authSecret: repository?.spec?.authSecret,
+      labels: repository.metadata?.labels,
     };
   }
 
