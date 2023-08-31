@@ -163,6 +163,7 @@ export class KubernetesService {
       // <replace type="crd">
       application: new lib.Application(customObjectsApi),
       cluster: new lib.Cluster(customObjectsApi),
+      componentplan: new lib.ComponentPlan(customObjectsApi),
       component: new lib.Component(customObjectsApi),
       menu: new lib.Menu(customObjectsApi),
       repository: new lib.Repository(customObjectsApi),

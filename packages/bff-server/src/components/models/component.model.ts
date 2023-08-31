@@ -79,6 +79,9 @@ export class Component {
   /** 代码来源 */
   @Field(() => ComponentSource, { description: '代码来源' })
   source?: string;
+
+  /** 最新版本 */
+  latestVersion?: string;
 }
 
 @ObjectType({ description: '分页' })

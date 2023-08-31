@@ -5,7 +5,7 @@ import * as jwt from 'jsonwebtoken';
 import { Jwt } from 'jsonwebtoken';
 import { customAlphabet } from 'nanoid';
 import { lowercase, numbers } from 'nanoid-dictionary';
-import type { JwtAuth, K8s, Request } from '../../types';
+import type { FileUpload, JwtAuth, K8s, Request } from '../../types';
 import { TokenException } from './errors';
 
 export const getConfigByPath = (configPath: string) => {
@@ -112,4 +112,30 @@ export const processedYaml = (spec: K8s.KubernetesObject) => {
     delete spec?.metadata?.uid;
   }
   return dumpYaml(spec);
+};
+
+/**
+ * 读取 readableStream 内容
+ * @param file FileUpload
+ */
+export const convertFileToText = async (file: FileUpload): Promise<string> => {
+  if (!file) return null;
+  const { createReadStream } = await file;
+  const readStream = createReadStream();
+  const chunks = [];
+  let size = 0;
+  return new Promise(resolve => {
+    readStream.on('data', chunk => {
+      chunks.push(chunk);
+      size += chunk.length;
+    });
+    readStream.on('end', () => {
+      const bufs = Buffer.concat(chunks, size);
+      resolve(bufs.toString());
+    });
+    readStream.on('error', () => {
+      console.error('Error: utils.convertFileToText');
+      resolve(null);
+    });
+  });
 };

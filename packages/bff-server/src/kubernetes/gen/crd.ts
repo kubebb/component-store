@@ -20,6 +20,7 @@ const CRD_LIST = [
   'menus.core.kubebb.k8s.com.cn',
   'repositories.core.kubebb.k8s.com.cn',
   'subscriptions.core.kubebb.k8s.com.cn',
+  'componentplans.core.kubebb.k8s.com.cn',
 ];
 
 const ClusterCrdTemplate = fs.readFileSync(join(LIB_CRD_DIR, 'user.ts')).toString();

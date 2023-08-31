@@ -1,4 +1,6 @@
+import { FileUpload } from '@/types';
 import { Field, InputType } from '@nestjs/graphql';
+import * as GraphQLUpload from 'graphql-upload/GraphQLUpload.js';
 import { RepositoryFilterOperation } from '../models/repository-filter-operation';
 
 @InputType({ description: '组件更新' })
@@ -68,8 +70,17 @@ export class CreateRepositoryInput {
   /** https验证 */
   insecure?: boolean;
 
-  /** 证书内容(base64) */
-  certData?: string;
+  /** ca.pem（根证书） */
+  @Field(() => GraphQLUpload)
+  cadata?: FileUpload;
+
+  /** client.pem（客户端证书） */
+  @Field(() => GraphQLUpload)
+  certdata?: FileUpload;
+
+  /** client.key（客户端私钥） */
+  @Field(() => GraphQLUpload)
+  keydata?: FileUpload;
 
   /** 用户名(base64) */
   username?: string;

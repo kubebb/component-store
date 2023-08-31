@@ -42,6 +42,7 @@ export class ComponentsService {
       maintainers: c.status?.maintainers,
       creationTimestamp: new Date(c.metadata?.creationTimestamp).toISOString(),
       updatedAt: latestVersion?.updatedAt ? new Date(latestVersion?.updatedAt).toISOString() : null,
+      latestVersion: latestVersion?.version,
     };
   }
 
