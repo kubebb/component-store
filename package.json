@@ -11,13 +11,16 @@
   "license": "ISC",
   "scripts": {
     "build": "pnpm build:server && pnpm build:portal",
+    "build:client": "pnpm --filter '*-client' build",
     "build:portal": "pnpm --filter '*-portal' build",
     "build:server": "pnpm --filter '*-server' build",
     "dev:portal": "pnpm --filter '*-portal' dev",
     "dev:server": "pnpm --filter '*-server' start:dev",
+    "postinstall": "npm run build:client",
     "lint-staged": "lint-staged",
     "prepare": "husky install",
     "start": "pnpm start:portal",
+    "start:portal": "pnpm --filter '*-portal' start",
     "start:server": "pnpm --filter '*-server' start",
     "test": "echo \"Error: no test specified\" && exit 1"
   },
@@ -53,7 +56,15 @@
   },
   "authors": [
     {
-      "name": "carrotzpc",
+      "name": "dayuy",
+      "email": "973860441@qq.com"
+    },
+    {
+      "name": "Jandiasnow",
+      "email": "88074479@qq.com"
+    },
+    {
+      "name": "Carrotzpc",
       "email": "zhang.pc3@gmail.com"
     }
   ]
