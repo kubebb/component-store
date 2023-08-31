@@ -4,6 +4,8 @@ export { Cluster } from './cluster';
 export { ClusterList } from './cluster-list';
 export { Component } from './component';
 export { ComponentList } from './component-list';
+export { ComponentPlan } from './componentplan';
+export { ComponentPlanList } from './componentplan-list';
 export { Menu } from './menu';
 export { MenuList } from './menu-list';
 export { Repository } from './repository';

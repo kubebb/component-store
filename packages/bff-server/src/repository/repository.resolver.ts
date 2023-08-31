@@ -37,7 +37,7 @@ export class RepositoryResolver {
     return this.repositoryService.getRepository(auth, name, cluster);
   }
 
-  @Mutation(() => Repository)
+  @Mutation(() => Repository, { description: '创建仓库' })
   async repositoryCreate(
     @Auth() auth: JwtAuth,
     @Args('repository') repository: CreateRepositoryInput,
@@ -50,7 +50,7 @@ export class RepositoryResolver {
     return this.repositoryService.create(auth, repository, cluster);
   }
 
-  @Mutation(() => Repository)
+  @Mutation(() => Repository, { description: '更新仓库' })
   async repositoryUpdate(
     @Auth() auth: JwtAuth,
     @Args('name') name: string,

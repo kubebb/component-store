@@ -1,4 +1,4 @@
-import { genNanoid } from '@/common/utils';
+import { convertFileToText, encodeBase64, genNanoid } from '@/common/utils';
 import serverConfig from '@/config/server.config';
 import { KubernetesService } from '@/kubernetes/kubernetes.service';
 import { Secret } from '@/secret/models/secret.model';
@@ -137,18 +137,7 @@ export class RepositoryService {
     repository: CreateRepositoryInput,
     cluster?: string
   ): Promise<Repository> {
-    const {
-      name,
-      url,
-      repositoryType,
-      insecure,
-      pullStategy,
-      imageOverride,
-      filter,
-      certData,
-      username,
-      password,
-    } = repository;
+    const { name, url, repositoryType, insecure, pullStategy, imageOverride, filter } = repository;
     const specFilter = filter?.map(f => {
       let op: 'ignore' | 'keep';
       let cond: AnyObj;
@@ -171,25 +160,7 @@ export class RepositoryService {
       pathOverride: { path: m.path, newPath: m.newPath },
     }));
     const k8s = await this.k8sService.getClient(auth, { cluster });
-
-    // TODO: create secret with cert
-    let secretName: string;
-    if (username || password || certData) {
-      secretName = genNanoid('repository');
-      await this.secretService.createSecret(
-        auth,
-        {
-          name: secretName,
-          namespace: this.kubebbNS,
-          data: {
-            username,
-            password,
-          },
-        },
-        cluster
-      );
-    }
-
+    const secretName = await this.applySecret(auth, undefined, repository, cluster);
     const { body } = await k8s.repository.create(this.kubebbNS, {
       metadata: {
         name,
@@ -213,43 +184,10 @@ export class RepositoryService {
     repository: UpdateRepositoryInput,
     cluster?: string
   ): Promise<Repository> {
-    const { insecure, pullStategy, imageOverride, filter, certData, username, password } =
-      repository;
+    const { insecure, pullStategy, imageOverride, filter } = repository;
     const { specFilter, specImgOver } = this.parseSpec({ filter, imageOverride });
     const { url, repositoryType, authSecret } = await this.getRepository(auth, name, cluster);
-    let secretName = authSecret;
-    // TODO: update secret with cert
-    if (certData || username || password) {
-      if (authSecret) {
-        await this.secretService.updateSecret(
-          auth,
-          authSecret,
-          this.kubebbNS,
-          {
-            data: {
-              username,
-              password,
-            },
-          },
-          cluster
-        );
-      } else {
-        secretName = genNanoid('repository');
-        await this.secretService.createSecret(
-          auth,
-          {
-            name: secretName,
-            namespace: this.kubebbNS,
-            data: {
-              username,
-              password,
-            },
-          },
-          cluster
-        );
-      }
-    }
-
+    const secretName = await this.applySecret(auth, authSecret, repository, cluster);
     const k8s = await this.k8sService.getClient(auth, { cluster });
     const { body } = await k8s.repository.patchMerge(name, this.kubebbNS, {
       spec: {
@@ -294,5 +232,47 @@ export class RepositoryService {
       pathOverride: { path: m.path, newPath: m.newPath },
     }));
     return { specFilter, specImgOver };
+  }
+
+  async applySecret(
+    auth: JwtAuth,
+    secretName: string,
+    repository: UpdateRepositoryInput,
+    cluster?: string
+  ): Promise<string> {
+    const { username, password, cadata, certdata, keydata } = repository;
+    if (username || password || cadata || certdata || keydata) {
+      const data: any = {
+        username,
+        password,
+      };
+      if (cadata) {
+        const cadataContent = await convertFileToText(cadata);
+        data.cadata = encodeBase64(cadataContent);
+      }
+      if (certdata) {
+        const certdataContent = await convertFileToText(certdata);
+        data.certdata = encodeBase64(certdataContent);
+      }
+      if (keydata) {
+        const keydataContent = await convertFileToText(keydata);
+        data.keydata = encodeBase64(keydataContent);
+      }
+      if (secretName) {
+        await this.secretService.updateSecret(auth, secretName, this.kubebbNS, { data }, cluster);
+      } else {
+        secretName = genNanoid('repository');
+        await this.secretService.createSecret(
+          auth,
+          {
+            name: secretName,
+            namespace: this.kubebbNS,
+            data,
+          },
+          cluster
+        );
+      }
+    }
+    return secretName;
   }
 }

@@ -5,6 +5,7 @@ import { ComponentsService } from './components.service';
 
 @Module({
   providers: [ComponentsService, ComponentsResolver],
+  exports: [ComponentsService],
   imports: [RepositoryModule],
 })
 export class ComponentsModule {}

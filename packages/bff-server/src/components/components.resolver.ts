@@ -88,7 +88,7 @@ export class ComponentsResolver {
     @Parent() component: Component,
     @Loader(RepositoryLoader) repositoryLoader: DataLoader<Repository['name'], Repository>
   ): Promise<string> {
-    const { repository, versions } = component;
+    const { repository } = component;
     const repositoryDetail = await repositoryLoader.load(repository);
     if (repositoryDetail) {
       const { lastSuccessfulTime, intervalSeconds } = repositoryDetail;
@@ -97,9 +97,6 @@ export class ComponentsResolver {
       if (latest + intervalSeconds > now) {
         return ComponentStatus.syncing;
       }
-    }
-    if (versions?.[0]?.deprecated) {
-      return ComponentStatus.deprecated;
     }
     return ComponentStatus.ready;
   }

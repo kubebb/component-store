@@ -46,6 +46,8 @@ export type Component = {
   icon?: Maybe<Scalars['String']['output']>;
   /** 关键词 */
   keywords?: Maybe<Array<Scalars['String']['output']>>;
+  /** 最新版本 */
+  latestVersion?: Maybe<Scalars['String']['output']>;
   /** 维护者 */
   maintainers?: Maybe<Array<ComponentMaintainer>>;
   /** 组件名称 */
@@ -120,14 +122,18 @@ export type CreateComponentInput = {
 };
 
 export type CreateRepositoryInput = {
-  /** 证书内容(base64) */
-  certData?: InputMaybe<Scalars['String']['input']>;
+  /** ca.pem（根证书） */
+  cadata?: InputMaybe<Scalars['Upload']['input']>;
+  /** client.pem（客户端证书） */
+  certdata?: InputMaybe<Scalars['Upload']['input']>;
   /** 组件过滤 */
   filter?: InputMaybe<Array<RepositoryFilterInput>>;
   /** 镜像仓库替换 */
   imageOverride?: InputMaybe<Array<RepositoryImageOverrideInput>>;
   /** https验证 */
   insecure?: InputMaybe<Scalars['Boolean']['input']>;
+  /** client.key（客户端私钥） */
+  keydata?: InputMaybe<Scalars['Upload']['input']>;
   /** 名称，规则：小写字母、数字、“-”，开头和结尾只能是字母或数字`（[a-z0-9]([-a-z0-9]*[a-z0-9])?）` */
   name: Scalars['String']['input'];
   /** 密码(base64) */
@@ -170,9 +176,11 @@ export type Mutation = {
   componentDownload: Scalars['String']['output'];
   /** 发布组件 */
   componentUpload: Scalars['Boolean']['output'];
+  /** 创建仓库 */
   repositoryCreate: Repository;
   /** 删除组件仓库 */
   repositoryRemove: Scalars['Boolean']['output'];
+  /** 更新仓库 */
   repositoryUpdate: Repository;
 };
 
@@ -229,8 +237,21 @@ export type PaginatedRepository = {
   totalCount: Scalars['Int']['output'];
 };
 
+/** 分页 */
+export type PaginatedSubscription = {
+  __typename?: 'PaginatedSubscription';
+  edges?: Maybe<Array<SubscriptionEdge>>;
+  hasNextPage: Scalars['Boolean']['output'];
+  nodes?: Maybe<Array<Subscription>>;
+  page: Scalars['Int']['output'];
+  pageSize: Scalars['Int']['output'];
+  totalCount: Scalars['Int']['output'];
+};
+
 export type Query = {
   __typename?: 'Query';
+  /** 订阅组件列表 */
+  SubscriptionsPaged: PaginatedSubscription;
   /** 组件详情 */
   component: Component;
   /** 组件列表（分页） */
@@ -243,6 +264,17 @@ export type Query = {
   repositoriesAll: Array<Repository>;
   /** 组件仓库详情 */
   repository: Repository;
+};
+
+export type QuerySubscriptionsPagedArgs = {
+  chartName?: InputMaybe<Scalars['String']['input']>;
+  cluster?: InputMaybe<Scalars['String']['input']>;
+  namespace: Scalars['String']['input'];
+  page?: InputMaybe<Scalars['Float']['input']>;
+  pageSize?: InputMaybe<Scalars['Float']['input']>;
+  repository?: InputMaybe<Scalars['String']['input']>;
+  sortDirection?: InputMaybe<SortDirection>;
+  sortField?: InputMaybe<Scalars['String']['input']>;
 };
 
 export type QueryComponentArgs = {
@@ -420,15 +452,44 @@ export enum SortDirection {
   Descend = 'descend',
 }
 
+/** 组件订阅 */
+export type Subscription = {
+  __typename?: 'Subscription';
+  /** 组件名称 */
+  chartName?: Maybe<Scalars['String']['output']>;
+  /** 订阅时间 */
+  creationTimestamp: Scalars['String']['output'];
+  /** name */
+  name: Scalars['ID']['output'];
+  /** 项目 */
+  namespace: Scalars['String']['output'];
+  /** 所属组件仓库 */
+  repository: Scalars['String']['output'];
+  /** 组件最近更新时间 */
+  updatedAt?: Maybe<Scalars['String']['output']>;
+  /** 组件最新版本 */
+  version?: Maybe<Scalars['String']['output']>;
+};
+
+export type SubscriptionEdge = {
+  __typename?: 'SubscriptionEdge';
+  cursor: Scalars['String']['output'];
+  node: Subscription;
+};
+
 export type UpdateRepositoryInput = {
-  /** 证书内容(base64) */
-  certData?: InputMaybe<Scalars['String']['input']>;
+  /** ca.pem（根证书） */
+  cadata?: InputMaybe<Scalars['Upload']['input']>;
+  /** client.pem（客户端证书） */
+  certdata?: InputMaybe<Scalars['Upload']['input']>;
   /** 组件过滤 */
   filter?: InputMaybe<Array<RepositoryFilterInput>>;
   /** 镜像仓库替换 */
   imageOverride?: InputMaybe<Array<RepositoryImageOverrideInput>>;
   /** https验证 */
   insecure?: InputMaybe<Scalars['Boolean']['input']>;
+  /** client.key（客户端私钥） */
+  keydata?: InputMaybe<Scalars['Upload']['input']>;
   /** 密码(base64) */
   password?: InputMaybe<Scalars['String']['input']>;
   /** 组件更新 */

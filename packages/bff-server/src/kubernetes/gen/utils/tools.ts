@@ -10,7 +10,8 @@ const _replaceSpecialName = (name: string) =>
     .replace(/^IBPCA/, 'ibpca')
     .replace(/^IBPConsole/, 'ibpconsole')
     .replace(/^IBPOrderer/, 'ibporderer')
-    .replace(/^IBPPeer/, 'ibppeer');
+    .replace(/^IBPPeer/, 'ibppeer')
+    .replace(/^ComponentPlan/, 'componentplan');
 /**
  * 将命名转换为横线命名
  * TwoWords => two-words

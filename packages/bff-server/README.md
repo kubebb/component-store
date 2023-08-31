@@ -105,7 +105,7 @@ spec:
           volumeMounts:
             # 注意只挂载到 configs/config.yaml 上，不要把整个 configs 目录都挂载了
             - name: component-store-bff-server-config-volume
-              mountPath: /usr/src/app/configs/config.yaml
+              mountPath: /usr/src/app/packages/bff-server/configs/config.yaml
               subPath: config.yaml
 ```
 
