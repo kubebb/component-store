@@ -150,6 +150,11 @@ input CreateRepositoryInput {
   username: String
 }
 
+input CreateSubscriptionInput {
+  """项目"""
+  namespace: String!
+}
+
 """Date custom scalar type"""
 scalar Date
 
@@ -182,6 +187,21 @@ scalar JSON
 scalar JSONObject
 
 type Mutation {
+  """订阅组件"""
+  SubscriptionCreate(
+    """集群下的资源，不传则为默认集群"""
+    cluster: String
+    subscription: CreateSubscriptionInput!
+  ): Boolean!
+
+  """取消订阅组件"""
+  SubscriptionRemove(
+    """集群下的资源，不传则为默认集群"""
+    cluster: String
+    name: String!
+    namespace: String!
+  ): Boolean!
+
   """删除组件"""
   componentDelete(
     chart: DeleteComponentInput!

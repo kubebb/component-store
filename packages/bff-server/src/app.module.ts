@@ -22,6 +22,7 @@ import serverConfig from './config/server.config';
 import { KubernetesModule } from './kubernetes/kubernetes.module';
 import { RepositoryModule } from './repository/repository.module';
 import { SecretModule } from './secret/secret.module';
+import { SubscriptionModule } from './subscription/subscription.module';
 
 @Module({
   imports: [
@@ -84,6 +85,7 @@ import { SecretModule } from './secret/secret.module';
     ComponentsModule,
     RepositoryModule,
     SecretModule,
+    SubscriptionModule,
   ],
   controllers: [AppController],
   providers: [
