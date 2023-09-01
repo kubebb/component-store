@@ -10,7 +10,7 @@ export class Subscription {
   chartName?: string;
 
   /** 组件最新版本 */
-  version?: string;
+  latestVersion?: string;
 
   /** 组件最近更新时间 */
   updatedAt?: string;

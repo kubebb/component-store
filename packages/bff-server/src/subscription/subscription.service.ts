@@ -1,7 +1,10 @@
 import { SortDirection } from '@/common/models/sort-direction.enum';
+import { genNanoid } from '@/common/utils';
 import { ComponentsService } from '@/components/components.service';
 import { Component } from '@/components/models/component.model';
-import { Injectable } from '@nestjs/common';
+import serverConfig from '@/config/server.config';
+import { Inject, Injectable } from '@nestjs/common';
+import { ConfigType } from '@nestjs/config';
 import { KubernetesService } from 'src/kubernetes/kubernetes.service';
 import { CRD, JwtAuth } from 'src/types';
 import { CreateSubscriptionInput } from './dto/create-subscription.input';
@@ -12,8 +15,12 @@ import { PaginatedSubscription, Subscription } from './models/subscription.model
 export class SubscriptionService {
   constructor(
     private readonly k8sService: KubernetesService,
-    private readonly componentsService: ComponentsService
+    private readonly componentsService: ComponentsService,
+    @Inject(serverConfig.KEY)
+    private config: ConfigType<typeof serverConfig>
   ) {}
+
+  private kubebbNS = this.config.kubebb.namespace;
 
   format(sub: CRD.Subscription, components: Component[]): Subscription {
     const specComponent = sub.spec?.component;
@@ -23,7 +30,7 @@ export class SubscriptionService {
       namespace: sub.metadata?.namespace,
       creationTimestamp: new Date(sub.metadata?.creationTimestamp).toISOString(),
       chartName: component?.chartName,
-      version: component?.latestVersion,
+      latestVersion: component?.latestVersion,
       updatedAt: component?.updatedAt,
       repository: sub.spec?.repository?.name,
     };
@@ -99,12 +106,20 @@ export class SubscriptionService {
     subscription: CreateSubscriptionInput,
     cluster?: string
   ): Promise<boolean> {
-    const { namespace } = subscription;
+    const { namespace, name } = subscription;
     const k8s = await this.k8sService.getClient(auth, { cluster });
     await k8s.subscription.create(namespace, {
       metadata: {
-        name: '',
+        name: genNanoid('subscription'),
         namespace,
+      },
+      spec: {
+        component: {
+          name,
+          namespace: this.kubebbNS,
+        },
+        componentPlanInstallMethod: 'manual',
+        name, // TODO
       },
     });
     return true;

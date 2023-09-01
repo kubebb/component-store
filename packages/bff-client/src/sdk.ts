@@ -88,8 +88,6 @@ export enum ComponentSource {
 
 /** 组件状态 */
 export enum ComponentStatus {
-  /** 废弃 */
-  Deprecated = 'deprecated',
   /** 正常 */
   Ready = 'ready',
   /** 同步中 */
@@ -148,6 +146,13 @@ export type CreateRepositoryInput = {
   username?: InputMaybe<Scalars['String']['input']>;
 };
 
+export type CreateSubscriptionInput = {
+  /** 组件name（如 kubebb.minio） */
+  name: Scalars['String']['input'];
+  /** 项目 */
+  namespace: Scalars['String']['input'];
+};
+
 /** 删除组件 */
 export type DeleteComponentInput = {
   /** Chart名称 */
@@ -182,6 +187,10 @@ export type Mutation = {
   repositoryRemove: Scalars['Boolean']['output'];
   /** 更新仓库 */
   repositoryUpdate: Repository;
+  /** 订阅 */
+  subscriptionCreate: Scalars['Boolean']['output'];
+  /** 取消订阅 */
+  subscriptionRemove: Scalars['Boolean']['output'];
 };
 
 export type MutationComponentDeleteArgs = {
@@ -213,6 +222,17 @@ export type MutationRepositoryUpdateArgs = {
   cluster?: InputMaybe<Scalars['String']['input']>;
   name: Scalars['String']['input'];
   repository: UpdateRepositoryInput;
+};
+
+export type MutationSubscriptionCreateArgs = {
+  cluster?: InputMaybe<Scalars['String']['input']>;
+  subscription: CreateSubscriptionInput;
+};
+
+export type MutationSubscriptionRemoveArgs = {
+  cluster?: InputMaybe<Scalars['String']['input']>;
+  name: Scalars['String']['input'];
+  namespace: Scalars['String']['input'];
 };
 
 /** 分页 */
@@ -250,8 +270,6 @@ export type PaginatedSubscription = {
 
 export type Query = {
   __typename?: 'Query';
-  /** 订阅组件列表 */
-  SubscriptionsPaged: PaginatedSubscription;
   /** 组件详情 */
   component: Component;
   /** 组件列表（分页） */
@@ -264,17 +282,8 @@ export type Query = {
   repositoriesAll: Array<Repository>;
   /** 组件仓库详情 */
   repository: Repository;
-};
-
-export type QuerySubscriptionsPagedArgs = {
-  chartName?: InputMaybe<Scalars['String']['input']>;
-  cluster?: InputMaybe<Scalars['String']['input']>;
-  namespace: Scalars['String']['input'];
-  page?: InputMaybe<Scalars['Float']['input']>;
-  pageSize?: InputMaybe<Scalars['Float']['input']>;
-  repository?: InputMaybe<Scalars['String']['input']>;
-  sortDirection?: InputMaybe<SortDirection>;
-  sortField?: InputMaybe<Scalars['String']['input']>;
+  /** 订阅列表 */
+  subscriptionsPaged: PaginatedSubscription;
 };
 
 export type QueryComponentArgs = {
@@ -305,6 +314,17 @@ export type QueryRepositoriesArgs = {
 export type QueryRepositoryArgs = {
   cluster?: InputMaybe<Scalars['String']['input']>;
   name: Scalars['String']['input'];
+};
+
+export type QuerySubscriptionsPagedArgs = {
+  chartName?: InputMaybe<Scalars['String']['input']>;
+  cluster?: InputMaybe<Scalars['String']['input']>;
+  namespace: Scalars['String']['input'];
+  page?: InputMaybe<Scalars['Float']['input']>;
+  pageSize?: InputMaybe<Scalars['Float']['input']>;
+  repository?: InputMaybe<Scalars['String']['input']>;
+  sortDirection?: InputMaybe<SortDirection>;
+  sortField?: InputMaybe<Scalars['String']['input']>;
 };
 
 export type Repository = {
@@ -459,6 +479,8 @@ export type Subscription = {
   chartName?: Maybe<Scalars['String']['output']>;
   /** 订阅时间 */
   creationTimestamp: Scalars['String']['output'];
+  /** 组件最新版本 */
+  latestVersion?: Maybe<Scalars['String']['output']>;
   /** name */
   name: Scalars['ID']['output'];
   /** 项目 */
@@ -467,8 +489,6 @@ export type Subscription = {
   repository: Scalars['String']['output'];
   /** 组件最近更新时间 */
   updatedAt?: Maybe<Scalars['String']['output']>;
-  /** 组件最新版本 */
-  version?: Maybe<Scalars['String']['output']>;
 };
 
 export type SubscriptionEdge = {
@@ -530,6 +550,7 @@ export type GetComponentsQuery = {
       updatedAt?: string | null;
       status?: ComponentStatus | null;
       source?: ComponentSource | null;
+      latestVersion?: string | null;
       versions?: Array<{
         __typename?: 'ComponentVersion';
         createdAt?: string | null;
@@ -560,6 +581,7 @@ export type GetComponentsAllQuery = {
     updatedAt?: string | null;
     status?: ComponentStatus | null;
     source?: ComponentSource | null;
+    latestVersion?: string | null;
     versions?: Array<{
       __typename?: 'ComponentVersion';
       createdAt?: string | null;
@@ -811,6 +833,51 @@ export type RemoveRepositoryMutationVariables = Exact<{
 
 export type RemoveRepositoryMutation = { __typename?: 'Mutation'; repositoryRemove: boolean };
 
+export type GetSubscriptionsPagedQueryVariables = Exact<{
+  namespace: Scalars['String']['input'];
+  page?: InputMaybe<Scalars['Float']['input']>;
+  pageSize?: InputMaybe<Scalars['Float']['input']>;
+  chartName?: InputMaybe<Scalars['String']['input']>;
+  repository?: InputMaybe<Scalars['String']['input']>;
+  sortDirection?: InputMaybe<SortDirection>;
+  sortField?: InputMaybe<Scalars['String']['input']>;
+  cluster?: InputMaybe<Scalars['String']['input']>;
+}>;
+
+export type GetSubscriptionsPagedQuery = {
+  __typename?: 'Query';
+  subscriptionsPaged: {
+    __typename?: 'PaginatedSubscription';
+    hasNextPage: boolean;
+    totalCount: number;
+    nodes?: Array<{
+      __typename?: 'Subscription';
+      name: string;
+      namespace: string;
+      chartName?: string | null;
+      latestVersion?: string | null;
+      updatedAt?: string | null;
+      repository: string;
+      creationTimestamp: string;
+    }> | null;
+  };
+};
+
+export type CreateSubscriptionMutationVariables = Exact<{
+  subscription: CreateSubscriptionInput;
+  cluster?: InputMaybe<Scalars['String']['input']>;
+}>;
+
+export type CreateSubscriptionMutation = { __typename?: 'Mutation'; subscriptionCreate: boolean };
+
+export type DeleteSubscriptionMutationVariables = Exact<{
+  name: Scalars['String']['input'];
+  namespace: Scalars['String']['input'];
+  cluster?: InputMaybe<Scalars['String']['input']>;
+}>;
+
+export type DeleteSubscriptionMutation = { __typename?: 'Mutation'; subscriptionRemove: boolean };
+
 export const GetComponentsDocument = gql`
   query getComponents(
     $page: Float = 1
@@ -846,6 +913,7 @@ export const GetComponentsDocument = gql`
         updatedAt
         status
         source
+        latestVersion
         versions {
           createdAt
           updatedAt
@@ -874,6 +942,7 @@ export const GetComponentsAllDocument = gql`
       updatedAt
       status
       source
+      latestVersion
       versions {
         createdAt
         updatedAt
@@ -1079,6 +1148,51 @@ export const RemoveRepositoryDocument = gql`
     repositoryRemove(name: $name, cluster: $cluster)
   }
 `;
+export const GetSubscriptionsPagedDocument = gql`
+  query getSubscriptionsPaged(
+    $namespace: String!
+    $page: Float = 1
+    $pageSize: Float = 20
+    $chartName: String
+    $repository: String
+    $sortDirection: SortDirection
+    $sortField: String
+    $cluster: String
+  ) {
+    subscriptionsPaged(
+      namespace: $namespace
+      page: $page
+      pageSize: $pageSize
+      chartName: $chartName
+      repository: $repository
+      sortDirection: $sortDirection
+      sortField: $sortField
+      cluster: $cluster
+    ) {
+      nodes {
+        name
+        namespace
+        chartName
+        latestVersion
+        updatedAt
+        repository
+        creationTimestamp
+      }
+      hasNextPage
+      totalCount
+    }
+  }
+`;
+export const CreateSubscriptionDocument = gql`
+  mutation createSubscription($subscription: CreateSubscriptionInput!, $cluster: String) {
+    subscriptionCreate(subscription: $subscription, cluster: $cluster)
+  }
+`;
+export const DeleteSubscriptionDocument = gql`
+  mutation deleteSubscription($name: String!, $namespace: String!, $cluster: String) {
+    subscriptionRemove(name: $name, namespace: $namespace, cluster: $cluster)
+  }
+`;
 
 export type SdkFunctionWrapper = <T>(
   action: (requestHeaders?: Record<string, string>) => Promise<T>,
@@ -1258,6 +1372,48 @@ export function getSdk(client: GraphQLClient, withWrapper: SdkFunctionWrapper = 
         'mutation'
       );
     },
+    getSubscriptionsPaged(
+      variables: GetSubscriptionsPagedQueryVariables,
+      requestHeaders?: GraphQLClientRequestHeaders
+    ): Promise<GetSubscriptionsPagedQuery> {
+      return withWrapper(
+        wrappedRequestHeaders =>
+          client.request<GetSubscriptionsPagedQuery>(GetSubscriptionsPagedDocument, variables, {
+            ...requestHeaders,
+            ...wrappedRequestHeaders,
+          }),
+        'getSubscriptionsPaged',
+        'query'
+      );
+    },
+    createSubscription(
+      variables: CreateSubscriptionMutationVariables,
+      requestHeaders?: GraphQLClientRequestHeaders
+    ): Promise<CreateSubscriptionMutation> {
+      return withWrapper(
+        wrappedRequestHeaders =>
+          client.request<CreateSubscriptionMutation>(CreateSubscriptionDocument, variables, {
+            ...requestHeaders,
+            ...wrappedRequestHeaders,
+          }),
+        'createSubscription',
+        'mutation'
+      );
+    },
+    deleteSubscription(
+      variables: DeleteSubscriptionMutationVariables,
+      requestHeaders?: GraphQLClientRequestHeaders
+    ): Promise<DeleteSubscriptionMutation> {
+      return withWrapper(
+        wrappedRequestHeaders =>
+          client.request<DeleteSubscriptionMutation>(DeleteSubscriptionDocument, variables, {
+            ...requestHeaders,
+            ...wrappedRequestHeaders,
+          }),
+        'deleteSubscription',
+        'mutation'
+      );
+    },
   };
 }
 export type Sdk = ReturnType<typeof getSdk>;
@@ -1394,6 +1550,16 @@ export function getSdkWithHooks(
       return useSWR<GetRepositoryQuery, ClientError>(
         genKey<GetRepositoryQueryVariables>('GetRepository', variables),
         () => sdk.getRepository(variables),
+        config
+      );
+    },
+    useGetSubscriptionsPaged(
+      variables: GetSubscriptionsPagedQueryVariables,
+      config?: SWRConfigInterface<GetSubscriptionsPagedQuery, ClientError>
+    ) {
+      return useSWR<GetSubscriptionsPagedQuery, ClientError>(
+        genKey<GetSubscriptionsPagedQueryVariables>('GetSubscriptionsPaged', variables),
+        () => sdk.getSubscriptionsPaged(variables),
         config
       );
     },

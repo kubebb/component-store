@@ -15,6 +15,7 @@ query getComponents($page: Float = 1, $pageSize: Float = 20, $name: String, $cha
       updatedAt
       status
       source
+      latestVersion
       versions {
         createdAt
         updatedAt
@@ -43,6 +44,7 @@ query getComponentsAll {
       updatedAt
       status
       source
+      latestVersion
       versions {
         createdAt
         updatedAt
