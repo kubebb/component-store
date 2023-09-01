@@ -17,45 +17,52 @@ const data = [
     column: 1,
     children: [
       {
-        id: 'component-store-repository',
-        text: '组件仓库管理',
-        textEn: 'Component Repository',
-        icon: BaasOrganization,
-        pathname: '/components/warehouse',
-        tenant: false,
-      },
-      {
-        id: 'component-store-market',
+        id: 'component-store-index',
         text: '组件市场',
         textEn: 'Component Market',
-        icon: BaasOrganization,
-        pathname: '/components/market',
-        tenant: false,
-      },
-      {
-        id: 'component-store-management',
-        text: '组件管理',
-        textEn: 'Component Management',
         children: [
           {
-            id: 'component-store-management-publish',
-            text: '我发布的',
-            textEn: 'I Published',
-            pathname: '/components/management/publish',
+            id: 'component-store-repository',
+            text: '组件仓库管理',
+            textEn: 'Component Repository',
+            icon: BaasOrganization,
+            pathname: '/components/warehouse',
             tenant: false,
           },
           {
-            id: 'component-store-management-installed',
-            text: '我安装的',
-            textEn: 'I Installed',
-            pathname: '/components/management/install',
+            id: 'component-store-market',
+            text: '组件市场',
+            textEn: 'Component Market',
+            icon: BaasOrganization,
+            pathname: '/components/market',
+            tenant: false,
           },
           {
-            id: 'component-store-management-subscribed',
-            text: '我订阅的',
-            textEn: 'I Subscribed',
-            pathname: '/components/management/subscription',
-          },
+            id: 'component-store-management',
+            text: '组件管理',
+            textEn: 'Component Management',
+            children: [
+              {
+                id: 'component-store-management-publish',
+                text: '我发布的',
+                textEn: 'I Published',
+                pathname: '/components/management/publish',
+                tenant: false,
+              },
+              {
+                id: 'component-store-management-installed',
+                text: '我安装的',
+                textEn: 'I Installed',
+                pathname: '/components/management/install',
+              },
+              {
+                id: 'component-store-management-subscribed',
+                text: '我订阅的',
+                textEn: 'I Subscribed',
+                pathname: '/components/management/subscription',
+              },
+            ]
+          }
         ]
       }
     ]

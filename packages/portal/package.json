@@ -33,7 +33,7 @@
     "@formily/core": "2.2.4",
     "@formily/react": "2.2.4",
     "@tenx-ui/auth-utils": "0.0.1",
-    "@tenx-ui/bff-client": "0.1.1",
+    "@tenx-ui/bff-client": "0.1.2",
     "@tenx-ui/charts": "1.1.2",
     "@tenx-ui/component-store-bff-client": "0.0.13",
     "@tenx-ui/form-helper": "0.0.2",

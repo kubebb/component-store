@@ -8,7 +8,7 @@ export const IS_PROD = constants.IS_PROD;
 
 /** 应用路由前缀 */
 constants.basename = function applyThis() {
-  return process.env.NODE_ENV === 'component-store';
+  return '/component-store';
 }.apply(constants);
 export const basename = constants.basename;
 

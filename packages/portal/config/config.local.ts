@@ -30,9 +30,9 @@ export default defineConfig({
       /** 重写目标路径，一般用于去除手动添加的路径前缀 */
       // pathRewrite: { '^/prefix-need-to-remove': '' },
     },
-    '/apis/bff': {
+    '/bff': {
       /** 目标地址 */
-      target: 'https://portal.172.22.96.209.nip.io/bff',
+      target: 'https://portal.172.22.96.209.nip.io',
       /** 是否改变请求的 origin 为目标地址 */
       changeOrigin: true,
       /** https 证书校验 */
