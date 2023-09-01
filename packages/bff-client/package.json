@@ -24,7 +24,7 @@
     "query-string": "^8.1.0"
   },
   "devDependencies": {
-    "@tenx-ui/materials": "^1.1.1",
+    "@tenx-ui/materials": "^1.5.8",
     "@types/react": "^18.0.0",
     "antd": "^5.4.0",
     "father": "^4.2.3",
@@ -32,12 +32,21 @@
     "swr": "^2.1.2"
   },
   "peerDependencies": {
-    "@tenx-ui/materials": ">=1.1.1",
+    "@tenx-ui/materials": ">=1.5.8",
     "antd": ">=5.4.0",
     "react": ">=16.9.0",
     "swr": ">=2.0.0"
   },
   "authors": [
     "zhangpc <zhang.pengcheng3@neolink.com>"
-  ]
+  ],
+  "yunti": {
+    "umd": {
+      "library": "ComponentStoreBffClient",
+      "entry": [
+        "/dist/ComponentStoreBffClient.js",
+        "/dist/ComponentStoreBffClient.css"
+      ]
+    }
+  }
 }
