@@ -305,14 +305,14 @@ importers:
         specifier: 0.0.1
         version: 0.0.1
       '@tenx-ui/bff-client':
-        specifier: 0.1.1
-        version: 0.1.1(@tenx-ui/materials@1.5.8)(antd@5.1.5)(react@18.1.0)(swr@2.0.0)
+        specifier: 0.1.2
+        version: 0.1.2(@tenx-ui/materials@1.5.8)(antd@5.1.5)(react@18.1.0)(swr@2.0.0)
       '@tenx-ui/charts':
         specifier: 1.1.2
         version: 1.1.2(@babel/core@7.22.9)(antd@5.1.5)(classnames@2.2.5)(prop-types@15.8.1)(react-dom@18.1.0)(react@18.1.0)
       '@tenx-ui/component-store-bff-client':
         specifier: 0.0.13
-        version: link:../bff-client
+        version: 0.0.13(@tenx-ui/materials@1.5.8)(antd@5.1.5)(react@18.1.0)(swr@2.0.0)
       '@tenx-ui/form-helper':
         specifier: 0.0.2
         version: 0.0.2(react@18.1.0)
@@ -6510,8 +6510,8 @@ packages:
     resolution: {integrity: sha512-aCo7kgzZ18i3gZ6ZZryoYP0pBbTDyqKT8nSIwNXgMckL+pxUA+Iy5owvbZ/Hptexn603adg+ppocwxkvGxiBaw==}
     dev: false
 
-  /@tenx-ui/bff-client@0.1.1(@tenx-ui/materials@1.5.8)(antd@5.1.5)(react@18.1.0)(swr@2.0.0):
-    resolution: {integrity: sha512-i8TRlttn8wB1NeC80lUXfcH2vSB+wrCN5lixEvRUyMXzG6DEBHJudS2dD3yE0wu/fg0AoxVy4br9w/tWQbYbJQ==}
+  /@tenx-ui/bff-client@0.1.2(@tenx-ui/materials@1.5.8)(antd@5.1.5)(react@18.1.0)(swr@2.0.0):
+    resolution: {integrity: sha512-4mKtvdwfnwr5Tm7VOyns/mPa2XRXrJ/2OKotvcef1umlSPDPQvwdjXPZ6Jt14WS6/aGtosUUDLkyCw77zKqM+g==}
     peerDependencies:
       '@tenx-ui/materials': '>=1.1.1'
       antd: '>=5.4.0'
@@ -6553,6 +6553,26 @@ packages:
       - react
       - react-dom
       - supports-color
+    dev: false
+
+  /@tenx-ui/component-store-bff-client@0.0.13(@tenx-ui/materials@1.5.8)(antd@5.1.5)(react@18.1.0)(swr@2.0.0):
+    resolution: {integrity: sha512-/H3eKbmDbqR7vliwVh3kzNf6SOvTazfW708CFYhVu9Bmk0tFIc1ZunFZxthGOe/65zvpNIE6y4XHYccNdJEU2A==}
+    peerDependencies:
+      '@tenx-ui/materials': '>=1.1.1'
+      antd: '>=5.4.0'
+      react: '>=16.9.0'
+      swr: '>=2.0.0'
+    dependencies:
+      '@tenx-ui/materials': 1.5.8(antd@5.1.5)(lodash@4.17.21)(prop-types@15.8.1)(react-dom@18.1.0)(react-router-dom@6.14.2)(react@18.1.0)
+      antd: 5.1.5(react-dom@18.1.0)(react@18.1.0)
+      graphql: 16.6.0
+      graphql-request: 5.2.0(graphql@16.6.0)
+      graphql-tag: 2.12.6(graphql@16.6.0)
+      query-string: 8.1.0
+      react: 18.1.0
+      swr: 2.0.0(react@18.1.0)
+    transitivePeerDependencies:
+      - encoding
     dev: false
 
   /@tenx-ui/ellipsis@0.0.8(antd@5.1.5)(classnames@2.2.5)(prop-types@15.8.1)(react-dom@18.1.0)(react@18.1.0):
