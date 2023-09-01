@@ -10,16 +10,16 @@ import { SubscriptionService } from './subscription.service';
 export class SubscriptionResolver {
   constructor(private readonly subscriptionService: SubscriptionService) {}
 
-  @Query(() => PaginatedSubscription, { description: '订阅组件列表' })
-  async SubscriptionsPaged(
+  @Query(() => PaginatedSubscription, { description: '订阅列表' })
+  async subscriptionsPaged(
     @Auth() auth: JwtAuth,
     @Args() args: SubscriptionArgs
   ): Promise<PaginatedSubscription> {
     return this.subscriptionService.getSubscriptionsPaged(auth, args);
   }
 
-  @Mutation(() => Boolean, { description: '订阅组件' })
-  async SubscriptionCreate(
+  @Mutation(() => Boolean, { description: '订阅' })
+  async subscriptionCreate(
     @Auth() auth: JwtAuth,
     @Args('subscription') subscription: CreateSubscriptionInput,
     @Args('cluster', {
@@ -31,8 +31,8 @@ export class SubscriptionResolver {
     return this.subscriptionService.createSubscription(auth, subscription, cluster);
   }
 
-  @Mutation(() => Boolean, { description: '取消订阅组件' })
-  async SubscriptionRemove(
+  @Mutation(() => Boolean, { description: '取消订阅' })
+  async subscriptionRemove(
     @Auth() auth: JwtAuth,
     @Args('name') name: string,
     @Args('namespace') namespace: string,
