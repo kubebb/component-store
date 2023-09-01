@@ -10,7 +10,7 @@
 import logo from '@/assets/img/logo.png';
 import { _qiankunData } from '@/utils/helper';
 import { GlobalOutlined } from '@ant-design/icons';
-import { initUnifiedLinkHistory } from '@tenx-ui/utils/es/UnifiedLink';
+import { initUnifiedLinkHistory } from '@tenx-ui/utils/es/UnifiedLink/index.prod';
 import { history, RunTimeLayoutConfig } from '@umijs/max';
 import { Modal, Tooltip, Typography } from 'antd';
 import React from 'react';
@@ -20,7 +20,7 @@ import utils from './utils/__utils';
 import { basename, IS_PROD, IS_QIAN_KUN } from './__constants';
 
 // TODO：qiankun umi 子应用 window.routerBase 问题，目前需要手动设置一下 routerBase 的值
-(window as any).routerBase = basename;
+(window as any).routerBase = IS_PROD ? basename : '/';
 
 export const qiankun = {
   // 应用加载之前
