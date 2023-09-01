@@ -32,8 +32,6 @@ ni
 
 ```bash
 # 开发 portal
-# 注意：portal 依赖了 bff-client，开发前需要构建下 bff-client
-nr build:client
 nr dev:portal
 
 # 开发 server

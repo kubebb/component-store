@@ -10,6 +10,11 @@
 import { defineConfig } from '@umijs/max';
 
 export default defineConfig({
+  // 本地开发时默认从源码目录引入 monorepo 中的子包，可以支持热更新，无需预构建其他子包即可进行开发。
+  // 详见 https://umijs.org/docs/api/config#monoreporedirect
+  monorepoRedirect: {
+    srcDir: ['src'],
+  },
   // 这里可为 api 地址配置代理规则，解决跨域等问题
   // 配置详见 https://github.com/chimurai/http-proxy-middleware#http-proxy-options
   proxy: {

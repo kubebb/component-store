@@ -16,7 +16,6 @@
     "build:server": "pnpm --filter '*-server' build",
     "dev:portal": "pnpm --filter '*-portal' dev",
     "dev:server": "pnpm --filter '*-server' start:dev",
-    "postinstall": "npm run build:client",
     "lint-staged": "lint-staged",
     "prepare": "husky install",
     "start": "pnpm start:portal",
