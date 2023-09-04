@@ -11,6 +11,10 @@ import {
   Descriptions,
   Divider,
   Dropdown,
+  FormilyForm,
+  FormilyFormItem,
+  FormilyInput,
+  FormilySelect,
   Image,
   Modal,
   Page,
@@ -32,7 +36,7 @@ import { matchPath, useLocation } from '@umijs/max';
 import qs from 'query-string';
 import DataProvider from '../../components/DataProvider';
 
-import utils from '../../utils/__utils';
+import utils, { RefsManager } from '../../utils/__utils';
 
 import * as __$$i18n from '../../i18n';
 
@@ -65,10 +69,13 @@ class ComponentsDetail$$Page extends React.Component {
 
     this.utils = utils;
 
+    this._refsManager = new RefsManager();
+
     __$$i18n._inject2(this);
 
     this.state = {
       cluster: undefined,
+      tenants: [],
       version: undefined,
       modalType: 'delete',
       isOpenModal: false,
@@ -76,9 +83,17 @@ class ComponentsDetail$$Page extends React.Component {
     };
   }
 
-  $ = () => null;
+  $ = refName => {
+    return this._refsManager.get(refName);
+  };
 
-  $$ = () => [];
+  $$ = refName => {
+    return this._refsManager.getAll(refName);
+  };
+
+  form(name) {
+    return this.$(name || 'formily_subscription')?.formRef?.current?.form;
+  }
 
   closeModal() {
     this.setState({
@@ -101,12 +116,43 @@ class ComponentsDetail$$Page extends React.Component {
     });
   }
 
+  async loadTenants() {
+    const res = await this.props.appHelper?.utils?.bffSdk?.getCurrentUserTenants();
+    const tenants =
+      res?.userCurrent?.tenants?.map(item => {
+        item.projects =
+          item.projects
+            ?.filter(item => {
+              return item.clusters?.some(cluster => cluster.name === this.getCluster());
+            })
+            ?.map(item => ({
+              label: item.fullName,
+              value: item.name,
+            })) || [];
+        return {
+          label: item.fullName,
+          value: JSON.stringify(item),
+        };
+      }) || [];
+    this.setState({
+      tenants,
+    });
+  }
+
   getContainer() {
     return window;
   }
 
   handleRefresh() {
     this.props.useGetComponent.mutate();
+  }
+
+  setFormValues(values, name) {
+    if (!this.form(name)) {
+      setTimeout(() => this.setFormValues(values, name), 200);
+      return;
+    }
+    this.form(name).setValues(values);
   }
 
   getClusterInfo() {
@@ -185,11 +231,18 @@ class ComponentsDetail$$Page extends React.Component {
 
   async handleOprationMenuClick(e) {
     if (e?.key === 'subscription') {
-      const pre = this.appHelper?.location?.pathname?.split('/')?.slice(0, 4)?.join('/');
-      this.history.push(
-        `${pre}/management-action/subscription/${
-          this.props.useGetComponent?.data?.component?.name
-        }?cluster=${this.getCluster()}`
+      this.setState(
+        {
+          isOpenModal: true,
+          modalType: 'subscription',
+        },
+        () => {
+          const { chartName } = this.props.useGetComponent?.data?.component || {};
+          this.setFormValues({
+            chartName,
+            version: this.getVersionInfo()?.version,
+          });
+        }
       );
     }
     if (e?.key === 'download') {
@@ -207,8 +260,44 @@ class ComponentsDetail$$Page extends React.Component {
     }
   }
 
+  async confirmSubscriptionModal(e, payload) {
+    const form = this.form();
+    form.submit(async v => {
+      const data = this.props.useGetComponent?.data?.component;
+      this.setState({
+        modalLoading: true,
+      });
+      try {
+        await this.utils.bff.createSubscription({
+          subscription: {
+            name: data?.name,
+            namespace: v?.info?.namespace,
+          },
+          cluster: data?.cluster || this.getCluster(),
+        });
+        this.closeModal();
+        this.utils.notification.success({
+          message: this.i18n('i18n-vrfy9kmq'),
+        });
+        this.history.go(-1);
+        this.setState({
+          modalLoading: false,
+        });
+      } catch (error) {
+        this.setState({
+          modalLoading: false,
+        });
+        this.utils.notification.warnings({
+          message: this.i18n('i18n-byab1606'),
+          errors: error?.response?.errors,
+        });
+      }
+    });
+  }
+
   componentDidMount() {
     this.loadCluster();
+    this.loadTenants();
   }
 
   render() {
@@ -216,6 +305,119 @@ class ComponentsDetail$$Page extends React.Component {
     const { state } = __$$context;
     return (
       <Page>
+        <Modal
+          mask={true}
+          onOk={function () {
+            return this.confirmSubscriptionModal.apply(
+              this,
+              Array.prototype.slice.call(arguments).concat([])
+            );
+          }.bind(this)}
+          open={__$$eval(() => this.state.isOpenModal && this.state.modalType === 'subscription')}
+          title={this.i18n('i18n-h8k0fzco') /* 订阅组件 */}
+          centered={false}
+          keyboard={true}
+          onCancel={function () {
+            return this.closeModal.apply(this, Array.prototype.slice.call(arguments).concat([]));
+          }.bind(this)}
+          forceRender={false}
+          maskClosable={false}
+          confirmLoading={__$$eval(() => this.state.modalLoading)}
+          destroyOnClose={true}
+          __component_name="Modal"
+        >
+          <FormilyForm
+            ref={this._refsManager.linkRef('formily_subscription')}
+            componentProps={{
+              colon: false,
+              layout: 'horizontal',
+              labelCol: 4,
+              labelAlign: 'left',
+              wrapperCol: 20,
+            }}
+            __component_name="FormilyForm"
+          >
+            <FormilyInput
+              fieldProps={{
+                name: 'chartName',
+                title: this.i18n('i18n-cuf6u4di') /* 组件名称 */,
+                required: true,
+                'x-pattern': 'disabled',
+                'x-validator': [],
+              }}
+              componentProps={{
+                'x-component-props': { placeholder: this.i18n('i18n-n9a8du2a') /* 请输入 */ },
+              }}
+              __component_name="FormilyInput"
+            />
+            <FormilyInput
+              fieldProps={{
+                name: 'version',
+                title: this.i18n('i18n-ekp8efeq') /* 组件版本 */,
+                required: true,
+                'x-pattern': 'disabled',
+                'x-validator': [],
+              }}
+              componentProps={{
+                'x-component-props': { placeholder: this.i18n('i18n-n9a8du2a') /* 请输入 */ },
+              }}
+              __component_name="FormilyInput"
+            />
+            <FormilyFormItem
+              fieldProps={{
+                name: 'info',
+                title: this.i18n('i18n-tchopvzq') /* 订阅项目 */,
+                'x-component': 'FormilyFormItem',
+                'x-validator': [],
+              }}
+              componentProps={{ 'x-component-props': {} }}
+              decoratorProps={{ 'x-decorator-props': { asterisk: true } }}
+              __component_name="FormilyFormItem"
+            >
+              <Space align="center" direction="horizontal" __component_name="Space">
+                <FormilySelect
+                  style={{ width: '191px' }}
+                  fieldProps={{
+                    enum: __$$eval(() => this.state.tenants || []),
+                    name: 'tenant',
+                    title: '',
+                    'x-validator': [],
+                    _unsafe_MixedSetter_enum_select: 'ExpressionSetter',
+                  }}
+                  componentProps={{
+                    'x-component-props': {
+                      disabled: false,
+                      allowClear: false,
+                      placeholder: this.i18n('i18n-lhvq14lg') /* 请选择租户 */,
+                      _sdkSwrGetFunc: {},
+                    },
+                  }}
+                  __component_name="FormilySelect"
+                />
+                <FormilySelect
+                  style={{ width: '190px' }}
+                  fieldProps={{
+                    enum: "{{(() => {console.log($form?.values?.info?.tenant, 'vvvvvvvvvvvvvv'); return $form?.values?.info?.tenant ? JSON.parse($form?.values?.info?.tenant)?.projects : []})()}}",
+                    name: 'namespace',
+                    title: '',
+                    'x-validator': [],
+                    _unsafe_MixedSetter_enum_select: 'ArraySetter',
+                  }}
+                  componentProps={{
+                    'x-component-props': {
+                      disabled: false,
+                      allowClear: false,
+                      placeholder: this.i18n('i18n-er0hhc9i') /* 请选择项目 */,
+                      _sdkSwrGetFunc: {},
+                      _unsafe_MixedSetter__sdkSwrGetFunc_select: 'ObjectSetter',
+                    },
+                  }}
+                  __component_name="FormilySelect"
+                />
+              </Space>
+            </FormilyFormItem>
+          </FormilyForm>
+        </Modal>
         <Modal
           mask={true}
           onOk={function () {

@@ -27,6 +27,11 @@ const routes = [
         path: '/components/management/publish',
         component: '@/pages/ComponentsManagementPublish',
       },
+      {
+        name: '组件管理-我订阅的',
+        path: '/components/management/subscription',
+        component: '@/pages/ComponentsManagementSubscription',
+      },
     ],
   },
 ];

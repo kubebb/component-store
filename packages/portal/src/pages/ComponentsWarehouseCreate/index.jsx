@@ -543,7 +543,7 @@ class ComponentsWarehouseCreate$$Page extends React.Component {
                         id: 'disabled',
                         type: 'disabled',
                         label: 'Chart Museum',
-                        value: 'Chart Museum',
+                        value: 'ChartMuseum',
                         children: '',
                       },
                     ],
