@@ -12,3 +12,5 @@ config:
   useSWRInfinite:
     - getRepositories
     - getComponents
+    - getSubscriptionsPaged
+    - getComponentplansPaged

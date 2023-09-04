@@ -17,6 +17,7 @@ import { ErrorFormatPlugin } from './common/plugins/error-format.plugin';
 import { DateScalar } from './common/scalars/date.scalar';
 import { JSONObjectScalar, JSONScalar } from './common/scalars/json.scalar';
 import { GRAPHQL_PATH } from './common/utils';
+import { ComponentplanModule } from './componentplan/componentplan.module';
 import { ComponentsModule } from './components/components.module';
 import serverConfig from './config/server.config';
 import { KubernetesModule } from './kubernetes/kubernetes.module';
@@ -86,6 +87,7 @@ import { SubscriptionModule } from './subscription/subscription.module';
     RepositoryModule,
     SecretModule,
     SubscriptionModule,
+    ComponentplanModule,
   ],
   controllers: [AppController],
   providers: [

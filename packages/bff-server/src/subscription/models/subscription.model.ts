@@ -1,10 +1,15 @@
 import { Paginated } from '@/common/models/paginated.function';
-import { Field, ID, ObjectType } from '@nestjs/graphql';
+import { Component } from '@/components/models/component.model';
+import { Field, HideField, ID, ObjectType } from '@nestjs/graphql';
+import { InstallMethod } from './installmethod.enum';
 
 @ObjectType({ description: '组件订阅' })
 export class Subscription {
   @Field(() => ID, { description: 'name' })
   name: string;
+
+  @HideField()
+  namespacedName: string;
 
   /** 组件名称 */
   chartName?: string;
@@ -23,6 +28,13 @@ export class Subscription {
 
   /** 订阅时间 */
   creationTimestamp: string;
+
+  /** 更新方式 */
+  @Field(() => InstallMethod, { description: '更新方式' })
+  componentPlanInstallMethod?: string;
+
+  /** 组件 */
+  component: Component;
 }
 
 @ObjectType({ description: '分页' })
