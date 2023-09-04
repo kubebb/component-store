@@ -540,7 +540,7 @@ class ComponentsMarket$$Page extends React.Component {
                                               ellipsis={true}
                                               __component_name="Typography.Text"
                                             >
-                                              {__$$eval(() => record?.name || '-')}
+                                              {__$$eval(() => record?.chartName || '-')}
                                             </Typography.Text>
                                           </Col>
                                           <Col flex="auto" __component_name="Col">
@@ -708,7 +708,7 @@ class ComponentsMarket$$Page extends React.Component {
                                             ellipsis={true}
                                             __component_name="Typography.Text"
                                           >
-                                            {__$$eval(() => record?.chartName || '-')}
+                                            {__$$eval(() => record?.repository || '-')}
                                           </Typography.Text>
                                         }
                                       </Descriptions.Item>

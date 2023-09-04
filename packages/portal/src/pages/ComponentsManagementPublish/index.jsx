@@ -838,7 +838,7 @@ class ComponentsManagementPublish$$Page extends React.Component {
                               target="_self"
                               __component_name="UnifiedLink"
                             >
-                              {__$$eval(() => record?.name || '-')}
+                              {__$$eval(() => record?.chartName || '-')}
                             </UnifiedLink>
                           ))(__$$createChildContext(__$$context, { text, record, index })),
                         ellipsis: { showTitle: true },
@@ -855,9 +855,7 @@ class ComponentsManagementPublish$$Page extends React.Component {
                               ellipsis={true}
                               __component_name="Typography.Text"
                             >
-                              {__$$eval(
-                                () => record?.versions?.map(item => item.version)?.join('，') || '-'
-                              )}
+                              {__$$eval(() => record?.latestVersion || '-')}
                             </Typography.Text>
                           ))(__$$createChildContext(__$$context, { text, record, index })),
                         dataIndex: 'version',
@@ -887,7 +885,7 @@ class ComponentsManagementPublish$$Page extends React.Component {
                       {
                         key: 'chartName',
                         title: this.i18n('i18n-1po87kgw') /* 组件仓库 */,
-                        dataIndex: 'chartName',
+                        dataIndex: 'repository',
                       },
                       {
                         key: 'status',

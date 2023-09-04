@@ -136,7 +136,7 @@ utils.getComponentPublishStatus = function __getComponentPublishStatus() {
         [isStatus ? 'children' : 'text']: pageThis.i18n('i18n-3uhh6hke'),
       },
       {
-        [isStatus ? 'id' : 'value']: 'feiqi',
+        [isStatus ? 'id' : 'value']: 'deprecate',
         type: 'error',
         [isStatus ? 'children' : 'text']: pageThis.i18n('i18n-zgk1d4r3'),
       },
