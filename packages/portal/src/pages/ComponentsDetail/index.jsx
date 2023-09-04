@@ -421,7 +421,8 @@ class ComponentsDetail$$Page extends React.Component {
                                 __component_name="Typography.Text"
                               >
                                 {__$$eval(
-                                  () => this.props.useGetComponent?.data?.component?.name || '-'
+                                  () =>
+                                    this.props.useGetComponent?.data?.component?.chartName || '-'
                                 )}
                               </Typography.Text>
                             </Col>
@@ -572,7 +573,7 @@ class ComponentsDetail$$Page extends React.Component {
                               __component_name="Typography.Text"
                             >
                               {__$$eval(
-                                () => this.props.useGetComponent?.data?.component?.chartName || '-'
+                                () => this.props.useGetComponent?.data?.component?.repository || '-'
                               )}
                             </Typography.Text>
                             <Divider
@@ -1024,7 +1025,13 @@ class ComponentsDetail$$Page extends React.Component {
                       ellipsis={true}
                       __component_name="Typography.Text"
                     >
-                      {__$$eval(() => this.getVersionInfo()?.version || '-')}
+                      {__$$eval(() =>
+                        this.getVersionInfo()?.version
+                          ? `${this.getVersionInfo()?.version} ${
+                              this.getVersionInfo()?.deprecated ? '（废弃）' : ''
+                            }`
+                          : '-'
+                      )}
                     </Typography.Text>
                   }
                 </Descriptions.Item>
