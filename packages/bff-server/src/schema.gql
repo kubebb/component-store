@@ -35,6 +35,7 @@ type Component {
 
   """组件名称"""
   name: ID!
+  namespace: String!
 
   """所属仓库"""
   repository: String!
@@ -103,6 +104,88 @@ type ComponentVersion {
   version: String
 }
 
+type Componentplan {
+  """组件"""
+  component: Component
+
+  """创建时间"""
+  creationTimestamp: String!
+
+  """组件名称"""
+  name: ID!
+
+  """项目"""
+  namespace: String!
+
+  """部署名称"""
+  releaseName: String!
+
+  """状态"""
+  status: ComponentplanStatus
+
+  """订阅"""
+  subscription: Subscription
+
+  """安装版本"""
+  version: String
+}
+
+type ComponentplanEdge {
+  cursor: String!
+  node: Componentplan!
+}
+
+"""组件状态"""
+enum ComponentplanStatus {
+  """失败"""
+  Failed
+
+  """安装失败"""
+  InstallFailed
+
+  """安装成功"""
+  InstallSuccess
+
+  """安装中"""
+  Installing
+
+  """回滚失败"""
+  RollBackFailed
+
+  """回滚成功"""
+  RollBackSuccess
+
+  """回滚中"""
+  RollingBack
+
+  """成功"""
+  Succeeded
+
+  """卸载失败"""
+  UninstallFailed
+
+  """卸载成功"""
+  UninstallSuccess
+
+  """卸载中"""
+  Uninstalling
+
+  """未知"""
+  Unknown
+
+  """升级失败"""
+  UpgradeFailed
+
+  """升级成功"""
+  UpgradeSuccess
+
+  """升级中"""
+  Upgrading
+
+  """前置步骤失败"""
+  WaitDo
+}
+
 """上传组件"""
 input CreateComponentInput {
   """组件helm包"""
@@ -110,6 +193,14 @@ input CreateComponentInput {
 
   """组件仓库"""
   repository: String!
+}
+
+input CreateComponentplanInput {
+  """名称"""
+  displayName: String
+
+  """name"""
+  name: String!
 }
 
 input CreateRepositoryInput {
@@ -185,6 +276,15 @@ input DownloadComponentInput {
   version: String!
 }
 
+"""组件更新方式"""
+enum InstallMethod {
+  """自动"""
+  auto
+
+  """手动"""
+  manual
+}
+
 scalar JSON
 
 scalar JSONObject
@@ -213,6 +313,31 @@ type Mutation {
     """集群下的资源，不传则为默认集群"""
     cluster: String
   ): Boolean!
+
+  """安装组件创建"""
+  componentplanCreate(
+    """集群下的资源，不传则为默认集群"""
+    cluster: String
+    componentplan: CreateComponentplanInput!
+    namespace: String!
+  ): Componentplan!
+
+  """安装组件删除"""
+  componentplanRemove(
+    """集群下的资源，不传则为默认集群"""
+    cluster: String
+    name: String!
+    namespace: String!
+  ): Boolean!
+
+  """安装组件更新"""
+  componentplanUpdate(
+    """集群下的资源，不传则为默认集群"""
+    cluster: String
+    componentplan: UpdateComponentplanInput!
+    name: String!
+    namespace: String!
+  ): Componentplan!
 
   """创建仓库"""
   repositoryCreate(
@@ -263,6 +388,16 @@ type PaginatedComponent {
 }
 
 """分页"""
+type PaginatedComponentplan {
+  edges: [ComponentplanEdge!]
+  hasNextPage: Boolean!
+  nodes: [Componentplan!]
+  page: Int!
+  pageSize: Int!
+  totalCount: Int!
+}
+
+"""分页"""
 type PaginatedRepository {
   edges: [RepositoryEdge!]
   hasNextPage: Boolean!
@@ -289,6 +424,38 @@ type Query {
     cluster: String
     name: String!
   ): Component!
+
+  """安装组件详情"""
+  componentplan(
+    """集群下的资源，不传则为默认集群"""
+    cluster: String
+    name: String!
+    namespace: String!
+  ): Componentplan!
+
+  """安装组件列表（分页）"""
+  componentplansPaged(
+    """集群（不传则为默认集群）"""
+    cluster: String
+
+    """项目"""
+    namespace: String!
+
+    """页码"""
+    page: Float = 1
+
+    """每页数量"""
+    pageSize: Float = 20
+
+    """部署名称"""
+    releaseName: String
+
+    """排序方向"""
+    sortDirection: SortDirection
+
+    """排序字段"""
+    sortField: String
+  ): PaginatedComponentplan!
 
   """组件列表（分页）"""
   components(
@@ -352,6 +519,13 @@ type Query {
   ): Repository!
 
   """订阅列表"""
+  subscriptions(
+    """集群下的资源，不传则为默认集群"""
+    cluster: String
+    namespace: String!
+  ): [Subscription!]!
+
+  """订阅列表（分页）"""
   subscriptionsPaged(
     """组件名称"""
     chartName: String
@@ -562,6 +736,12 @@ type Subscription {
   """组件名称"""
   chartName: String
 
+  """组件"""
+  component: Component!
+
+  """更新方式"""
+  componentPlanInstallMethod: InstallMethod
+
   """订阅时间"""
   creationTimestamp: String!
 
@@ -584,6 +764,11 @@ type Subscription {
 type SubscriptionEdge {
   cursor: String!
   node: Subscription!
+}
+
+input UpdateComponentplanInput {
+  """名称"""
+  displayName: String
 }
 
 input UpdateRepositoryInput {

@@ -1,17 +1,35 @@
-# 订阅列表
+# 订阅列表（分页）
 query getSubscriptionsPaged($namespace: String!, $page: Float = 1, $pageSize: Float = 20, $chartName: String, $repository: String, $sortDirection: SortDirection, $sortField: String, $cluster: String){
   subscriptionsPaged(namespace: $namespace, page: $page, pageSize: $pageSize, chartName: $chartName, repository: $repository, sortDirection: $sortDirection, sortField: $sortField, cluster: $cluster){
     nodes {
       name
       namespace
-      chartName
+      creationTimestamp
+      component {
+        name
+        chartName
+        latestVersion
+        updatedAt
+        repository
+      }
+      chartName # TODO DELETE
       latestVersion
       updatedAt
       repository
-      creationTimestamp
     }
     hasNextPage
     totalCount
+  }
+}
+
+# 订阅列表
+query getSubscriptions($namespace: String!, $cluster: String){
+  subscriptions(namespace: $namespace, cluster: $cluster){
+    name
+    namespace
+    component {
+      name
+    }
   }
 }
 

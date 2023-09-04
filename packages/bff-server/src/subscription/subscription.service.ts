@@ -22,18 +22,32 @@ export class SubscriptionService {
 
   private kubebbNS = this.config.kubebb.namespace;
 
-  format(sub: CRD.Subscription, components: Component[]): Subscription {
+  format(sub: CRD.Subscription, components?: Component[], cluster?: string): Subscription {
     const specComponent = sub.spec?.component;
     const component = components?.find(c => c.name === specComponent?.name);
     return {
       name: sub.metadata?.name,
       namespace: sub.metadata?.namespace,
+      namespacedName: `${sub.metadata?.name}_${sub.metadata.namespace}_${cluster || ''}`,
       creationTimestamp: new Date(sub.metadata?.creationTimestamp).toISOString(),
       chartName: component?.chartName,
       latestVersion: component?.latestVersion,
       updatedAt: component?.updatedAt,
+      component,
       repository: sub.spec?.repository?.name,
+      componentPlanInstallMethod: sub.spec?.componentPlanInstallMethod,
     };
+  }
+
+  async getSubscription(
+    auth: JwtAuth,
+    name: string,
+    namespace: string,
+    cluster?: string
+  ): Promise<Subscription> {
+    const k8s = await this.k8sService.getClient(auth, { cluster });
+    const { body } = await k8s.subscription.read(name, namespace);
+    return this.format(body);
   }
 
   async getSubscriptions(
@@ -45,7 +59,7 @@ export class SubscriptionService {
     const { body } = await k8s.subscription.list(namespace);
     const components = await this.componentsService.listComponents(auth, cluster);
     return body.items
-      ?.map(item => this.format(item, components))
+      ?.map(item => this.format(item, components, cluster))
       ?.sort(
         (a, b) => new Date(b.creationTimestamp).valueOf() - new Date(a.creationTimestamp).valueOf()
       );
@@ -119,7 +133,7 @@ export class SubscriptionService {
           namespace: this.kubebbNS,
         },
         componentPlanInstallMethod: 'manual',
-        name, // TODO
+        name,
       },
     });
     return true;

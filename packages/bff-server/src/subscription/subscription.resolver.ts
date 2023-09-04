@@ -10,12 +10,25 @@ import { SubscriptionService } from './subscription.service';
 export class SubscriptionResolver {
   constructor(private readonly subscriptionService: SubscriptionService) {}
 
-  @Query(() => PaginatedSubscription, { description: '订阅列表' })
+  @Query(() => PaginatedSubscription, { description: '订阅列表（分页）' })
   async subscriptionsPaged(
     @Auth() auth: JwtAuth,
     @Args() args: SubscriptionArgs
   ): Promise<PaginatedSubscription> {
     return this.subscriptionService.getSubscriptionsPaged(auth, args);
+  }
+
+  @Query(() => [Subscription], { description: '订阅列表' })
+  async subscriptions(
+    @Auth() auth: JwtAuth,
+    @Args('namespace') namespace: string,
+    @Args('cluster', {
+      nullable: true,
+      description: '集群下的资源，不传则为默认集群',
+    })
+    cluster: string
+  ): Promise<Subscription[]> {
+    return this.subscriptionService.getSubscriptions(auth, namespace, cluster);
   }
 
   @Mutation(() => Boolean, { description: '订阅' })

@@ -52,6 +52,7 @@ export type Component = {
   maintainers?: Maybe<Array<ComponentMaintainer>>;
   /** 组件名称 */
   name: Scalars['ID']['output'];
+  namespace: Scalars['String']['output'];
   /** 所属仓库 */
   repository: Scalars['String']['output'];
   /** 代码来源 */
@@ -111,12 +112,81 @@ export type ComponentVersion = {
   version?: Maybe<Scalars['String']['output']>;
 };
 
+export type Componentplan = {
+  __typename?: 'Componentplan';
+  /** 组件 */
+  component?: Maybe<Component>;
+  /** 创建时间 */
+  creationTimestamp: Scalars['String']['output'];
+  /** 组件名称 */
+  name: Scalars['ID']['output'];
+  /** 项目 */
+  namespace: Scalars['String']['output'];
+  /** 部署名称 */
+  releaseName: Scalars['String']['output'];
+  /** 状态 */
+  status?: Maybe<ComponentplanStatus>;
+  /** 订阅 */
+  subscription?: Maybe<Subscription>;
+  /** 安装版本 */
+  version?: Maybe<Scalars['String']['output']>;
+};
+
+export type ComponentplanEdge = {
+  __typename?: 'ComponentplanEdge';
+  cursor: Scalars['String']['output'];
+  node: Componentplan;
+};
+
+/** 组件状态 */
+export enum ComponentplanStatus {
+  /** 失败 */
+  Failed = 'Failed',
+  /** 安装失败 */
+  InstallFailed = 'InstallFailed',
+  /** 安装成功 */
+  InstallSuccess = 'InstallSuccess',
+  /** 安装中 */
+  Installing = 'Installing',
+  /** 回滚失败 */
+  RollBackFailed = 'RollBackFailed',
+  /** 回滚成功 */
+  RollBackSuccess = 'RollBackSuccess',
+  /** 回滚中 */
+  RollingBack = 'RollingBack',
+  /** 成功 */
+  Succeeded = 'Succeeded',
+  /** 卸载失败 */
+  UninstallFailed = 'UninstallFailed',
+  /** 卸载成功 */
+  UninstallSuccess = 'UninstallSuccess',
+  /** 卸载中 */
+  Uninstalling = 'Uninstalling',
+  /** 未知 */
+  Unknown = 'Unknown',
+  /** 升级失败 */
+  UpgradeFailed = 'UpgradeFailed',
+  /** 升级成功 */
+  UpgradeSuccess = 'UpgradeSuccess',
+  /** 升级中 */
+  Upgrading = 'Upgrading',
+  /** 前置步骤失败 */
+  WaitDo = 'WaitDo',
+}
+
 /** 上传组件 */
 export type CreateComponentInput = {
   /** 组件helm包 */
   file: Scalars['Upload']['input'];
   /** 组件仓库 */
   repository: Scalars['String']['input'];
+};
+
+export type CreateComponentplanInput = {
+  /** 名称 */
+  displayName?: InputMaybe<Scalars['String']['input']>;
+  /** name */
+  name: Scalars['String']['input'];
 };
 
 export type CreateRepositoryInput = {
@@ -173,6 +243,14 @@ export type DownloadComponentInput = {
   version: Scalars['String']['input'];
 };
 
+/** 组件更新方式 */
+export enum InstallMethod {
+  /** 自动 */
+  Auto = 'auto',
+  /** 手动 */
+  Manual = 'manual',
+}
+
 export type Mutation = {
   __typename?: 'Mutation';
   /** 删除组件 */
@@ -181,6 +259,12 @@ export type Mutation = {
   componentDownload: Scalars['String']['output'];
   /** 发布组件 */
   componentUpload: Scalars['Boolean']['output'];
+  /** 安装组件创建 */
+  componentplanCreate: Componentplan;
+  /** 安装组件删除 */
+  componentplanRemove: Scalars['Boolean']['output'];
+  /** 安装组件更新 */
+  componentplanUpdate: Componentplan;
   /** 创建仓库 */
   repositoryCreate: Repository;
   /** 删除组件仓库 */
@@ -206,6 +290,25 @@ export type MutationComponentDownloadArgs = {
 export type MutationComponentUploadArgs = {
   chart: CreateComponentInput;
   cluster?: InputMaybe<Scalars['String']['input']>;
+};
+
+export type MutationComponentplanCreateArgs = {
+  cluster?: InputMaybe<Scalars['String']['input']>;
+  componentplan: CreateComponentplanInput;
+  namespace: Scalars['String']['input'];
+};
+
+export type MutationComponentplanRemoveArgs = {
+  cluster?: InputMaybe<Scalars['String']['input']>;
+  name: Scalars['String']['input'];
+  namespace: Scalars['String']['input'];
+};
+
+export type MutationComponentplanUpdateArgs = {
+  cluster?: InputMaybe<Scalars['String']['input']>;
+  componentplan: UpdateComponentplanInput;
+  name: Scalars['String']['input'];
+  namespace: Scalars['String']['input'];
 };
 
 export type MutationRepositoryCreateArgs = {
@@ -247,6 +350,17 @@ export type PaginatedComponent = {
 };
 
 /** 分页 */
+export type PaginatedComponentplan = {
+  __typename?: 'PaginatedComponentplan';
+  edges?: Maybe<Array<ComponentplanEdge>>;
+  hasNextPage: Scalars['Boolean']['output'];
+  nodes?: Maybe<Array<Componentplan>>;
+  page: Scalars['Int']['output'];
+  pageSize: Scalars['Int']['output'];
+  totalCount: Scalars['Int']['output'];
+};
+
+/** 分页 */
 export type PaginatedRepository = {
   __typename?: 'PaginatedRepository';
   edges?: Maybe<Array<RepositoryEdge>>;
@@ -272,6 +386,10 @@ export type Query = {
   __typename?: 'Query';
   /** 组件详情 */
   component: Component;
+  /** 安装组件详情 */
+  componentplan: Componentplan;
+  /** 安装组件列表（分页） */
+  componentplansPaged: PaginatedComponentplan;
   /** 组件列表（分页） */
   components: PaginatedComponent;
   /** 组件列表 */
@@ -283,12 +401,30 @@ export type Query = {
   /** 组件仓库详情 */
   repository: Repository;
   /** 订阅列表 */
+  subscriptions: Array<Subscription>;
+  /** 订阅列表（分页） */
   subscriptionsPaged: PaginatedSubscription;
 };
 
 export type QueryComponentArgs = {
   cluster?: InputMaybe<Scalars['String']['input']>;
   name: Scalars['String']['input'];
+};
+
+export type QueryComponentplanArgs = {
+  cluster?: InputMaybe<Scalars['String']['input']>;
+  name: Scalars['String']['input'];
+  namespace: Scalars['String']['input'];
+};
+
+export type QueryComponentplansPagedArgs = {
+  cluster?: InputMaybe<Scalars['String']['input']>;
+  namespace: Scalars['String']['input'];
+  page?: InputMaybe<Scalars['Float']['input']>;
+  pageSize?: InputMaybe<Scalars['Float']['input']>;
+  releaseName?: InputMaybe<Scalars['String']['input']>;
+  sortDirection?: InputMaybe<SortDirection>;
+  sortField?: InputMaybe<Scalars['String']['input']>;
 };
 
 export type QueryComponentsArgs = {
@@ -314,6 +450,11 @@ export type QueryRepositoriesArgs = {
 export type QueryRepositoryArgs = {
   cluster?: InputMaybe<Scalars['String']['input']>;
   name: Scalars['String']['input'];
+};
+
+export type QuerySubscriptionsArgs = {
+  cluster?: InputMaybe<Scalars['String']['input']>;
+  namespace: Scalars['String']['input'];
 };
 
 export type QuerySubscriptionsPagedArgs = {
@@ -477,6 +618,10 @@ export type Subscription = {
   __typename?: 'Subscription';
   /** 组件名称 */
   chartName?: Maybe<Scalars['String']['output']>;
+  /** 组件 */
+  component: Component;
+  /** 更新方式 */
+  componentPlanInstallMethod?: Maybe<InstallMethod>;
   /** 订阅时间 */
   creationTimestamp: Scalars['String']['output'];
   /** 组件最新版本 */
@@ -495,6 +640,11 @@ export type SubscriptionEdge = {
   __typename?: 'SubscriptionEdge';
   cursor: Scalars['String']['output'];
   node: Subscription;
+};
+
+export type UpdateComponentplanInput = {
+  /** 名称 */
+  displayName?: InputMaybe<Scalars['String']['input']>;
 };
 
 export type UpdateRepositoryInput = {
@@ -516,6 +666,79 @@ export type UpdateRepositoryInput = {
   pullStategy?: InputMaybe<RepositoryPullStategyInput>;
   /** 用户名(base64) */
   username?: InputMaybe<Scalars['String']['input']>;
+};
+
+export type GetComponentplansPagedQueryVariables = Exact<{
+  namespace: Scalars['String']['input'];
+  page?: InputMaybe<Scalars['Float']['input']>;
+  pageSize?: InputMaybe<Scalars['Float']['input']>;
+  releaseName?: InputMaybe<Scalars['String']['input']>;
+  sortDirection?: InputMaybe<SortDirection>;
+  sortField?: InputMaybe<Scalars['String']['input']>;
+  cluster?: InputMaybe<Scalars['String']['input']>;
+}>;
+
+export type GetComponentplansPagedQuery = {
+  __typename?: 'Query';
+  componentplansPaged: {
+    __typename?: 'PaginatedComponentplan';
+    hasNextPage: boolean;
+    totalCount: number;
+    nodes?: Array<{
+      __typename?: 'Componentplan';
+      name: string;
+      releaseName: string;
+      creationTimestamp: string;
+      namespace: string;
+      version?: string | null;
+      status?: ComponentplanStatus | null;
+      component?: {
+        __typename?: 'Component';
+        name: string;
+        chartName: string;
+        latestVersion?: string | null;
+        repository: string;
+      } | null;
+      subscription?: {
+        __typename?: 'Subscription';
+        componentPlanInstallMethod?: InstallMethod | null;
+      } | null;
+    }> | null;
+  };
+};
+
+export type GetComponentplanQueryVariables = Exact<{
+  name: Scalars['String']['input'];
+  namespace: Scalars['String']['input'];
+  cluster?: InputMaybe<Scalars['String']['input']>;
+}>;
+
+export type GetComponentplanQuery = {
+  __typename?: 'Query';
+  componentplan: {
+    __typename?: 'Componentplan';
+    name: string;
+    releaseName: string;
+    creationTimestamp: string;
+    namespace: string;
+    version?: string | null;
+    status?: ComponentplanStatus | null;
+    component?: {
+      __typename?: 'Component';
+      chartName: string;
+      latestVersion?: string | null;
+      repository: string;
+      versions?: Array<{
+        __typename?: 'ComponentVersion';
+        version?: string | null;
+        deprecated?: boolean | null;
+      }> | null;
+    } | null;
+    subscription?: {
+      __typename?: 'Subscription';
+      componentPlanInstallMethod?: InstallMethod | null;
+    } | null;
+  };
 };
 
 export type GetComponentsQueryVariables = Exact<{
@@ -854,13 +1077,36 @@ export type GetSubscriptionsPagedQuery = {
       __typename?: 'Subscription';
       name: string;
       namespace: string;
+      creationTimestamp: string;
       chartName?: string | null;
       latestVersion?: string | null;
       updatedAt?: string | null;
       repository: string;
-      creationTimestamp: string;
+      component: {
+        __typename?: 'Component';
+        name: string;
+        chartName: string;
+        latestVersion?: string | null;
+        updatedAt?: string | null;
+        repository: string;
+      };
     }> | null;
   };
+};
+
+export type GetSubscriptionsQueryVariables = Exact<{
+  namespace: Scalars['String']['input'];
+  cluster?: InputMaybe<Scalars['String']['input']>;
+}>;
+
+export type GetSubscriptionsQuery = {
+  __typename?: 'Query';
+  subscriptions: Array<{
+    __typename?: 'Subscription';
+    name: string;
+    namespace: string;
+    component: { __typename?: 'Component'; name: string };
+  }>;
 };
 
 export type CreateSubscriptionMutationVariables = Exact<{
@@ -878,6 +1124,71 @@ export type DeleteSubscriptionMutationVariables = Exact<{
 
 export type DeleteSubscriptionMutation = { __typename?: 'Mutation'; subscriptionRemove: boolean };
 
+export const GetComponentplansPagedDocument = gql`
+  query getComponentplansPaged(
+    $namespace: String!
+    $page: Float = 1
+    $pageSize: Float = 20
+    $releaseName: String
+    $sortDirection: SortDirection
+    $sortField: String
+    $cluster: String
+  ) {
+    componentplansPaged(
+      namespace: $namespace
+      page: $page
+      pageSize: $pageSize
+      releaseName: $releaseName
+      sortDirection: $sortDirection
+      sortField: $sortField
+      cluster: $cluster
+    ) {
+      nodes {
+        name
+        releaseName
+        creationTimestamp
+        namespace
+        version
+        status
+        component {
+          name
+          chartName
+          latestVersion
+          repository
+        }
+        subscription {
+          componentPlanInstallMethod
+        }
+      }
+      hasNextPage
+      totalCount
+    }
+  }
+`;
+export const GetComponentplanDocument = gql`
+  query getComponentplan($name: String!, $namespace: String!, $cluster: String) {
+    componentplan(name: $name, namespace: $namespace, cluster: $cluster) {
+      name
+      releaseName
+      creationTimestamp
+      namespace
+      version
+      status
+      component {
+        chartName
+        latestVersion
+        repository
+        versions {
+          version
+          deprecated
+        }
+      }
+      subscription {
+        componentPlanInstallMethod
+      }
+    }
+  }
+`;
 export const GetComponentsDocument = gql`
   query getComponents(
     $page: Float = 1
@@ -1172,14 +1483,32 @@ export const GetSubscriptionsPagedDocument = gql`
       nodes {
         name
         namespace
+        creationTimestamp
+        component {
+          name
+          chartName
+          latestVersion
+          updatedAt
+          repository
+        }
         chartName
         latestVersion
         updatedAt
         repository
-        creationTimestamp
       }
       hasNextPage
       totalCount
+    }
+  }
+`;
+export const GetSubscriptionsDocument = gql`
+  query getSubscriptions($namespace: String!, $cluster: String) {
+    subscriptions(namespace: $namespace, cluster: $cluster) {
+      name
+      namespace
+      component {
+        name
+      }
     }
   }
 `;
@@ -1204,6 +1533,34 @@ const defaultWrapper: SdkFunctionWrapper = (action, _operationName, _operationTy
 
 export function getSdk(client: GraphQLClient, withWrapper: SdkFunctionWrapper = defaultWrapper) {
   return {
+    getComponentplansPaged(
+      variables: GetComponentplansPagedQueryVariables,
+      requestHeaders?: GraphQLClientRequestHeaders
+    ): Promise<GetComponentplansPagedQuery> {
+      return withWrapper(
+        wrappedRequestHeaders =>
+          client.request<GetComponentplansPagedQuery>(GetComponentplansPagedDocument, variables, {
+            ...requestHeaders,
+            ...wrappedRequestHeaders,
+          }),
+        'getComponentplansPaged',
+        'query'
+      );
+    },
+    getComponentplan(
+      variables: GetComponentplanQueryVariables,
+      requestHeaders?: GraphQLClientRequestHeaders
+    ): Promise<GetComponentplanQuery> {
+      return withWrapper(
+        wrappedRequestHeaders =>
+          client.request<GetComponentplanQuery>(GetComponentplanDocument, variables, {
+            ...requestHeaders,
+            ...wrappedRequestHeaders,
+          }),
+        'getComponentplan',
+        'query'
+      );
+    },
     getComponents(
       variables?: GetComponentsQueryVariables,
       requestHeaders?: GraphQLClientRequestHeaders
@@ -1386,6 +1743,20 @@ export function getSdk(client: GraphQLClient, withWrapper: SdkFunctionWrapper = 
         'query'
       );
     },
+    getSubscriptions(
+      variables: GetSubscriptionsQueryVariables,
+      requestHeaders?: GraphQLClientRequestHeaders
+    ): Promise<GetSubscriptionsQuery> {
+      return withWrapper(
+        wrappedRequestHeaders =>
+          client.request<GetSubscriptionsQuery>(GetSubscriptionsDocument, variables, {
+            ...requestHeaders,
+            ...wrappedRequestHeaders,
+          }),
+        'getSubscriptions',
+        'query'
+      );
+    },
     createSubscription(
       variables: CreateSubscriptionMutationVariables,
       requestHeaders?: GraphQLClientRequestHeaders
@@ -1459,6 +1830,49 @@ export function getSdkWithHooks(
   ];
   return {
     ...sdk,
+    useGetComponentplansPaged(
+      variables: GetComponentplansPagedQueryVariables,
+      config?: SWRConfigInterface<GetComponentplansPagedQuery, ClientError>
+    ) {
+      return useSWR<GetComponentplansPagedQuery, ClientError>(
+        genKey<GetComponentplansPagedQueryVariables>('GetComponentplansPaged', variables),
+        () => sdk.getComponentplansPaged(variables),
+        config
+      );
+    },
+    useGetComponentplansPagedInfinite(
+      getKey: SWRInfiniteKeyLoader<
+        GetComponentplansPagedQuery,
+        GetComponentplansPagedQueryVariables
+      >,
+      variables: GetComponentplansPagedQueryVariables,
+      config?: SWRInfiniteConfiguration<GetComponentplansPagedQuery, ClientError>
+    ) {
+      return useSWRInfinite<GetComponentplansPagedQuery, ClientError>(
+        utilsForInfinite.generateGetKey<
+          GetComponentplansPagedQuery,
+          GetComponentplansPagedQueryVariables
+        >(
+          genKey<GetComponentplansPagedQueryVariables>('GetComponentplansPaged', variables),
+          getKey
+        ),
+        utilsForInfinite.generateFetcher<
+          GetComponentplansPagedQuery,
+          GetComponentplansPagedQueryVariables
+        >(sdk.getComponentplansPaged, variables),
+        config
+      );
+    },
+    useGetComponentplan(
+      variables: GetComponentplanQueryVariables,
+      config?: SWRConfigInterface<GetComponentplanQuery, ClientError>
+    ) {
+      return useSWR<GetComponentplanQuery, ClientError>(
+        genKey<GetComponentplanQueryVariables>('GetComponentplan', variables),
+        () => sdk.getComponentplan(variables),
+        config
+      );
+    },
     useGetComponents(
       variables?: GetComponentsQueryVariables,
       config?: SWRConfigInterface<GetComponentsQuery, ClientError>
@@ -1560,6 +1974,33 @@ export function getSdkWithHooks(
       return useSWR<GetSubscriptionsPagedQuery, ClientError>(
         genKey<GetSubscriptionsPagedQueryVariables>('GetSubscriptionsPaged', variables),
         () => sdk.getSubscriptionsPaged(variables),
+        config
+      );
+    },
+    useGetSubscriptionsPagedInfinite(
+      getKey: SWRInfiniteKeyLoader<GetSubscriptionsPagedQuery, GetSubscriptionsPagedQueryVariables>,
+      variables: GetSubscriptionsPagedQueryVariables,
+      config?: SWRInfiniteConfiguration<GetSubscriptionsPagedQuery, ClientError>
+    ) {
+      return useSWRInfinite<GetSubscriptionsPagedQuery, ClientError>(
+        utilsForInfinite.generateGetKey<
+          GetSubscriptionsPagedQuery,
+          GetSubscriptionsPagedQueryVariables
+        >(genKey<GetSubscriptionsPagedQueryVariables>('GetSubscriptionsPaged', variables), getKey),
+        utilsForInfinite.generateFetcher<
+          GetSubscriptionsPagedQuery,
+          GetSubscriptionsPagedQueryVariables
+        >(sdk.getSubscriptionsPaged, variables),
+        config
+      );
+    },
+    useGetSubscriptions(
+      variables: GetSubscriptionsQueryVariables,
+      config?: SWRConfigInterface<GetSubscriptionsQuery, ClientError>
+    ) {
+      return useSWR<GetSubscriptionsQuery, ClientError>(
+        genKey<GetSubscriptionsQueryVariables>('GetSubscriptions', variables),
+        () => sdk.getSubscriptions(variables),
         config
       );
     },

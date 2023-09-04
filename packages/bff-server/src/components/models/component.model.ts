@@ -1,5 +1,5 @@
 import { Paginated } from '@/common/models/paginated.function';
-import { Field, ID, ObjectType } from '@nestjs/graphql';
+import { Field, HideField, ID, ObjectType } from '@nestjs/graphql';
 import { ComponentSource } from './component-source.enum';
 import { ComponentStatus } from './component-status.enum';
 
@@ -35,6 +35,11 @@ class ComponentMaintainer {
 export class Component {
   @Field(() => ID, { description: '组件名称' })
   name: string;
+
+  namespace: string;
+
+  @HideField()
+  namespacedName: string;
 
   /** Chart 名称 */
   chartName: string;

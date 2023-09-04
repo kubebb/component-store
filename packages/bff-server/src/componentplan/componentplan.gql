@@ -1,0 +1,48 @@
+# 安装列表（分页）
+query getComponentplansPaged($namespace: String!, $page: Float = 1, $pageSize: Float = 20, $releaseName: String, $sortDirection: SortDirection, $sortField: String, $cluster: String) {
+  componentplansPaged(namespace: $namespace, page: $page, pageSize: $pageSize, releaseName: $releaseName, sortDirection: $sortDirection, sortField: $sortField, cluster: $cluster) {
+    nodes {
+      name
+      releaseName
+      creationTimestamp
+      namespace
+      version
+      status
+      component {
+        name
+        chartName
+        latestVersion
+        repository
+      }
+      subscription {
+        componentPlanInstallMethod
+      }
+    }
+    hasNextPage
+    totalCount
+  }
+}
+
+# 安装详情
+query getComponentplan($name: String!, $namespace: String!, $cluster: String) {
+  componentplan(name: $name, namespace: $namespace, cluster: $cluster) {
+    name
+    releaseName
+    creationTimestamp
+    namespace
+    version
+    status
+    component {
+      chartName
+      latestVersion
+      repository
+      versions{
+        version
+        deprecated
+      }
+    }
+    subscription {
+      componentPlanInstallMethod
+    }
+  }
+}

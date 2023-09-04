@@ -26,10 +26,12 @@ export class ComponentsService {
   private logger = new Logger('ComponentsService');
   private kubebbNS = this.config.kubebb.namespace;
 
-  formatComponent(c: CRD.Component): Component {
+  formatComponent(c: CRD.Component, cluster?: string): Component {
     const latestVersion = c.status?.versions?.[0];
     return {
       name: c.metadata?.name,
+      namespace: c.metadata?.namespace,
+      namespacedName: `${c.metadata?.name}_${c.metadata.namespace}_${cluster || ''}`,
       chartName: c.status?.name,
       repository: c.status?.repository?.name,
       description: c.status?.description,
