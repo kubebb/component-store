@@ -17,7 +17,7 @@ export const errorsHandler = (errors: GraphQLError[]) => {
         showForbiddenNotification(e);
         break;
       default:
-        showGlobalErrorNotification(e);
+        // showGlobalErrorNotification(e);
         break;
     }
   });
