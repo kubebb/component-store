@@ -8,5 +8,5 @@ log:
 k8s:
   cluster:
     name: kube-oidc-proxy
-    server: https://k8s.172.22.96.209.nip.io
+    server: https://kube-oidc-proxy.u4a-system.svc
     skipTLSVerify: true
