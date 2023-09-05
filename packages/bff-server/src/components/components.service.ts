@@ -1,8 +1,11 @@
 import { SortDirection } from '@/common/models/sort-direction.enum';
+import { decodeBase64 } from '@/common/utils';
 import serverConfig from '@/config/server.config';
 import { KubernetesService } from '@/kubernetes/kubernetes.service';
 import { RepositoryService } from '@/repository/repository.service';
-import { CRD, JwtAuth } from '@/types';
+import { Secret } from '@/secret/models/secret.model';
+import { SecretService } from '@/secret/secret.service';
+import { CRD, JwtAuth, UrllibClientOptions } from '@/types';
 import { HttpException, Inject, Injectable, Logger } from '@nestjs/common';
 import { ConfigType } from '@nestjs/config';
 import { IncomingHttpHeaders } from 'http';
@@ -19,6 +22,7 @@ export class ComponentsService {
   constructor(
     private readonly k8sService: KubernetesService,
     private readonly repositoryService: RepositoryService,
+    private readonly secretService: SecretService,
     @Inject(serverConfig.KEY)
     private config: ConfigType<typeof serverConfig>
   ) {}
@@ -101,12 +105,23 @@ export class ComponentsService {
   ): Promise<boolean> {
     const { repository, file } = chart;
     const { createReadStream } = await file;
-    const { url } = await this.repositoryService.getRepository(auth, repository, cluster);
-    // TODO: username password
-    await this.callChartMuseum(`${url}/api/charts`, {
-      method: 'POST',
-      content: createReadStream(),
-    });
+    const { url, authSecret } = await this.repositoryService.getRepository(
+      auth,
+      repository,
+      cluster
+    );
+    let secret: Secret;
+    if (authSecret) {
+      secret = await this.secretService.getSecretDetail(auth, authSecret, this.kubebbNS, cluster);
+    }
+    await this.callChartMuseumClient(
+      `${url}/api/charts`,
+      {
+        method: 'POST',
+        content: createReadStream(),
+      },
+      secret
+    );
     return true;
   }
 
@@ -152,6 +167,42 @@ export class ComponentsService {
       headers,
     };
     const res = await urllib.request(reqUrl, Object.assign({}, defaultOptions, options));
+    if (res.status >= 400) {
+      throw new HttpException(res, res.status);
+    }
+    return res;
+  }
+
+  async callChartMuseumClient(endpoint: string, options: RequestOptions, secret?: Secret) {
+    const reqUrl = endpoint;
+    const cOptions: UrllibClientOptions = {
+      defaultArgs: {
+        dataType: 'json',
+        timeout: 10 * 1000,
+        ...options,
+      },
+      connect: {},
+    };
+    if (secret) {
+      if (secret?.data?.password && secret?.data?.username) {
+        cOptions.defaultArgs.auth = `${decodeBase64(secret.data.username)}:${decodeBase64(
+          secret.data.password
+        )}`;
+      }
+      if (secret?.data?.certdata) {
+        cOptions.connect.cert = decodeBase64(secret.data.certdata);
+      }
+      if (secret?.data?.keydata) {
+        cOptions.connect.key = decodeBase64(secret.data.keydata);
+      }
+      if (secret?.data?.cadata) {
+        cOptions.connect.ca = decodeBase64(secret.data.cadata);
+      }
+    }
+    Logger.debug('callChartMuseum => url:', reqUrl);
+    Logger.debug('callChartMuseum => options:', cOptions);
+    const urllibClient = new urllib.HttpClient(cOptions);
+    const res = await urllibClient.request(reqUrl);
     if (res.status >= 400) {
       throw new HttpException(res, res.status);
     }

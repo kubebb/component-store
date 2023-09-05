@@ -1,4 +1,5 @@
 import { Request as ExpressReq } from 'express';
+import { ClientOptions } from 'urllib/src/esm/HttpClient';
 import { UserRole } from './common/models/user-role.enum';
 
 export * as K8s from '@kubernetes/client-node';
@@ -65,4 +66,14 @@ export interface FileUpload {
   mimetype: string;
   encoding: string;
   createReadStream: () => Readable;
+}
+
+export interface UrllibClientOptions extends ClientOptions {
+  connect?: {
+    key?: string | Buffer;
+    cert?: string | Buffer;
+    ca?: string | Buffer;
+    rejectUnauthorized?: boolean;
+    socketPath?: string | null;
+  };
 }
