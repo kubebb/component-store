@@ -179,13 +179,12 @@ export class ComponentsService {
       defaultArgs: {
         dataType: 'json',
         timeout: 10 * 1000,
-        ...options,
       },
       connect: {},
     };
     if (secret) {
       if (secret?.data?.password && secret?.data?.username) {
-        cOptions.defaultArgs.auth = `${decodeBase64(secret.data.username)}:${decodeBase64(
+        options.auth = `${decodeBase64(secret.data.username)}:${decodeBase64(
           secret.data.password
         )}`;
       }
@@ -202,7 +201,7 @@ export class ComponentsService {
     Logger.debug('callChartMuseum => url:', reqUrl);
     Logger.debug('callChartMuseum => options:', cOptions);
     const urllibClient = new urllib.HttpClient(cOptions);
-    const res = await urllibClient.request(reqUrl);
+    const res = await urllibClient.request(reqUrl, options);
     if (res.status >= 400) {
       throw new HttpException(res, res.status);
     }
