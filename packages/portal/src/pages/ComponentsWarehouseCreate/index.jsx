@@ -114,7 +114,7 @@ class ComponentsWarehouseCreate$$Page extends React.Component {
       const params = {
         name: v.name,
         url: v.url,
-        repositoryType: v.repositoryType,
+        // repositoryType: v.repositoryType,
         insecure: v?.insecure?.includes('true'),
         cadata: v?.cadata?.fileList?.[0]?.originFileObj,
         certdata: v?.certdata?.fileList?.[0]?.originFileObj,
@@ -184,7 +184,7 @@ class ComponentsWarehouseCreate$$Page extends React.Component {
       this.form().setValues({
         name: v.name,
         url: v.url,
-        repositoryType: v.repositoryType,
+        // repositoryType: v.repositoryType,
         insecure: v.insecure ? ['true'] : [],
         info: {
           auth: v.username && v.password ? ['true'] : [],
@@ -224,18 +224,13 @@ class ComponentsWarehouseCreate$$Page extends React.Component {
       return;
     }
     this.form().setValues({
-      repositoryType: 'Git',
+      // repositoryType: 'Git',
       insecure: ['true'],
       filter: {
-        value: [
-          {
-            keepDeprecated: 'true',
-            operation: 'ignore_all',
-          },
-        ],
+        value: [],
       },
       imageOverride: {
-        value: [{}],
+        value: [],
       },
       pullStategy: {
         intervalSeconds: 120,
@@ -443,6 +438,7 @@ class ComponentsWarehouseCreate$$Page extends React.Component {
             >
               <FormilyForm
                 ref={this._refsManager.linkRef('formily_create')}
+                formHelper={{ autoFocus: true }}
                 componentProps={{
                   colon: false,
                   layout: 'horizontal',
@@ -490,6 +486,7 @@ class ComponentsWarehouseCreate$$Page extends React.Component {
                             Array.prototype.slice.call(arguments).concat([])
                           );
                         }.bind(this),
+                        triggerType: 'onBlur',
                       },
                     ],
                   }}
@@ -529,46 +526,50 @@ class ComponentsWarehouseCreate$$Page extends React.Component {
                   decoratorProps={{ 'x-decorator-props': { asterisk: true } }}
                   __component_name="FormilyInput"
                 />
-                <FormilySelect
-                  fieldProps={{
-                    enum: [
-                      {
-                        id: 'disabled',
-                        type: 'disabled',
-                        label: 'Git',
-                        value: 'Git',
-                        children: '',
-                      },
-                      {
-                        id: 'disabled',
-                        type: 'disabled',
-                        label: 'Chart Museum',
-                        value: 'ChartMuseum',
-                        children: '',
-                      },
-                    ],
-                    name: 'repositoryType',
-                    title: this.i18n('i18n-gyax19ni') /* 类型 */,
-                    default: '',
-                    required: true,
-                    'x-pattern': __$$eval(() =>
-                      this.props.appHelper?.match?.params?.id !== 'create' ? 'disabled' : 'editable'
-                    ),
-                    'x-validator': [],
-                  }}
-                  componentProps={{
-                    'x-component-props': {
-                      disabled: __$$eval(
-                        () => this.props.appHelper?.match?.params?.id !== 'create'
+                {!!false && (
+                  <FormilySelect
+                    fieldProps={{
+                      enum: [
+                        {
+                          id: 'disabled',
+                          type: 'disabled',
+                          label: 'Git',
+                          value: 'Git',
+                          children: '',
+                        },
+                        {
+                          id: 'disabled',
+                          type: 'disabled',
+                          label: 'Chart Museum',
+                          value: 'ChartMuseum',
+                          children: '',
+                        },
+                      ],
+                      name: 'repositoryType',
+                      title: this.i18n('i18n-gyax19ni') /* 类型 */,
+                      default: '',
+                      required: true,
+                      'x-pattern': __$$eval(() =>
+                        this.props.appHelper?.match?.params?.id !== 'create'
+                          ? 'disabled'
+                          : 'editable'
                       ),
-                      allowClear: false,
-                      placeholder: this.i18n('i18n-n0h4rmtn') /* 请选择组件仓库类型 */,
-                      _sdkSwrGetFunc: {},
-                    },
-                  }}
-                  decoratorProps={{ 'x-decorator-props': { asterisk: false } }}
-                  __component_name="FormilySelect"
-                />
+                      'x-validator': [],
+                    }}
+                    componentProps={{
+                      'x-component-props': {
+                        disabled: __$$eval(
+                          () => this.props.appHelper?.match?.params?.id !== 'create'
+                        ),
+                        allowClear: false,
+                        placeholder: this.i18n('i18n-n0h4rmtn') /* 请选择组件仓库类型 */,
+                        _sdkSwrGetFunc: {},
+                      },
+                    }}
+                    decoratorProps={{ 'x-decorator-props': { asterisk: false } }}
+                    __component_name="FormilySelect"
+                  />
+                )}
                 <FormilyCheckbox
                   ref={this._refsManager.linkRef('formilycheckbox-cc84e65a')}
                   style={{}}
@@ -586,7 +587,18 @@ class ComponentsWarehouseCreate$$Page extends React.Component {
                   style={{}}
                   fieldProps={{
                     name: 'cadata',
-                    title: this.i18n('i18n-r8c2xx03') /* 根证书 */,
+                    title: (
+                      <Typography.Text
+                        type="colorTextSecondary"
+                        style={{ top: '2px', fontSize: '', position: 'relative' }}
+                        strong={false}
+                        disabled={false}
+                        ellipsis={true}
+                        __component_name="Typography.Text"
+                      >
+                        {this.i18n('i18n-r8c2xx03') /* 根证书 */}
+                      </Typography.Text>
+                    ),
                     'x-display':
                       "{{$form.values?.insecure?.includes('true') ? 'visible': 'hidden'}}",
                     'x-component': 'FormilyUpload',
@@ -603,6 +615,7 @@ class ComponentsWarehouseCreate$$Page extends React.Component {
                         }.bind(this),
                       },
                     ],
+                    _unsafe_MixedSetter_title_select: 'SlotSetter',
                   }}
                   componentProps={{
                     'x-component-props': {
@@ -614,6 +627,7 @@ class ComponentsWarehouseCreate$$Page extends React.Component {
                           Array.prototype.slice.call(arguments).concat([])
                         );
                       }.bind(this),
+                      uploadListInline: true,
                     },
                   }}
                   decoratorProps={{
@@ -646,11 +660,23 @@ class ComponentsWarehouseCreate$$Page extends React.Component {
                   style={{}}
                   fieldProps={{
                     name: 'certdata',
-                    title: this.i18n('i18n-dx6dp5fl') /* 客户端证书 */,
+                    title: (
+                      <Typography.Text
+                        type="colorTextSecondary"
+                        style={{ top: '2px', fontSize: '', position: 'relative' }}
+                        strong={false}
+                        disabled={false}
+                        ellipsis={true}
+                        __component_name="Typography.Text"
+                      >
+                        {this.i18n('i18n-dx6dp5fl') /* 客户端证书 */}
+                      </Typography.Text>
+                    ),
                     'x-display':
                       "{{$form.values?.insecure?.includes('true') ? 'visible': 'hidden'}}",
                     'x-component': 'FormilyUpload',
                     'x-validator': [],
+                    _unsafe_MixedSetter_title_select: 'SlotSetter',
                   }}
                   componentProps={{
                     'x-component-props': {
@@ -662,6 +688,7 @@ class ComponentsWarehouseCreate$$Page extends React.Component {
                           Array.prototype.slice.call(arguments).concat([])
                         );
                       }.bind(this),
+                      uploadListInline: true,
                     },
                   }}
                   decoratorProps={{
@@ -694,11 +721,23 @@ class ComponentsWarehouseCreate$$Page extends React.Component {
                   style={{}}
                   fieldProps={{
                     name: 'keydata',
-                    title: '客户端私钥',
+                    title: (
+                      <Typography.Text
+                        type="colorTextSecondary"
+                        style={{ top: '2px', fontSize: '', position: 'relative' }}
+                        strong={false}
+                        disabled={false}
+                        ellipsis={true}
+                        __component_name="Typography.Text"
+                      >
+                        {this.i18n('i18n-4g9ld3fm') /* 客户端私钥 */}
+                      </Typography.Text>
+                    ),
                     'x-display':
                       "{{$form.values?.insecure?.includes('true') ? 'visible': 'hidden'}}",
                     'x-component': 'FormilyUpload',
                     'x-validator': [],
+                    _unsafe_MixedSetter_title_select: 'SlotSetter',
                   }}
                   componentProps={{
                     'x-component-props': {
@@ -710,6 +749,7 @@ class ComponentsWarehouseCreate$$Page extends React.Component {
                           Array.prototype.slice.call(arguments).concat([])
                         );
                       }.bind(this),
+                      uploadListInline: true,
                     },
                   }}
                   decoratorProps={{
@@ -815,7 +855,18 @@ class ComponentsWarehouseCreate$$Page extends React.Component {
                   fieldProps={{
                     enum: [],
                     name: 'username',
-                    title: this.i18n('i18n-h2dtugcf') /* 用户名 */,
+                    title: (
+                      <Typography.Text
+                        type="colorTextSecondary"
+                        style={{ top: '2px', fontSize: '', position: 'relative' }}
+                        strong={false}
+                        disabled={false}
+                        ellipsis={true}
+                        __component_name="Typography.Text"
+                      >
+                        {this.i18n('i18n-h2dtugcf') /* 用户名 */}
+                      </Typography.Text>
+                    ),
                     required: false,
                     'x-display':
                       "{{$form.values.info?.auth?.includes('true') ? 'visible': 'hidden'}}",
@@ -828,6 +879,7 @@ class ComponentsWarehouseCreate$$Page extends React.Component {
                         required: true,
                       },
                     ],
+                    _unsafe_MixedSetter_title_select: 'SlotSetter',
                   }}
                   componentProps={{
                     'x-component-props': {
@@ -841,7 +893,18 @@ class ComponentsWarehouseCreate$$Page extends React.Component {
                   fieldProps={{
                     enum: [],
                     name: 'password',
-                    title: this.i18n('i18n-yufusyzl') /* 密码 */,
+                    title: (
+                      <Typography.Text
+                        type="colorTextSecondary"
+                        style={{ top: '2px', fontSize: '', position: 'relative' }}
+                        strong={false}
+                        disabled={false}
+                        ellipsis={true}
+                        __component_name="Typography.Text"
+                      >
+                        {this.i18n('i18n-yufusyzl') /* 密码 */}
+                      </Typography.Text>
+                    ),
                     required: false,
                     'x-display':
                       "{{$form.values.info?.auth?.includes('true') ? 'visible': 'hidden'}}",
@@ -854,6 +917,7 @@ class ComponentsWarehouseCreate$$Page extends React.Component {
                         required: true,
                       },
                     ],
+                    _unsafe_MixedSetter_title_select: 'SlotSetter',
                   }}
                   componentProps={{
                     'x-component-props': {
@@ -884,18 +948,6 @@ class ComponentsWarehouseCreate$$Page extends React.Component {
                         key="node_oclkjgkdel1"
                       >
                         <Col span={24} __component_name="Col">
-                          <Typography.Title
-                            bold={true}
-                            level={1}
-                            style={{ paddingLeft: '10px' }}
-                            bordered={false}
-                            ellipsis={true}
-                            __component_name="Typography.Title"
-                          >
-                            {this.i18n('i18n-pmazt1ej') /* 组件设置 */}
-                          </Typography.Title>
-                        </Col>
-                        <Col span={24} __component_name="Col">
                           <FormilyFormItem
                             style={{}}
                             fieldProps={{
@@ -914,7 +966,7 @@ class ComponentsWarehouseCreate$$Page extends React.Component {
                                     ellipsis={true}
                                     __component_name="Typography.Text"
                                   >
-                                    {this.i18n('i18n-s3gh7xiq') /* 组件更新 */}
+                                    {this.i18n('i18n-o7t5qsx5') /* 仓库同步设置 */}
                                   </Typography.Text>
                                   <Tooltip
                                     title={
@@ -950,7 +1002,7 @@ class ComponentsWarehouseCreate$$Page extends React.Component {
                               __component_name="Space"
                             >
                               <FormilyNumberPicker
-                                style={{ marginBottom: '0px' }}
+                                style={{ width: '150px', marginBottom: '0px' }}
                                 fieldProps={{
                                   name: 'intervalSeconds',
                                   title: '',
@@ -958,6 +1010,7 @@ class ComponentsWarehouseCreate$$Page extends React.Component {
                                 }}
                                 componentProps={{
                                   'x-component-props': {
+                                    addonBefore: this.i18n('i18n-2rvtjegc') /* 时间间隔 */,
                                     placeholder: this.i18n('i18n-n9a8du2a') /* 请输入 */,
                                   },
                                 }}
@@ -974,18 +1027,8 @@ class ComponentsWarehouseCreate$$Page extends React.Component {
                                         {this.i18n('i18n-8hmhhcp4') /* S */}
                                       </Typography.Text>
                                     ),
-                                    addonBefore: (
-                                      <Typography.Text
-                                        style={{ fontSize: '' }}
-                                        strong={false}
-                                        disabled={false}
-                                        ellipsis={true}
-                                        __component_name="Typography.Text"
-                                      >
-                                        {this.i18n('i18n-2rvtjegc') /* 时间间隔 */}
-                                      </Typography.Text>
-                                    ),
-                                    wrapperWidth: '90px',
+                                    addonBefore: '',
+                                    wrapperWidth: '',
                                     _unsafe_MixedSetter_addonAfter_select: 'SlotSetter',
                                     _unsafe_MixedSetter_addonBefore_select: 'SlotSetter',
                                   },
@@ -993,6 +1036,7 @@ class ComponentsWarehouseCreate$$Page extends React.Component {
                                 __component_name="FormilyNumberPicker"
                               />
                               <FormilyNumberPicker
+                                style={{ width: '150px' }}
                                 fieldProps={{
                                   name: 'timeoutSeconds',
                                   title: '',
@@ -1000,6 +1044,7 @@ class ComponentsWarehouseCreate$$Page extends React.Component {
                                 }}
                                 componentProps={{
                                   'x-component-props': {
+                                    addonBefore: this.i18n('i18n-vf2r2t3g') /* 超时时间 */,
                                     placeholder: this.i18n('i18n-n9a8du2a') /* 请输入 */,
                                   },
                                 }}
@@ -1016,18 +1061,8 @@ class ComponentsWarehouseCreate$$Page extends React.Component {
                                         {this.i18n('i18n-8hmhhcp4') /* S */}
                                       </Typography.Text>
                                     ),
-                                    addonBefore: (
-                                      <Typography.Text
-                                        style={{ fontSize: '', marginBottom: '0px' }}
-                                        strong={false}
-                                        disabled={false}
-                                        ellipsis={true}
-                                        __component_name="Typography.Text"
-                                      >
-                                        {this.i18n('i18n-vf2r2t3g') /* 超时时间 */}
-                                      </Typography.Text>
-                                    ),
-                                    wrapperWidth: '90px',
+                                    addonBefore: '',
+                                    wrapperWidth: '',
                                     _unsafe_MixedSetter_addonAfter_select: 'SlotSetter',
                                     _unsafe_MixedSetter_addonBefore_select: 'SlotSetter',
                                   },
@@ -1035,10 +1070,11 @@ class ComponentsWarehouseCreate$$Page extends React.Component {
                                 __component_name="FormilyNumberPicker"
                               />
                               <FormilyNumberPicker
-                                style={{ marginBottom: '0px' }}
+                                style={{ width: '150px' }}
                                 fieldProps={{ name: 'retry', title: '', 'x-validator': [] }}
                                 componentProps={{
                                   'x-component-props': {
+                                    addonBefore: this.i18n('i18n-6p75zmij') /* 重试次数 */,
                                     placeholder: this.i18n('i18n-n9a8du2a') /* 请输入 */,
                                   },
                                 }}
@@ -1055,18 +1091,8 @@ class ComponentsWarehouseCreate$$Page extends React.Component {
                                         {this.i18n('i18n-k3pyvdbr') /* 次 */}
                                       </Typography.Text>
                                     ),
-                                    addonBefore: (
-                                      <Typography.Text
-                                        style={{ fontSize: '' }}
-                                        strong={false}
-                                        disabled={false}
-                                        ellipsis={true}
-                                        __component_name="Typography.Text"
-                                      >
-                                        {this.i18n('i18n-6p75zmij') /* 重试次数 */}
-                                      </Typography.Text>
-                                    ),
-                                    wrapperWidth: '90px',
+                                    addonBefore: '',
+                                    wrapperWidth: '',
                                     _unsafe_MixedSetter_addonAfter_select: 'SlotSetter',
                                     _unsafe_MixedSetter_addonBefore_select: 'SlotSetter',
                                   },
@@ -1093,7 +1119,7 @@ class ComponentsWarehouseCreate$$Page extends React.Component {
                                     ellipsis={true}
                                     __component_name="Typography.Text"
                                   >
-                                    组件过滤
+                                    {this.i18n('i18n-5bcb4vh8') /* 仓库组件过滤 */}
                                   </Typography.Text>
                                   <Tooltip
                                     title={
@@ -1334,18 +1360,6 @@ class ComponentsWarehouseCreate$$Page extends React.Component {
                       </Row>,
                       <Row wrap={true} style={{}} __component_name="Row" key="node_oclkjh34mr1">
                         <Col span={24} __component_name="Col">
-                          <Typography.Title
-                            bold={true}
-                            level={1}
-                            style={{ paddingLeft: '10px' }}
-                            bordered={false}
-                            ellipsis={true}
-                            __component_name="Typography.Title"
-                          >
-                            {this.i18n('i18n-kcn0ynhf') /* 镜像仓库设置 */}
-                          </Typography.Title>
-                        </Col>
-                        <Col span={24} __component_name="Col">
                           <FormilyFormItem
                             style={{}}
                             fieldProps={{
@@ -1536,7 +1550,7 @@ class ComponentsWarehouseCreate$$Page extends React.Component {
                       </Row>,
                     ],
                   ]}
-                  defaultOpen={true}
+                  defaultOpen={__$$eval(() => this.props.appHelper?.match?.params?.id !== 'create')}
                   orientation="left"
                   __component_name="Divider"
                   orientationMargin={0}

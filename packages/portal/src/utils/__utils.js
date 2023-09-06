@@ -103,7 +103,7 @@ utils.getComponentWarehouseTypes = function __getComponentWarehouseTypes() {
         [isStatus ? 'children' : 'text']: 'Git',
       },
       {
-        [isStatus ? 'id' : 'value']: 'Chart Museum',
+        [isStatus ? 'id' : 'value']: 'ChartMuseum',
         [isStatus ? 'children' : 'text']: 'Chart Museum',
       },
     ];

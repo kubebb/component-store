@@ -306,7 +306,7 @@ importers:
         version: 0.0.1
       '@tenx-ui/bff-client':
         specifier: 0.1.2
-        version: 0.1.2(@tenx-ui/materials@1.5.8)(antd@5.6.4)(react@18.1.0)(swr@2.0.0)
+        version: 0.1.2(@tenx-ui/materials@1.5.9)(antd@5.6.4)(react@18.1.0)(swr@2.0.0)
       '@tenx-ui/charts':
         specifier: 1.1.2
         version: 1.1.2(@babel/core@7.22.9)(antd@5.6.4)(classnames@2.2.5)(prop-types@15.8.1)(react-dom@18.1.0)(react@18.1.0)
@@ -323,8 +323,8 @@ importers:
         specifier: 0.1.1
         version: 0.1.1(react-dom@18.1.0)(react@18.1.0)
       '@tenx-ui/materials':
-        specifier: 1.5.8
-        version: 1.5.8(antd@5.6.4)(lodash@4.17.21)(prop-types@15.8.1)(react-dom@18.1.0)(react-router-dom@6.14.2)(react@18.1.0)
+        specifier: 1.5.9
+        version: 1.5.9(antd@5.6.4)(lodash@4.17.21)(prop-types@15.8.1)(react-dom@18.1.0)(react-router-dom@6.14.2)(react@18.1.0)
       '@tenx-ui/request':
         specifier: ^1.0.0-beta.6
         version: 1.0.0-beta.6
@@ -6506,7 +6506,7 @@ packages:
     resolution: {integrity: sha512-aCo7kgzZ18i3gZ6ZZryoYP0pBbTDyqKT8nSIwNXgMckL+pxUA+Iy5owvbZ/Hptexn603adg+ppocwxkvGxiBaw==}
     dev: false
 
-  /@tenx-ui/bff-client@0.1.2(@tenx-ui/materials@1.5.8)(antd@5.6.4)(react@18.1.0)(swr@2.0.0):
+  /@tenx-ui/bff-client@0.1.2(@tenx-ui/materials@1.5.9)(antd@5.6.4)(react@18.1.0)(swr@2.0.0):
     resolution: {integrity: sha512-4mKtvdwfnwr5Tm7VOyns/mPa2XRXrJ/2OKotvcef1umlSPDPQvwdjXPZ6Jt14WS6/aGtosUUDLkyCw77zKqM+g==}
     peerDependencies:
       '@tenx-ui/materials': '>=1.1.1'
@@ -6514,7 +6514,7 @@ packages:
       react: '>=16.9.0'
       swr: '>=2.0.0'
     dependencies:
-      '@tenx-ui/materials': 1.5.8(antd@5.6.4)(lodash@4.17.21)(prop-types@15.8.1)(react-dom@18.1.0)(react-router-dom@6.14.2)(react@18.1.0)
+      '@tenx-ui/materials': 1.5.9(antd@5.6.4)(lodash@4.17.21)(prop-types@15.8.1)(react-dom@18.1.0)(react-router-dom@6.14.2)(react@18.1.0)
       antd: 5.6.4(react-dom@18.1.0)(react@18.1.0)
       graphql: 16.6.0
       graphql-request: 5.2.0(graphql@16.6.0)
@@ -6605,22 +6605,6 @@ packages:
     resolution: {integrity: sha512-KRr4cj9qOubriyB9mqLT86qceHj+3bj3f4YAhV27lBcwN023Zzc5643g0IMuChzm4MDoJJSmDL6v34hOefNtfA==}
     dev: false
 
-  /@tenx-ui/materials@1.5.8(antd@5.6.4)(lodash@4.17.21)(prop-types@15.8.1)(react-dom@18.1.0)(react-router-dom@6.14.2)(react@18.1.0):
-    resolution: {integrity: sha512-2zSx9eO0wtV2gbiMPgKDP86LG7mL5tIcnrpfgg/FzgofaxmE5fcNM24E+qlpsXJeeaSbdRi5kOybHSz+bs6rqA==}
-    peerDependencies:
-      antd: ^5.1.5
-    dependencies:
-      '@tenx-ui/utils': 2.3.1(lodash@4.17.21)(moment@2.29.4)(prop-types@15.8.1)(react-dom@18.1.0)(react-router-dom@6.14.2)(react@18.1.0)
-      antd: 5.6.4(react-dom@18.1.0)(react@18.1.0)
-    transitivePeerDependencies:
-      - lodash
-      - moment
-      - prop-types
-      - react
-      - react-dom
-      - react-router-dom
-    dev: false
-
   /@tenx-ui/materials@1.5.8(antd@5.7.1)(lodash@4.17.21)(moment@2.29.4)(prop-types@15.8.1)(react-dom@18.1.0)(react-router-dom@6.14.2)(react@18.1.0):
     resolution: {integrity: sha512-2zSx9eO0wtV2gbiMPgKDP86LG7mL5tIcnrpfgg/FzgofaxmE5fcNM24E+qlpsXJeeaSbdRi5kOybHSz+bs6rqA==}
     peerDependencies:
@@ -6636,6 +6620,22 @@ packages:
       - react-dom
       - react-router-dom
     dev: true
+
+  /@tenx-ui/materials@1.5.9(antd@5.6.4)(lodash@4.17.21)(prop-types@15.8.1)(react-dom@18.1.0)(react-router-dom@6.14.2)(react@18.1.0):
+    resolution: {integrity: sha512-V5QzWB126hyXzjGLJ41dGX0KUKc85/zRbWx8kcyxOYCYJ6SEGFIMMdoLXOJTbaUtW0SH5ENEo2qG5QFTFCxjkw==}
+    peerDependencies:
+      antd: ^5.1.5
+    dependencies:
+      '@tenx-ui/utils': 2.3.1(lodash@4.17.21)(moment@2.29.4)(prop-types@15.8.1)(react-dom@18.1.0)(react-router-dom@6.14.2)(react@18.1.0)
+      antd: 5.6.4(react-dom@18.1.0)(react@18.1.0)
+    transitivePeerDependencies:
+      - lodash
+      - moment
+      - prop-types
+      - react
+      - react-dom
+      - react-router-dom
+    dev: false
 
   /@tenx-ui/request@1.0.0-beta.6:
     resolution: {integrity: sha512-4W4yKKiw+BfXnVOLwpYvJDm/c+csrbR8EyQnDEM7T91KYvSqBB4A60Mh/jR5A7+YQz3LCGgWME4fZEn1Ol3/aw==}
