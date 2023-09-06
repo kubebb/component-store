@@ -63,16 +63,16 @@ class ComponentsManagementSubscription$$Page extends React.Component {
     __$$i18n._inject2(this);
 
     this.state = {
-      isOpenModal: false,
-      modalType: 'delete',
-      searchValue: undefined,
-      searchKey: 'chartName',
       size: 10,
-      current: 1,
       record: {},
-      pagination: undefined,
-      filters: undefined,
       sorter: undefined,
+      current: 1,
+      filters: undefined,
+      modalType: 'delete',
+      searchKey: 'chartName',
+      pagination: undefined,
+      isOpenModal: false,
+      searchValue: undefined,
       deleteLoading: false,
     };
   }
@@ -80,6 +80,33 @@ class ComponentsManagementSubscription$$Page extends React.Component {
   $ = () => null;
 
   $$ = () => [];
+
+  closeModal() {
+    this.setState({
+      isOpenModal: false,
+    });
+  }
+
+  handleSearch(v) {
+    this.setState(
+      {
+        current: 1,
+      },
+      this.handleQueryChange
+    );
+  }
+
+  handleRefresh(event) {
+    this.props.useGetSubscriptionsPaged?.mutate();
+  }
+
+  openDeleteModal(e, { record, type = 'delete' }) {
+    this.setState({
+      isOpenModal: true,
+      modalType: 'delete',
+      record,
+    });
+  }
 
   handleQueryChange() {
     const {} = this.state.filters || {};
@@ -97,33 +124,15 @@ class ComponentsManagementSubscription$$Page extends React.Component {
     this.utils?.changeLocationQuery(this, 'useGetSubscriptionsPaged', params);
   }
 
-  handleRefresh(event) {
-    this.props.useGetSubscriptionsPaged?.mutate();
-  }
-
-  handleSearchKeyChange(v) {
+  handleTableChange(pagination, filters, sorter, extra) {
     this.setState(
       {
-        searchValue: undefined,
-        current: 1,
-        searchKey: v,
+        pagination,
+        filters,
+        sorter,
       },
       this.handleQueryChange
     );
-  }
-
-  openDeleteModal(e, { record, type = 'delete' }) {
-    this.setState({
-      isOpenModal: true,
-      modalType: 'delete',
-      record,
-    });
-  }
-
-  closeModal() {
-    this.setState({
-      isOpenModal: false,
-    });
   }
 
   async confirmDeleteModal(e, payload) {
@@ -155,16 +164,16 @@ class ComponentsManagementSubscription$$Page extends React.Component {
     }
   }
 
-  handleSearchValueChange(e) {
-    this.setState({
-      searchValue: e.target.value,
-    });
+  paginationShowTotal(total, range) {
+    return `${this.i18n('i18n-wajqflwo')} ${total} ${this.i18n('i18n-7vre8aeh')}`;
   }
 
-  handleSearch(v) {
+  handleSearchKeyChange(v) {
     this.setState(
       {
+        searchValue: undefined,
         current: 1,
+        searchKey: v,
       },
       this.handleQueryChange
     );
@@ -180,19 +189,10 @@ class ComponentsManagementSubscription$$Page extends React.Component {
     );
   }
 
-  handleTableChange(pagination, filters, sorter, extra) {
-    this.setState(
-      {
-        pagination,
-        filters,
-        sorter,
-      },
-      this.handleQueryChange
-    );
-  }
-
-  paginationShowTotal(total, range) {
-    return `${this.i18n('i18n-wajqflwo')} ${total} ${this.i18n('i18n-7vre8aeh')}`;
+  handleSearchValueChange(e) {
+    this.setState({
+      searchValue: e.target.value,
+    });
   }
 
   componentDidMount() {}
@@ -431,7 +431,12 @@ class ComponentsManagementSubscription$$Page extends React.Component {
                           (__$$context => (
                             <UnifiedLink
                               to={__$$eval(
-                                () => `/components/management/subscription/detail/${record?.id}`
+                                () =>
+                                  `/components/market/subPage/management-detail/detail/${
+                                    record?.repository
+                                  }.${record?.chartName}?cluster=${
+                                    __$$context.utils.getAuthData()?.cluster
+                                  }`
                               )}
                               target="_self"
                               __component_name="UnifiedLink"
@@ -445,16 +450,15 @@ class ComponentsManagementSubscription$$Page extends React.Component {
                       {
                         key: 'latestVersion',
                         title: this.i18n('i18n-7e7t3bw9') /* 版本 */,
-                        dataIndex: 'latestVersion',
                         render: (text, record, index) =>
                           (__$$context => (
-                            <Space __component_name="Space" direction="horizontal" align="center">
+                            <Space align="center" direction="horizontal" __component_name="Space">
                               <Typography.Text
-                                __component_name="Typography.Text"
-                                ellipsis={true}
                                 style={{ fontSize: '' }}
-                                disabled={false}
                                 strong={false}
+                                disabled={false}
+                                ellipsis={true}
+                                __component_name="Typography.Text"
                               >
                                 {__$$eval(() => record?.latestVersion || '-')}
                               </Typography.Text>
@@ -467,12 +471,13 @@ class ComponentsManagementSubscription$$Page extends React.Component {
                                     24 <
                                   7
                               ) && (
-                                <Tag __component_name="Tag" color="success" closable={false}>
+                                <Tag color="success" closable={false} __component_name="Tag">
                                   NEW
                                 </Tag>
                               )}
                             </Space>
                           ))(__$$createChildContext(__$$context, { text, record, index })),
+                        dataIndex: 'latestVersion',
                       },
                       {
                         key: 'repository',
@@ -496,6 +501,7 @@ class ComponentsManagementSubscription$$Page extends React.Component {
                       },
                       {
                         title: this.i18n('i18n-ioy0ge9h') /* 操作 */,
+                        width: 120,
                         render: (text, record, index) =>
                           (__$$context => (
                             <Space size={12} align="center" direction="horizontal">
@@ -522,7 +528,6 @@ class ComponentsManagementSubscription$$Page extends React.Component {
                             </Space>
                           ))(__$$createChildContext(__$$context, { text, record, index })),
                         dataIndex: 'op',
-                        width: 120,
                       },
                     ]}
                     onChange={function () {
@@ -535,13 +540,7 @@ class ComponentsManagementSubscription$$Page extends React.Component {
                       () =>
                         this.props.useGetSubscriptionsPaged?.data?.subscriptionsPaged?.nodes || 0
                     )}
-                    pagination={{
-                      size: 'default',
-                      simple: false,
-                      position: [],
-                      showQuickJumper: false,
-                      showSizeChanger: false,
-                    }}
+                    pagination={false}
                     showHeader={true}
                     __component_name="Table"
                   />

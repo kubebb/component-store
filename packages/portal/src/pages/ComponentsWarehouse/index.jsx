@@ -395,12 +395,32 @@ class ComponentsWarehouse$$Page extends React.Component {
                         dataIndex: 'name',
                       },
                       {
-                        key: 'repositoryType',
-                        title: this.i18n('i18n-gyax19ni') /* 类型 */,
-                        filters: __$$eval(() => this.utils.getComponentWarehouseTypes(this)),
-                        dataIndex: 'repositoryType',
+                        title: this.i18n('i18n-iqh7qzhi') /* URL */,
+                        render: (text, record, index) =>
+                          (__$$context => (
+                            <Typography.Paragraph
+                              code={false}
+                              mark={false}
+                              style={{ fontSize: '' }}
+                              delete={false}
+                              strong={false}
+                              copyable={false}
+                              disabled={false}
+                              editable={false}
+                              ellipsis={{
+                                rows: 2,
+                                tooltip: {
+                                  title: __$$eval(() => record?.url),
+                                  _unsafe_MixedSetter_title_select: 'VariableSetter',
+                                },
+                              }}
+                              underline={false}
+                            >
+                              {__$$eval(() => record?.url)}
+                            </Typography.Paragraph>
+                          ))(__$$createChildContext(__$$context, { text, record, index })),
+                        dataIndex: 'url',
                       },
-                      { title: this.i18n('i18n-iqh7qzhi') /* URL */, dataIndex: 'url' },
                       {
                         key: 'status',
                         title: this.i18n('i18n-o48ciymn') /* 当前状态 */,
@@ -433,7 +453,7 @@ class ComponentsWarehouse$$Page extends React.Component {
                       },
                       {
                         key: 'creationTimestamp',
-                        title: this.i18n('i18n-m6kwhtjg') /* 更新时间 */,
+                        title: this.i18n('i18n-gjr2ewmb') /* 创建时间 */,
                         render: (text, record, index) =>
                           (__$$context => (
                             <Typography.Time
