@@ -4,6 +4,6 @@ import { CreateComponentplanInput } from './create-componentplan.input';
 @InputType()
 export class UpdateComponentplanInput extends OmitType(
   CreateComponentplanInput,
-  ['name'],
+  ['releaseName', 'chartName', 'repository'],
   InputType
 ) {}

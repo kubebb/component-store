@@ -9,6 +9,9 @@ export class Repository {
   @Field(() => ID, { description: 'name' })
   name: string;
 
+  @HideField()
+  namespacedName: string;
+
   /** 类型 */
   repositoryType?: string;
 

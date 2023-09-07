@@ -111,6 +111,9 @@ type Componentplan {
   """创建时间"""
   creationTimestamp: String!
 
+  """更新时间"""
+  latest: Boolean
+
   """组件名称"""
   name: ID!
 
@@ -119,6 +122,9 @@ type Componentplan {
 
   """部署名称"""
   releaseName: String!
+
+  """仓库"""
+  repository: Repository
 
   """状态"""
   status: ComponentplanStatus
@@ -133,6 +139,19 @@ type Componentplan {
 type ComponentplanEdge {
   cursor: String!
   node: Componentplan!
+}
+
+input ComponentplanImageInput {
+  digest: String
+
+  """名称（如：ghcr.io/helm/chartmuseum:v0.16.0 或 ghcr.io/helm/chartmuseum）"""
+  name: String
+
+  """替换名称（如：172.22.50.223/kubebb/chartmuseum）"""
+  newName: String
+
+  """替换tag（如：v0.16.0）"""
+  newTag: String
 }
 
 """组件状态"""
@@ -196,11 +215,29 @@ input CreateComponentInput {
 }
 
 input CreateComponentplanInput {
-  """名称"""
-  displayName: String
+  """组件名称"""
+  chartName: String!
 
-  """name"""
-  name: String!
+  """更新方式"""
+  componentPlanInstallMethod: InstallMethod!
+
+  """替换镜像"""
+  images: [ComponentplanImageInput!]
+
+  """部署名称"""
+  releaseName: String!
+
+  """组件仓库"""
+  repository: String!
+
+  """自动更新时间（Cron 格式）"""
+  schedule: String
+
+  """配置文件"""
+  valuesYaml: String
+
+  """版本"""
+  version: String!
 }
 
 input CreateRepositoryInput {
@@ -232,7 +269,7 @@ input CreateRepositoryInput {
   pullStategy: RepositoryPullStategyInput
 
   """类型"""
-  repositoryType: String!
+  repositoryType: String
 
   """URL"""
   url: String!
@@ -320,7 +357,7 @@ type Mutation {
     cluster: String
     componentplan: CreateComponentplanInput!
     namespace: String!
-  ): Componentplan!
+  ): Boolean!
 
   """安装组件删除"""
   componentplanRemove(
@@ -337,7 +374,7 @@ type Mutation {
     componentplan: UpdateComponentplanInput!
     name: String!
     namespace: String!
-  ): Componentplan!
+  ): Boolean!
 
   """创建仓库"""
   repositoryCreate(
@@ -435,6 +472,9 @@ type Query {
 
   """安装组件列表（分页）"""
   componentplansPaged(
+    """组件名称"""
+    chartName: String
+
     """集群（不传则为默认集群）"""
     cluster: String
 
@@ -449,6 +489,9 @@ type Query {
 
     """部署名称"""
     releaseName: String
+
+    """组件仓库"""
+    repository: String
 
     """排序方向"""
     sortDirection: SortDirection
@@ -767,8 +810,20 @@ type SubscriptionEdge {
 }
 
 input UpdateComponentplanInput {
-  """名称"""
-  displayName: String
+  """更新方式"""
+  componentPlanInstallMethod: InstallMethod!
+
+  """替换镜像"""
+  images: [ComponentplanImageInput!]
+
+  """自动更新时间（Cron 格式）"""
+  schedule: String
+
+  """配置文件"""
+  valuesYaml: String
+
+  """版本"""
+  version: String!
 }
 
 input UpdateRepositoryInput {
@@ -795,6 +850,9 @@ input UpdateRepositoryInput {
 
   """组件更新"""
   pullStategy: RepositoryPullStategyInput
+
+  """类型"""
+  repositoryType: String
 
   """用户名(base64)"""
   username: String

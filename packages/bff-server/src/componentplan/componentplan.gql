@@ -1,6 +1,6 @@
-# 安装列表（分页）
-query getComponentplansPaged($namespace: String!, $page: Float = 1, $pageSize: Float = 20, $releaseName: String, $sortDirection: SortDirection, $sortField: String, $cluster: String) {
-  componentplansPaged(namespace: $namespace, page: $page, pageSize: $pageSize, releaseName: $releaseName, sortDirection: $sortDirection, sortField: $sortField, cluster: $cluster) {
+# 「安装组件」列表（分页）
+query getComponentplansPaged($namespace: String!, $page: Float = 1, $pageSize: Float = 20, $releaseName: String, $sortDirection: SortDirection, $sortField: String, $cluster: String, $chartName: String, $repository: String) {
+  componentplansPaged(namespace: $namespace, page: $page, pageSize: $pageSize, releaseName: $releaseName, sortDirection: $sortDirection, sortField: $sortField, cluster: $cluster, chartName: $chartName, repository: $repository) {
     nodes {
       name
       releaseName
@@ -23,7 +23,7 @@ query getComponentplansPaged($namespace: String!, $page: Float = 1, $pageSize: F
   }
 }
 
-# 安装详情
+# 「安装组件」详情
 query getComponentplan($name: String!, $namespace: String!, $cluster: String) {
   componentplan(name: $name, namespace: $namespace, cluster: $cluster) {
     name
@@ -44,5 +44,28 @@ query getComponentplan($name: String!, $namespace: String!, $cluster: String) {
     subscription {
       componentPlanInstallMethod
     }
+    repository {
+      imageOverride {
+        registry
+        newRegistry
+        path
+        newPath
+      }
+    }
   }
+}
+
+# 创建「安装组件」
+mutation createComponentplan($namespace: String!, $componentplan: CreateComponentplanInput!, $cluster: String){
+  componentplanCreate(namespace: $namespace, componentplan: $componentplan, cluster: $cluster)
+}
+
+# 更新「安装组件」
+mutation updateComponentplan($name: String!, $namespace: String!, $componentplan: UpdateComponentplanInput!, $cluster: String){
+  componentplanUpdate(name: $name, namespace: $namespace, componentplan: $componentplan, cluster: $cluster)
+}
+
+# 删除「安装组件」
+mutation deleteComponentplan($name: String!, $namespace: String!, $cluster: String){
+  componentplanRemove(name: $name, namespace: $namespace, cluster: $cluster)
 }

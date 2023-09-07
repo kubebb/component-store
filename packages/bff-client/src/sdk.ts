@@ -118,12 +118,16 @@ export type Componentplan = {
   component?: Maybe<Component>;
   /** 创建时间 */
   creationTimestamp: Scalars['String']['output'];
+  /** 更新时间 */
+  latest?: Maybe<Scalars['Boolean']['output']>;
   /** 组件名称 */
   name: Scalars['ID']['output'];
   /** 项目 */
   namespace: Scalars['String']['output'];
   /** 部署名称 */
   releaseName: Scalars['String']['output'];
+  /** 仓库 */
+  repository?: Maybe<Repository>;
   /** 状态 */
   status?: Maybe<ComponentplanStatus>;
   /** 订阅 */
@@ -136,6 +140,16 @@ export type ComponentplanEdge = {
   __typename?: 'ComponentplanEdge';
   cursor: Scalars['String']['output'];
   node: Componentplan;
+};
+
+export type ComponentplanImageInput = {
+  digest?: InputMaybe<Scalars['String']['input']>;
+  /** 名称（如：ghcr.io/helm/chartmuseum:v0.16.0 或 ghcr.io/helm/chartmuseum） */
+  name?: InputMaybe<Scalars['String']['input']>;
+  /** 替换名称（如：172.22.50.223/kubebb/chartmuseum） */
+  newName?: InputMaybe<Scalars['String']['input']>;
+  /** 替换tag（如：v0.16.0） */
+  newTag?: InputMaybe<Scalars['String']['input']>;
 };
 
 /** 组件状态 */
@@ -183,10 +197,22 @@ export type CreateComponentInput = {
 };
 
 export type CreateComponentplanInput = {
-  /** 名称 */
-  displayName?: InputMaybe<Scalars['String']['input']>;
-  /** name */
-  name: Scalars['String']['input'];
+  /** 组件名称 */
+  chartName: Scalars['String']['input'];
+  /** 更新方式 */
+  componentPlanInstallMethod: InstallMethod;
+  /** 替换镜像 */
+  images?: InputMaybe<Array<ComponentplanImageInput>>;
+  /** 部署名称 */
+  releaseName: Scalars['String']['input'];
+  /** 组件仓库 */
+  repository: Scalars['String']['input'];
+  /** 自动更新时间（Cron 格式） */
+  schedule?: InputMaybe<Scalars['String']['input']>;
+  /** 配置文件 */
+  valuesYaml?: InputMaybe<Scalars['String']['input']>;
+  /** 版本 */
+  version: Scalars['String']['input'];
 };
 
 export type CreateRepositoryInput = {
@@ -209,7 +235,7 @@ export type CreateRepositoryInput = {
   /** 组件更新 */
   pullStategy?: InputMaybe<RepositoryPullStategyInput>;
   /** 类型 */
-  repositoryType: Scalars['String']['input'];
+  repositoryType?: InputMaybe<Scalars['String']['input']>;
   /** URL */
   url: Scalars['String']['input'];
   /** 用户名(base64) */
@@ -260,11 +286,11 @@ export type Mutation = {
   /** 发布组件 */
   componentUpload: Scalars['Boolean']['output'];
   /** 安装组件创建 */
-  componentplanCreate: Componentplan;
+  componentplanCreate: Scalars['Boolean']['output'];
   /** 安装组件删除 */
   componentplanRemove: Scalars['Boolean']['output'];
   /** 安装组件更新 */
-  componentplanUpdate: Componentplan;
+  componentplanUpdate: Scalars['Boolean']['output'];
   /** 创建仓库 */
   repositoryCreate: Repository;
   /** 删除组件仓库 */
@@ -418,11 +444,13 @@ export type QueryComponentplanArgs = {
 };
 
 export type QueryComponentplansPagedArgs = {
+  chartName?: InputMaybe<Scalars['String']['input']>;
   cluster?: InputMaybe<Scalars['String']['input']>;
   namespace: Scalars['String']['input'];
   page?: InputMaybe<Scalars['Float']['input']>;
   pageSize?: InputMaybe<Scalars['Float']['input']>;
   releaseName?: InputMaybe<Scalars['String']['input']>;
+  repository?: InputMaybe<Scalars['String']['input']>;
   sortDirection?: InputMaybe<SortDirection>;
   sortField?: InputMaybe<Scalars['String']['input']>;
 };
@@ -643,8 +671,16 @@ export type SubscriptionEdge = {
 };
 
 export type UpdateComponentplanInput = {
-  /** 名称 */
-  displayName?: InputMaybe<Scalars['String']['input']>;
+  /** 更新方式 */
+  componentPlanInstallMethod: InstallMethod;
+  /** 替换镜像 */
+  images?: InputMaybe<Array<ComponentplanImageInput>>;
+  /** 自动更新时间（Cron 格式） */
+  schedule?: InputMaybe<Scalars['String']['input']>;
+  /** 配置文件 */
+  valuesYaml?: InputMaybe<Scalars['String']['input']>;
+  /** 版本 */
+  version: Scalars['String']['input'];
 };
 
 export type UpdateRepositoryInput = {
@@ -664,6 +700,8 @@ export type UpdateRepositoryInput = {
   password?: InputMaybe<Scalars['String']['input']>;
   /** 组件更新 */
   pullStategy?: InputMaybe<RepositoryPullStategyInput>;
+  /** 类型 */
+  repositoryType?: InputMaybe<Scalars['String']['input']>;
   /** 用户名(base64) */
   username?: InputMaybe<Scalars['String']['input']>;
 };
@@ -676,6 +714,8 @@ export type GetComponentplansPagedQueryVariables = Exact<{
   sortDirection?: InputMaybe<SortDirection>;
   sortField?: InputMaybe<Scalars['String']['input']>;
   cluster?: InputMaybe<Scalars['String']['input']>;
+  chartName?: InputMaybe<Scalars['String']['input']>;
+  repository?: InputMaybe<Scalars['String']['input']>;
 }>;
 
 export type GetComponentplansPagedQuery = {
@@ -738,8 +778,43 @@ export type GetComponentplanQuery = {
       __typename?: 'Subscription';
       componentPlanInstallMethod?: InstallMethod | null;
     } | null;
+    repository?: {
+      __typename?: 'Repository';
+      imageOverride?: Array<{
+        __typename?: 'RepositoryImageOverride';
+        registry?: string | null;
+        newRegistry?: string | null;
+        path?: string | null;
+        newPath?: string | null;
+      }> | null;
+    } | null;
   };
 };
+
+export type CreateComponentplanMutationVariables = Exact<{
+  namespace: Scalars['String']['input'];
+  componentplan: CreateComponentplanInput;
+  cluster?: InputMaybe<Scalars['String']['input']>;
+}>;
+
+export type CreateComponentplanMutation = { __typename?: 'Mutation'; componentplanCreate: boolean };
+
+export type UpdateComponentplanMutationVariables = Exact<{
+  name: Scalars['String']['input'];
+  namespace: Scalars['String']['input'];
+  componentplan: UpdateComponentplanInput;
+  cluster?: InputMaybe<Scalars['String']['input']>;
+}>;
+
+export type UpdateComponentplanMutation = { __typename?: 'Mutation'; componentplanUpdate: boolean };
+
+export type DeleteComponentplanMutationVariables = Exact<{
+  name: Scalars['String']['input'];
+  namespace: Scalars['String']['input'];
+  cluster?: InputMaybe<Scalars['String']['input']>;
+}>;
+
+export type DeleteComponentplanMutation = { __typename?: 'Mutation'; componentplanRemove: boolean };
 
 export type GetComponentsQueryVariables = Exact<{
   page?: InputMaybe<Scalars['Float']['input']>;
@@ -1133,6 +1208,8 @@ export const GetComponentplansPagedDocument = gql`
     $sortDirection: SortDirection
     $sortField: String
     $cluster: String
+    $chartName: String
+    $repository: String
   ) {
     componentplansPaged(
       namespace: $namespace
@@ -1142,6 +1219,8 @@ export const GetComponentplansPagedDocument = gql`
       sortDirection: $sortDirection
       sortField: $sortField
       cluster: $cluster
+      chartName: $chartName
+      repository: $repository
     ) {
       nodes {
         name
@@ -1186,7 +1265,44 @@ export const GetComponentplanDocument = gql`
       subscription {
         componentPlanInstallMethod
       }
+      repository {
+        imageOverride {
+          registry
+          newRegistry
+          path
+          newPath
+        }
+      }
     }
+  }
+`;
+export const CreateComponentplanDocument = gql`
+  mutation createComponentplan(
+    $namespace: String!
+    $componentplan: CreateComponentplanInput!
+    $cluster: String
+  ) {
+    componentplanCreate(namespace: $namespace, componentplan: $componentplan, cluster: $cluster)
+  }
+`;
+export const UpdateComponentplanDocument = gql`
+  mutation updateComponentplan(
+    $name: String!
+    $namespace: String!
+    $componentplan: UpdateComponentplanInput!
+    $cluster: String
+  ) {
+    componentplanUpdate(
+      name: $name
+      namespace: $namespace
+      componentplan: $componentplan
+      cluster: $cluster
+    )
+  }
+`;
+export const DeleteComponentplanDocument = gql`
+  mutation deleteComponentplan($name: String!, $namespace: String!, $cluster: String) {
+    componentplanRemove(name: $name, namespace: $namespace, cluster: $cluster)
   }
 `;
 export const GetComponentsDocument = gql`
@@ -1559,6 +1675,48 @@ export function getSdk(client: GraphQLClient, withWrapper: SdkFunctionWrapper = 
           }),
         'getComponentplan',
         'query'
+      );
+    },
+    createComponentplan(
+      variables: CreateComponentplanMutationVariables,
+      requestHeaders?: GraphQLClientRequestHeaders
+    ): Promise<CreateComponentplanMutation> {
+      return withWrapper(
+        wrappedRequestHeaders =>
+          client.request<CreateComponentplanMutation>(CreateComponentplanDocument, variables, {
+            ...requestHeaders,
+            ...wrappedRequestHeaders,
+          }),
+        'createComponentplan',
+        'mutation'
+      );
+    },
+    updateComponentplan(
+      variables: UpdateComponentplanMutationVariables,
+      requestHeaders?: GraphQLClientRequestHeaders
+    ): Promise<UpdateComponentplanMutation> {
+      return withWrapper(
+        wrappedRequestHeaders =>
+          client.request<UpdateComponentplanMutation>(UpdateComponentplanDocument, variables, {
+            ...requestHeaders,
+            ...wrappedRequestHeaders,
+          }),
+        'updateComponentplan',
+        'mutation'
+      );
+    },
+    deleteComponentplan(
+      variables: DeleteComponentplanMutationVariables,
+      requestHeaders?: GraphQLClientRequestHeaders
+    ): Promise<DeleteComponentplanMutation> {
+      return withWrapper(
+        wrappedRequestHeaders =>
+          client.request<DeleteComponentplanMutation>(DeleteComponentplanDocument, variables, {
+            ...requestHeaders,
+            ...wrappedRequestHeaders,
+          }),
+        'deleteComponentplan',
+        'mutation'
       );
     },
     getComponents(

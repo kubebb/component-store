@@ -4,6 +4,6 @@ import { CreateRepositoryInput } from './create-repository.input';
 @InputType()
 export class UpdateRepositoryInput extends OmitType(
   CreateRepositoryInput,
-  ['name', 'url', 'repositoryType'],
+  ['name', 'url'],
   InputType
 ) {}
