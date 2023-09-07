@@ -1,5 +1,6 @@
 import { SortDirection } from '@/common/models/sort-direction.enum';
 import { genNanoid } from '@/common/utils';
+import { CreateComponentplanInput } from '@/componentplan/dto/create-componentplan.input';
 import { ComponentsService } from '@/components/components.service';
 import { Component } from '@/components/models/component.model';
 import serverConfig from '@/config/server.config';
@@ -134,6 +135,61 @@ export class SubscriptionService {
         },
         componentPlanInstallMethod: 'manual',
         name,
+      },
+    });
+    return true;
+  }
+
+  async createSubscriptionByCpl(
+    auth: JwtAuth,
+    namespace: string,
+    componentplan: CreateComponentplanInput,
+    cluster?: string
+  ): Promise<boolean> {
+    const { releaseName, chartName, repository, componentPlanInstallMethod, images, schedule } =
+      componentplan;
+    const k8s = await this.k8sService.getClient(auth, { cluster });
+    await k8s.subscription.create(namespace, {
+      metadata: {
+        name: genNanoid('subscription'),
+        namespace,
+      },
+      spec: {
+        component: {
+          name: `${repository}.${chartName}`,
+          namespace: this.kubebbNS,
+        },
+        name: releaseName,
+        componentPlanInstallMethod,
+        schedule,
+        override: {
+          images,
+        },
+      },
+    });
+    return true;
+  }
+
+  async updateSubscription(
+    auth: JwtAuth,
+    name: string,
+    namespace: string,
+    componentplan: CreateComponentplanInput,
+    cluster?: string
+  ): Promise<boolean> {
+    const { chartName, repository, componentPlanInstallMethod, images, schedule } = componentplan;
+    const k8s = await this.k8sService.getClient(auth, { cluster });
+    await k8s.subscription.patchMerge(name, namespace, {
+      spec: {
+        component: {
+          name: `${repository}.${chartName}`,
+          namespace: this.kubebbNS,
+        },
+        componentPlanInstallMethod,
+        schedule,
+        override: {
+          images,
+        },
       },
     });
     return true;

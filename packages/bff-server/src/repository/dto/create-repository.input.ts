@@ -62,7 +62,7 @@ export class CreateRepositoryInput {
   name: string;
 
   /** 类型 */
-  repositoryType: string;
+  repositoryType?: string;
 
   /** URL */
   url: string;

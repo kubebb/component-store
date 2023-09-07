@@ -2,8 +2,8 @@ import { Loader } from '@/common/dataloader';
 import { Auth } from '@/common/decorators/auth.decorator';
 import { Repository } from '@/repository/models/repository.model';
 import { RepositoryLoader } from '@/repository/repository.loader';
-import { JwtAuth } from '@/types';
-import { Args, Mutation, Parent, Query, ResolveField, Resolver } from '@nestjs/graphql';
+import { AnyObj, JwtAuth } from '@/types';
+import { Args, Info, Mutation, Parent, Query, ResolveField, Resolver } from '@nestjs/graphql';
 import DataLoader from 'dataloader';
 import { ComponentsService } from './components.service';
 import { ComponentArgs } from './dto/component.args';
@@ -85,11 +85,17 @@ export class ComponentsResolver {
 
   @ResolveField(() => ComponentStatus, { description: '状态' })
   async status(
+    @Info() info: AnyObj,
     @Parent() component: Component,
-    @Loader(RepositoryLoader) repositoryLoader: DataLoader<Repository['name'], Repository>
+    @Loader(RepositoryLoader) repositoryLoader: DataLoader<Repository['namespacedName'], Repository>
   ): Promise<string> {
-    const { repository } = component;
-    const repositoryDetail = await repositoryLoader.load(repository);
+    const {
+      variableValues: { cluster },
+    } = info;
+    const { repository, namespace } = component;
+    const repositoryDetail = await repositoryLoader.load(
+      `${repository}_${namespace}_${cluster || ''}`
+    );
     if (repositoryDetail) {
       const { lastSuccessfulTime, intervalSeconds } = repositoryDetail;
       const now = Date.now();
@@ -103,11 +109,17 @@ export class ComponentsResolver {
 
   @ResolveField(() => ComponentSource, { description: '来源' })
   async source(
+    @Info() info: AnyObj,
     @Parent() component: Component,
-    @Loader(RepositoryLoader) repositoryLoader: DataLoader<Repository['name'], Repository>
+    @Loader(RepositoryLoader) repositoryLoader: DataLoader<Repository['namespacedName'], Repository>
   ): Promise<string> {
-    const { repository } = component;
-    const repositoryDetail = await repositoryLoader.load(repository);
+    const {
+      variableValues: { cluster },
+    } = info;
+    const { repository, namespace } = component;
+    const repositoryDetail = await repositoryLoader.load(
+      `${repository}_${namespace}_${cluster || ''}`
+    );
     const source = repositoryDetail?.labels?.['kubebb.repository.source'];
     if (source === ComponentSource.official) {
       return ComponentSource.official;

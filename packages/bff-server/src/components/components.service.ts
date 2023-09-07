@@ -134,13 +134,24 @@ export class ComponentsService {
     cluster?: string
   ): Promise<boolean> {
     const { repository, chartName, versions } = chart;
-    const { url } = await this.repositoryService.getRepository(auth, repository, cluster);
-    // TODO: username password
+    const { url, authSecret } = await this.repositoryService.getRepository(
+      auth,
+      repository,
+      cluster
+    );
+    let secret: Secret;
+    if (authSecret) {
+      secret = await this.secretService.getSecretDetail(auth, authSecret, this.kubebbNS, cluster);
+    }
     await Promise.all(
       versions?.map(version =>
-        this.callChartMuseum(`${url}/api/charts/${chartName}/${version}`, {
-          method: 'DELETE',
-        })
+        this.callChartMuseumClient(
+          `${url}/api/charts/${chartName}/${version}`,
+          {
+            method: 'DELETE',
+          },
+          secret
+        )
       )
     );
     return true;

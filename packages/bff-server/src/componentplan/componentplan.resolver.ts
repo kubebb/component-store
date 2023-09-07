@@ -1,7 +1,8 @@
 import { Loader } from '@/common/dataloader';
 import { Auth } from '@/common/decorators/auth.decorator';
-import { ComponentLoader } from '@/components/components.loader';
 import { Component } from '@/components/models/component.model';
+import { Repository } from '@/repository/models/repository.model';
+import { RepositoryLoader } from '@/repository/repository.loader';
 import { Subscription } from '@/subscription/models/subscription.model';
 import SubscriptionLoader from '@/subscription/subscription.loader';
 import { AnyObj, JwtAuth } from '@/types';
@@ -39,7 +40,7 @@ export class ComponentplanResolver {
     return this.componentplanService.get(auth, name, namespace, cluster);
   }
 
-  @Mutation(() => Componentplan, { description: '安装组件创建' })
+  @Mutation(() => Boolean, { description: '安装组件创建' })
   async componentplanCreate(
     @Auth() auth: JwtAuth,
     @Args('namespace') namespace: string,
@@ -49,11 +50,11 @@ export class ComponentplanResolver {
       description: '集群下的资源，不传则为默认集群',
     })
     cluster: string
-  ): Promise<Componentplan> {
+  ): Promise<boolean> {
     return this.componentplanService.create(auth, namespace, componentplan, cluster);
   }
 
-  @Mutation(() => Componentplan, { description: '安装组件更新' })
+  @Mutation(() => Boolean, { description: '安装组件更新' })
   async componentplanUpdate(
     @Auth() auth: JwtAuth,
     @Args('name') name: string,
@@ -64,7 +65,7 @@ export class ComponentplanResolver {
       description: '集群下的资源，不传则为默认集群',
     })
     cluster: string
-  ) {
+  ): Promise<boolean> {
     return this.componentplanService.update(auth, name, namespace, componentplan, cluster);
   }
 
@@ -82,24 +83,7 @@ export class ComponentplanResolver {
     return this.componentplanService.remove(auth, name, namespace, cluster);
   }
 
-  @ResolveField(() => Component, { description: '组件' })
-  async component(
-    @Info() info: AnyObj,
-    @Parent() componentplan: Componentplan,
-    @Loader(ComponentLoader) componentLoader: DataLoader<Component['namespacedName'], Component>
-  ): Promise<Component> {
-    const {
-      variableValues: { cluster },
-    } = info;
-    const { specComponent } = componentplan;
-    if (!specComponent?.name) return null;
-    const component = await componentLoader.load(
-      `${specComponent.name}_${specComponent.namespace}_${cluster || ''}`
-    );
-    return component;
-  }
-
-  @ResolveField(() => Subscription, { description: '订阅' })
+  @ResolveField(() => Subscription, { nullable: true, description: '订阅' })
   async subscription(
     @Info() info: AnyObj,
     @Parent() componentplan: Componentplan,
@@ -115,5 +99,20 @@ export class ComponentplanResolver {
       `${subscriptionName}_${namespace}_${cluster || ''}`
     );
     return subscription;
+  }
+
+  @ResolveField(() => Repository, { nullable: true, description: '仓库' })
+  async repository(
+    @Info() info: AnyObj,
+    @Parent() componentplan: Componentplan,
+    @Loader(RepositoryLoader) repositoryLoader: DataLoader<Repository['namespacedName'], Repository>
+  ): Promise<Repository> {
+    const {
+      variableValues: { cluster },
+    } = info;
+    const { component = {} } = componentplan;
+    const { repository, namespace } = component as Component;
+    if (!repository || !namespace) return null;
+    return repositoryLoader.load(`${repository}_${namespace}_${cluster || ''}`);
   }
 }

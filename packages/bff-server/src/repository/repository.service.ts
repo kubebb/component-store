@@ -1,7 +1,6 @@
 import { convertFileToText, encodeBase64, genNanoid } from '@/common/utils';
 import serverConfig from '@/config/server.config';
 import { KubernetesService } from '@/kubernetes/kubernetes.service';
-import { Secret } from '@/secret/models/secret.model';
 import { SecretService } from '@/secret/secret.service';
 import { AnyObj, CRD, JwtAuth } from '@/types';
 import { Inject, Injectable } from '@nestjs/common';
@@ -24,7 +23,7 @@ export class RepositoryService {
 
   private kubebbNS = this.config.kubebb.namespace;
 
-  formatRepository(repository: CRD.Repository, secret?: Secret): Repository {
+  formatRepository(repository: CRD.Repository, cluster?: string): Repository {
     const conditions = repository.status?.conditions || [];
     const lastSuccessfulTime = conditions.find(
       c => c.lastSuccessfulTime && c.status === 'True' && c.type === 'Synced'
@@ -68,6 +67,9 @@ export class RepositoryService {
     }));
     return {
       name: repository.metadata.name,
+      namespacedName: `${repository.metadata?.name}_${repository.metadata.namespace}_${
+        cluster || ''
+      }`,
       repositoryType: repository.spec?.repositoryType,
       url: repository.spec?.url,
       creationTimestamp: new Date(repository.metadata.creationTimestamp).toISOString(),
@@ -77,8 +79,6 @@ export class RepositoryService {
       pullStategy: repository.spec?.pullStategy,
       filter,
       imageOverride,
-      password: secret?.data?.password,
-      username: secret?.data?.username,
       insecure: repository?.spec?.insecure,
       authSecret: repository?.spec?.authSecret,
       labels: repository.metadata?.labels,
@@ -114,22 +114,13 @@ export class RepositoryService {
     const { body } = await k8s.repository.list(this.kubebbNS, {
       fieldSelector,
     });
-    return body.items?.map(item => this.formatRepository(item));
+    return body.items?.map(item => this.formatRepository(item, cluster));
   }
 
   async getRepository(auth: JwtAuth, name: string, cluster?: string): Promise<Repository> {
     const k8s = await this.k8sService.getClient(auth, { cluster });
     const { body } = await k8s.repository.read(name, this.kubebbNS);
-    let secret: Secret;
-    if (body.spec?.authSecret) {
-      secret = await this.secretService.getSecretDetail(
-        auth,
-        body.spec.authSecret,
-        this.kubebbNS,
-        cluster
-      );
-    }
-    return this.formatRepository(body, secret);
+    return this.formatRepository(body);
   }
 
   async create(

@@ -1,7 +1,7 @@
 import { Paginated } from '@/common/models/paginated.function';
 import { Component } from '@/components/models/component.model';
+import { Repository } from '@/repository/models/repository.model';
 import { Subscription } from '@/subscription/models/subscription.model';
-import { AnyObj } from '@/types';
 import { Field, HideField, ID, ObjectType } from '@nestjs/graphql';
 import { ComponentplanStatus } from './status-componentplan.enum';
 
@@ -28,8 +28,11 @@ export class Componentplan {
 
   /** 更新时间 */
 
+  // @HideField()
+  latest?: boolean;
+
   @HideField()
-  specComponent?: AnyObj;
+  approved?: boolean;
 
   /** 组件 */
   component?: Component;
@@ -39,6 +42,9 @@ export class Componentplan {
 
   /** 订阅 */
   subscription?: Subscription;
+
+  /** 仓库 */
+  repository?: Repository;
 }
 
 @ObjectType({ description: '分页' })
