@@ -103,7 +103,7 @@ export class ComponentplanService {
       repository,
     } = args;
     const res = await this.list(auth, namespace, {}, cluster);
-    // 过滤出 以releaseName为唯一ID，选择cpl status.latest == true | null
+    // 过滤出 以releaseName为唯一ID，选择cpl status.latest == true（其中sub创建的cpl（status.latest == null），通过「组件市场」安装入口安装）
     const releasenameMap = new Map();
     res?.forEach(cpl => {
       if (cpl.releaseName) {
@@ -115,7 +115,7 @@ export class ComponentplanService {
       t =>
         !releasenameMap.has(t.releaseName) ||
         releasenameMap.get(t.releaseName) <= 1 ||
-        t.latest !== false
+        t.latest === true
     );
     // 根据搜索条件过滤
     const filteredRes = fRes?.filter(
@@ -151,7 +151,7 @@ export class ComponentplanService {
   ): Promise<boolean> {
     /**
      * 创建：
-     * 1. 自动：只创建sub
+     * 1. 自动：只创建sub（？如果已有sub呢？）
      * 2. 手动：创建cpl
      */
     const {
@@ -227,7 +227,7 @@ export class ComponentplanService {
        * 编辑：
        * 自动：有sub就修改，没有就创建；
        * 手动：有sub就修改，没有就不处理；
-       * 最后修改cpl;
+       * 最后修改cpl，同时approved：true;
        */
       if (componentPlanInstallMethod === InstallMethod.auto) {
         if (subscriptionName) {
@@ -282,6 +282,21 @@ export class ComponentplanService {
       cluster
     );
     await Promise.all((cpls || []).map(cpl => k8s.componentplan.delete(cpl.name, namespace)));
+    // 如果有sub，修改sub的自动更新为手动
+    const subsName = (cpls || []).map(cpl => cpl.subscriptionName).filter(subN => !!subN);
+    await Promise.all(
+      (subsName || []).map(subName =>
+        this.subscriptionService.updateSubscription(
+          auth,
+          subName,
+          namespace,
+          {
+            componentPlanInstallMethod: InstallMethod.manual,
+          },
+          cluster
+        )
+      )
+    );
     return true;
   }
 }
