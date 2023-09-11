@@ -24,9 +24,7 @@ export class SubscriptionService {
 
   private kubebbNS = this.config.kubebb.namespace;
 
-  format(sub: CRD.Subscription, components?: Component[], cluster?: string): Subscription {
-    const specComponent = sub.spec?.component;
-    const component = components?.find(c => c.name === specComponent?.name);
+  format(sub: CRD.Subscription, component?: Component, cluster?: string): Subscription {
     return {
       name: sub.metadata?.name,
       namespace: sub.metadata?.namespace,
@@ -35,7 +33,7 @@ export class SubscriptionService {
       chartName: component?.chartName,
       latestVersion: component?.latestVersion,
       updatedAt: component?.updatedAt,
-      component,
+      component: component || (sub.spec?.component as Component),
       repository: sub.spec?.repository?.name,
       componentPlanInstallMethod: sub.spec?.componentPlanInstallMethod,
       releaseName: sub.spec?.name,
@@ -62,7 +60,11 @@ export class SubscriptionService {
     const { body } = await k8s.subscription.list(namespace);
     const components = await this.componentsService.listComponents(auth, cluster);
     return body.items
-      ?.map(item => this.format(item, components, cluster))
+      ?.map(item => {
+        const specComponent = item.spec?.component;
+        const component = components?.find(c => c.name === specComponent?.name);
+        return this.format(item, component, cluster);
+      })
       ?.sort(
         (a, b) => new Date(b.creationTimestamp).valueOf() - new Date(a.creationTimestamp).valueOf()
       );

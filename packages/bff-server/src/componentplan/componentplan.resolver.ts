@@ -83,6 +83,20 @@ export class ComponentplanResolver {
     return this.componentplanService.remove(auth, name, namespace, cluster);
   }
 
+  @Mutation(() => Boolean, { description: '安装组件回滚' })
+  async componentplanRollback(
+    @Auth() auth: JwtAuth,
+    @Args('name') name: string,
+    @Args('namespace') namespace: string,
+    @Args('cluster', {
+      nullable: true,
+      description: '集群下的资源，不传则为默认集群',
+    })
+    cluster: string
+  ): Promise<boolean> {
+    return this.componentplanService.rollback(auth, name, namespace, cluster);
+  }
+
   @ResolveField(() => Subscription, { nullable: true, description: '订阅' })
   async subscription(
     @Info() info: AnyObj,
@@ -114,5 +128,18 @@ export class ComponentplanResolver {
     const { repository, namespace } = component as Component;
     if (!repository || !namespace) return null;
     return repositoryLoader.load(`${repository}_${namespace}_${cluster || ''}`);
+  }
+
+  @ResolveField(() => [Componentplan], { nullable: true, description: '历史版本' })
+  async history(
+    @Auth() auth: JwtAuth,
+    @Info() info: AnyObj,
+    @Parent() componentplan: Componentplan
+  ): Promise<Componentplan[]> {
+    const {
+      variableValues: { cluster },
+    } = info;
+    const { namespace, releaseName } = componentplan;
+    return this.componentplanService.history(auth, namespace, releaseName, cluster);
   }
 }

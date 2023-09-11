@@ -37,7 +37,7 @@ export class Subscription {
   componentPlanInstallMethod?: string;
 
   /** 组件 */
-  component: Component;
+  component?: Component;
 }
 
 @ObjectType({ description: '分页' })

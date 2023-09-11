@@ -111,6 +111,12 @@ type Componentplan {
   """创建时间"""
   creationTimestamp: String!
 
+  """历史版本"""
+  history: [Componentplan!]
+
+  """当前安装"""
+  latest: Boolean
+
   """组件名称"""
   name: ID!
 
@@ -358,6 +364,14 @@ type Mutation {
 
   """安装组件删除"""
   componentplanRemove(
+    """集群下的资源，不传则为默认集群"""
+    cluster: String
+    name: String!
+    namespace: String!
+  ): Boolean!
+
+  """安装组件回滚"""
+  componentplanRollback(
     """集群下的资源，不传则为默认集群"""
     cluster: String
     name: String!
@@ -777,7 +791,7 @@ type Subscription {
   chartName: String
 
   """组件"""
-  component: Component!
+  component: Component
 
   """更新方式"""
   componentPlanInstallMethod: InstallMethod

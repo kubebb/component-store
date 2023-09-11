@@ -27,7 +27,7 @@ export class ComponentplanService {
 
   private kubebbNS = this.config.kubebb.namespace;
 
-  format(cp: CRD.ComponentPlan, component: Component): Componentplan {
+  format(cp: CRD.ComponentPlan, component?: Component): Componentplan {
     let status = ComponentplanStatus.Unknown;
     const conditions = cp.status?.conditions;
     if (conditions) {
@@ -141,6 +141,36 @@ export class ComponentplanService {
       hasNextPage: page * pageSize < totalCount,
       nodes: filteredRes.slice((page - 1) * pageSize, page * pageSize),
     };
+  }
+
+  async history(
+    auth: JwtAuth,
+    namespace: string,
+    releaseName: string,
+    cluster?: string
+  ): Promise<Componentplan[]> {
+    const labelSelectors = [`core.kubebb.k8s.com.cn/componentplan-release=${releaseName}`];
+    const cpls = await this.list(
+      auth,
+      namespace,
+      { labelSelector: labelSelectors.join(',') },
+      cluster
+    );
+    const versionMap = new Map();
+    cpls?.forEach(cpl => {
+      if (cpl.version) {
+        const num = versionMap.get(cpl.version) || 0;
+        const cTime =
+          new Date(cpl.creationTimestamp).valueOf() > new Date(num).valueOf()
+            ? cpl.creationTimestamp
+            : num;
+        versionMap.set(cpl.version, cTime);
+      }
+    });
+    const filteredRes = cpls?.filter(
+      t => versionMap.has(t.version) && versionMap.get(t.version) === t.creationTimestamp
+    );
+    return filteredRes;
   }
 
   async create(
@@ -297,6 +327,23 @@ export class ComponentplanService {
         )
       )
     );
+    return true;
+  }
+
+  async rollback(
+    auth: JwtAuth,
+    name: string,
+    namespace: string,
+    cluster?: string
+  ): Promise<boolean> {
+    const k8s = await this.k8sService.getClient(auth, { cluster });
+    await k8s.componentplan.patchMerge(name, namespace, {
+      metadata: {
+        labels: {
+          'core.kubebb.k8s.com.cn/rollback': 'true',
+        },
+      },
+    });
     return true;
   }
 }
