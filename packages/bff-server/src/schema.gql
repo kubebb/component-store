@@ -536,6 +536,9 @@ type Query {
 
     """排序字段"""
     sortField: String
+
+    """来源（多选）"""
+    source: String
   ): PaginatedComponent!
 
   """组件列表"""
@@ -557,6 +560,9 @@ type Query {
 
     """类型"""
     repositoryTypes: [String!]
+
+    """来源（官方）"""
+    source: String
 
     """状态"""
     statuses: [String!]

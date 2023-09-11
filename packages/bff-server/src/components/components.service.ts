@@ -52,6 +52,12 @@ export class ComponentsService {
     };
   }
 
+  async list(auth: JwtAuth, cluster?: string): Promise<Component[]> {
+    const k8s = await this.k8sService.getClient(auth, { cluster });
+    const { body } = await k8s.component.list(this.kubebbNS);
+    return body.items?.map(t => this.formatComponent(t, cluster));
+  }
+
   async listComponents(auth: JwtAuth, cluster?: string): Promise<Component[]> {
     const k8s = await this.k8sService.getClient(auth, { cluster });
     const { body } = await k8s.component.list(this.kubebbNS);
@@ -64,13 +70,20 @@ export class ComponentsService {
   }
 
   async getComponentsPaged(auth: JwtAuth, args: ComponentArgs): Promise<PaginatedComponent> {
-    const { page, pageSize, name, chartName, keyword, sortDirection, sortField, cluster } = args;
+    const { page, pageSize, name, chartName, keyword, sortDirection, sortField, cluster, source } =
+      args;
+    let reposName: string[] = [];
+    if (source) {
+      const repos = await this.repositoryService.getRepositories(auth, { source }, cluster);
+      reposName = repos?.map(r => r.name);
+    }
     const res = await this.listComponents(auth, cluster);
     const filteredRes = res?.filter(
       t =>
         (!name || t.name?.includes(name)) &&
         (!chartName || t.chartName?.includes(chartName)) &&
-        (!keyword || t.keywords?.includes(keyword))
+        (!keyword || t.keywords?.includes(keyword)) &&
+        (!source || reposName.includes(t.repository))
     );
     if (sortField && sortDirection) {
       filteredRes?.sort((a, b) => {

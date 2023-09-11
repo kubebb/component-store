@@ -474,6 +474,7 @@ export type QueryComponentsArgs = {
   pageSize?: InputMaybe<Scalars['Float']['input']>;
   sortDirection?: InputMaybe<SortDirection>;
   sortField?: InputMaybe<Scalars['String']['input']>;
+  source?: InputMaybe<Scalars['String']['input']>;
 };
 
 export type QueryRepositoriesArgs = {
@@ -482,6 +483,7 @@ export type QueryRepositoriesArgs = {
   page?: InputMaybe<Scalars['Float']['input']>;
   pageSize?: InputMaybe<Scalars['Float']['input']>;
   repositoryTypes?: InputMaybe<Array<Scalars['String']['input']>>;
+  source?: InputMaybe<Scalars['String']['input']>;
   statuses?: InputMaybe<Array<Scalars['String']['input']>>;
 };
 
@@ -875,6 +877,7 @@ export type GetComponentsQueryVariables = Exact<{
   sortDirection?: InputMaybe<SortDirection>;
   sortField?: InputMaybe<Scalars['String']['input']>;
   cluster?: InputMaybe<Scalars['String']['input']>;
+  source?: InputMaybe<Scalars['String']['input']>;
 }>;
 
 export type GetComponentsQuery = {
@@ -1392,6 +1395,7 @@ export const GetComponentsDocument = gql`
     $sortDirection: SortDirection
     $sortField: String
     $cluster: String
+    $source: String
   ) {
     components(
       page: $page
@@ -1402,6 +1406,7 @@ export const GetComponentsDocument = gql`
       sortDirection: $sortDirection
       sortField: $sortField
       cluster: $cluster
+      source: $source
     ) {
       nodes {
         name
