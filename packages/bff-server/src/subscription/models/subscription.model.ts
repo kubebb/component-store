@@ -14,6 +14,9 @@ export class Subscription {
   /** 组件名称 */
   chartName?: string;
 
+  /** 部署名称 */
+  releaseName?: string;
+
   /** 组件最新版本 */
   latestVersion?: string;
 

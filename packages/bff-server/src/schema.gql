@@ -111,9 +111,6 @@ type Componentplan {
   """创建时间"""
   creationTimestamp: String!
 
-  """更新时间"""
-  latest: Boolean
-
   """组件名称"""
   name: ID!
 
@@ -796,6 +793,9 @@ type Subscription {
 
   """项目"""
   namespace: String!
+
+  """部署名称"""
+  releaseName: String
 
   """所属组件仓库"""
   repository: String!

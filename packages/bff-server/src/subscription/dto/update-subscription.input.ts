@@ -1,8 +1,5 @@
-import { Field, InputType, Int, PartialType } from '@nestjs/graphql';
-import { CreateSubscriptionInput } from './create-subscription.input';
+import { UpdateComponentplanInput } from '@/componentplan/dto/update-componentplan.input';
+import { InputType, PartialType } from '@nestjs/graphql';
 
 @InputType()
-export class UpdateSubscriptionInput extends PartialType(CreateSubscriptionInput) {
-  @Field(() => Int)
-  id: number;
-}
+export class UpdateSubscriptionInput extends PartialType(UpdateComponentplanInput) {}

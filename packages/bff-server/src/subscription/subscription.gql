@@ -5,6 +5,7 @@ query getSubscriptionsPaged($namespace: String!, $page: Float = 1, $pageSize: Fl
       name
       namespace
       creationTimestamp
+      releaseName
       component {
         name
         chartName
@@ -27,6 +28,7 @@ query getSubscriptions($namespace: String!, $cluster: String){
   subscriptions(namespace: $namespace, cluster: $cluster){
     name
     namespace
+    releaseName
     component {
       name
     }

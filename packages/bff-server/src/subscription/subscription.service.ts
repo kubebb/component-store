@@ -10,6 +10,7 @@ import { KubernetesService } from 'src/kubernetes/kubernetes.service';
 import { CRD, JwtAuth } from 'src/types';
 import { CreateSubscriptionInput } from './dto/create-subscription.input';
 import { SubscriptionArgs } from './dto/subscription.args';
+import { UpdateSubscriptionInput } from './dto/update-subscription.input';
 import { PaginatedSubscription, Subscription } from './models/subscription.model';
 
 @Injectable()
@@ -37,6 +38,7 @@ export class SubscriptionService {
       component,
       repository: sub.spec?.repository?.name,
       componentPlanInstallMethod: sub.spec?.componentPlanInstallMethod,
+      releaseName: sub.spec?.name,
     };
   }
 
@@ -174,17 +176,13 @@ export class SubscriptionService {
     auth: JwtAuth,
     name: string,
     namespace: string,
-    componentplan: CreateComponentplanInput,
+    componentplan: UpdateSubscriptionInput,
     cluster?: string
   ): Promise<boolean> {
-    const { chartName, repository, componentPlanInstallMethod, images, schedule } = componentplan;
+    const { componentPlanInstallMethod, images, schedule } = componentplan;
     const k8s = await this.k8sService.getClient(auth, { cluster });
     await k8s.subscription.patchMerge(name, namespace, {
       spec: {
-        component: {
-          name: `${repository}.${chartName}`,
-          namespace: this.kubebbNS,
-        },
         componentPlanInstallMethod,
         schedule,
         override: {

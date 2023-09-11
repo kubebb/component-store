@@ -118,8 +118,6 @@ export type Componentplan = {
   component?: Maybe<Component>;
   /** 创建时间 */
   creationTimestamp: Scalars['String']['output'];
-  /** 更新时间 */
-  latest?: Maybe<Scalars['Boolean']['output']>;
   /** 组件名称 */
   name: Scalars['ID']['output'];
   /** 项目 */
@@ -658,6 +656,8 @@ export type Subscription = {
   name: Scalars['ID']['output'];
   /** 项目 */
   namespace: Scalars['String']['output'];
+  /** 部署名称 */
+  releaseName?: Maybe<Scalars['String']['output']>;
   /** 所属组件仓库 */
   repository: Scalars['String']['output'];
   /** 组件最近更新时间 */
@@ -1153,6 +1153,7 @@ export type GetSubscriptionsPagedQuery = {
       name: string;
       namespace: string;
       creationTimestamp: string;
+      releaseName?: string | null;
       chartName?: string | null;
       latestVersion?: string | null;
       updatedAt?: string | null;
@@ -1180,6 +1181,7 @@ export type GetSubscriptionsQuery = {
     __typename?: 'Subscription';
     name: string;
     namespace: string;
+    releaseName?: string | null;
     component: { __typename?: 'Component'; name: string };
   }>;
 };
@@ -1600,6 +1602,7 @@ export const GetSubscriptionsPagedDocument = gql`
         name
         namespace
         creationTimestamp
+        releaseName
         component {
           name
           chartName
@@ -1622,6 +1625,7 @@ export const GetSubscriptionsDocument = gql`
     subscriptions(namespace: $namespace, cluster: $cluster) {
       name
       namespace
+      releaseName
       component {
         name
       }
