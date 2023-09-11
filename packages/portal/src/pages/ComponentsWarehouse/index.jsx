@@ -77,6 +77,7 @@ class ComponentsWarehouse$$Page extends React.Component {
       isOpenModal: false,
       searchValue: undefined,
       deleteLoading: false,
+      clusterLoading: true,
     };
   }
 
@@ -123,6 +124,7 @@ class ComponentsWarehouse$$Page extends React.Component {
       {
         clusters,
         cluster: clusters?.[0]?.value,
+        clusterLoading: false,
       },
       this.handleQueryChange
     );
@@ -514,6 +516,7 @@ class ComponentsWarehouse$$Page extends React.Component {
                       () =>
                         this.props.useGetRepositories?.isLoading ||
                         this.props?.useGetRepositories?.loading ||
+                        this.state.clusterLoading ||
                         false
                     )}
                     onChange={function () {

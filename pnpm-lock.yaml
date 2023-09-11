@@ -306,25 +306,28 @@ importers:
         version: 0.0.1
       '@tenx-ui/bff-client':
         specifier: 0.1.2
-        version: 0.1.2(@tenx-ui/materials@1.5.9)(antd@5.6.4)(react@18.1.0)(swr@2.0.0)
+        version: 0.1.2(@tenx-ui/materials@1.5.10)(antd@5.6.4)(react@18.1.0)(swr@2.0.0)
       '@tenx-ui/charts':
         specifier: 1.1.2
         version: 1.1.2(@babel/core@7.22.9)(antd@5.6.4)(classnames@2.2.5)(prop-types@15.8.1)(react-dom@18.1.0)(react@18.1.0)
       '@tenx-ui/component-store-bff-client':
-        specifier: 0.0.16
-        version: link:../bff-client
+        specifier: 0.0.18
+        version: 0.0.18(@tenx-ui/materials@1.5.10)(antd@5.6.4)(react@18.1.0)(swr@2.0.0)
+      '@tenx-ui/editor':
+        specifier: 3.0.2-beta
+        version: 3.0.2-beta(antd@5.6.4)(classnames@2.2.5)(prop-types@15.8.1)(react-dom@18.1.0)(react@18.1.0)
       '@tenx-ui/form-helper':
         specifier: 0.0.2
         version: 0.0.2(react@18.1.0)
       '@tenx-ui/icon':
-        specifier: ^2.4.17
-        version: 2.4.17(classnames@2.2.5)(prop-types@15.8.1)(react-dom@18.1.0)(react@18.1.0)
+        specifier: ^2.4.27
+        version: 2.4.27(classnames@2.2.5)(prop-types@15.8.1)(react-dom@18.1.0)(react@18.1.0)
       '@tenx-ui/icon-materials':
-        specifier: 0.1.1
-        version: 0.1.1(react-dom@18.1.0)(react@18.1.0)
+        specifier: 0.1.4
+        version: 0.1.4(react-dom@18.1.0)(react@18.1.0)
       '@tenx-ui/materials':
-        specifier: 1.5.9
-        version: 1.5.9(antd@5.6.4)(lodash@4.17.21)(prop-types@15.8.1)(react-dom@18.1.0)(react-router-dom@6.14.2)(react@18.1.0)
+        specifier: 1.5.10
+        version: 1.5.10(antd@5.6.4)(lodash@4.17.21)(prop-types@15.8.1)(react-dom@18.1.0)(react-router-dom@6.14.2)(react@18.1.0)
       '@tenx-ui/request':
         specifier: ^1.0.0-beta.6
         version: 1.0.0-beta.6
@@ -2981,6 +2984,14 @@ packages:
       '@babel/core': 7.22.9
       '@babel/helper-create-regexp-features-plugin': 7.22.9(@babel/core@7.22.9)
       '@babel/helper-plugin-utils': 7.22.5
+
+  /@babel/polyfill@7.12.1:
+    resolution: {integrity: sha1-Hy1jcdEmG72WHzxdWQkVDhLQvZY=}
+    deprecated: 🚨 This package has been deprecated in favor of separate inclusion of a polyfill and regenerator-runtime (when needed). See the @babel/polyfill docs (https://babeljs.io/docs/en/babel-polyfill) for more information.
+    dependencies:
+      core-js: 2.6.12
+      regenerator-runtime: 0.13.11
+    dev: false
 
   /@babel/preset-env@7.22.9(@babel/core@7.22.9):
     resolution: {integrity: sha512-wNi5H/Emkhll/bqPjsjQorSykrlfY5OWakd6AulLvMEytpKasMVUpVy8RL4qBIBs5Ac6/5i0/Rv0b/Fg6Eag/g==}
@@ -6506,7 +6517,7 @@ packages:
     resolution: {integrity: sha512-aCo7kgzZ18i3gZ6ZZryoYP0pBbTDyqKT8nSIwNXgMckL+pxUA+Iy5owvbZ/Hptexn603adg+ppocwxkvGxiBaw==}
     dev: false
 
-  /@tenx-ui/bff-client@0.1.2(@tenx-ui/materials@1.5.9)(antd@5.6.4)(react@18.1.0)(swr@2.0.0):
+  /@tenx-ui/bff-client@0.1.2(@tenx-ui/materials@1.5.10)(antd@5.6.4)(react@18.1.0)(swr@2.0.0):
     resolution: {integrity: sha512-4mKtvdwfnwr5Tm7VOyns/mPa2XRXrJ/2OKotvcef1umlSPDPQvwdjXPZ6Jt14WS6/aGtosUUDLkyCw77zKqM+g==}
     peerDependencies:
       '@tenx-ui/materials': '>=1.1.1'
@@ -6514,7 +6525,7 @@ packages:
       react: '>=16.9.0'
       swr: '>=2.0.0'
     dependencies:
-      '@tenx-ui/materials': 1.5.9(antd@5.6.4)(lodash@4.17.21)(prop-types@15.8.1)(react-dom@18.1.0)(react-router-dom@6.14.2)(react@18.1.0)
+      '@tenx-ui/materials': 1.5.10(antd@5.6.4)(lodash@4.17.21)(prop-types@15.8.1)(react-dom@18.1.0)(react-router-dom@6.14.2)(react@18.1.0)
       antd: 5.6.4(react-dom@18.1.0)(react@18.1.0)
       graphql: 16.6.0
       graphql-request: 5.2.0(graphql@16.6.0)
@@ -6551,6 +6562,45 @@ packages:
       - supports-color
     dev: false
 
+  /@tenx-ui/component-store-bff-client@0.0.18(@tenx-ui/materials@1.5.10)(antd@5.6.4)(react@18.1.0)(swr@2.0.0):
+    resolution: {integrity: sha512-CKdpKJmrQiXtztiCzALKRqam31lRQlMNdL9YX5+/esIfwn2Uzs+dbiIdtzQl6MZzBuu9g5pdB8naZtwXxMWUsg==}
+    peerDependencies:
+      '@tenx-ui/materials': '>=1.5.8'
+      antd: '>=5.4.0'
+      react: '>=16.9.0'
+      swr: '>=2.0.0'
+    dependencies:
+      '@tenx-ui/materials': 1.5.10(antd@5.6.4)(lodash@4.17.21)(prop-types@15.8.1)(react-dom@18.1.0)(react-router-dom@6.14.2)(react@18.1.0)
+      antd: 5.6.4(react-dom@18.1.0)(react@18.1.0)
+      graphql: 16.6.0
+      graphql-request: 5.2.0(graphql@16.6.0)
+      graphql-tag: 2.12.6(graphql@16.6.0)
+      query-string: 8.1.0
+      react: 18.1.0
+      swr: 2.0.0(react@18.1.0)
+    transitivePeerDependencies:
+      - encoding
+    dev: false
+
+  /@tenx-ui/editor@3.0.2-beta(antd@5.6.4)(classnames@2.2.5)(prop-types@15.8.1)(react-dom@18.1.0)(react@18.1.0):
+    resolution: {integrity: sha512-sDR/YgqLdjwLg9uyMzq5bRLw65GhXC+cE/4c5x6hWTCRFkk3aTSbcu7kmuYoXG/2Vx2Y5M+Sx5v8rdJbpM5O1A==}
+    peerDependencies:
+      antd: '>=1.0.0'
+      classnames: '>=2.2.5'
+      prop-types: '>=15.6.1'
+      react: '>=16.0.0'
+      react-dom: '>=16.0.0'
+    dependencies:
+      antd: 5.6.4(react-dom@18.1.0)(react@18.1.0)
+      classnames: 2.2.5
+      create-event: 1.0.14
+      fscreen: 1.2.0
+      prop-types: 15.8.1
+      react: 18.1.0
+      react-ace: 6.6.0(react-dom@18.1.0)(react@18.1.0)
+      react-dom: 18.1.0(react@18.1.0)
+    dev: false
+
   /@tenx-ui/ellipsis@0.0.8(antd@5.6.4)(classnames@2.2.5)(prop-types@15.8.1)(react-dom@18.1.0)(react@18.1.0):
     resolution: {integrity: sha512-iX02S7MtiLo9Q3jsWzdWo0HZ6f5rwm+8jaMz44Q0o8k4OMzIrCv4IrnRQJyDWDGj5Wkx/hlh4mea3BFO0RUpkA==}
     peerDependencies:
@@ -6576,8 +6626,8 @@ packages:
       react: 18.1.0
     dev: false
 
-  /@tenx-ui/icon-materials@0.1.1(react-dom@18.1.0)(react@18.1.0):
-    resolution: {integrity: sha512-eg9kVvDq27WUn36fEhaQtqAIH1ElZdUmCgUcP/toAUSZPqnNOccOhr/9FS6U1InPe+enVyleDkFjFy9WmTzBUw==}
+  /@tenx-ui/icon-materials@0.1.4(react-dom@18.1.0)(react@18.1.0):
+    resolution: {integrity: sha512-Ro31D5Nn3mCasbU8WouVgVIRcBbAA0B/fc6u/x+/mG0ZMTxT0pcIGpbKKgABmidtrusTaz5fBvASMmx04C+jVg==}
     peerDependencies:
       moment: latest
       react: ^17.x
@@ -6587,8 +6637,8 @@ packages:
       react-dom: 18.1.0(react@18.1.0)
     dev: false
 
-  /@tenx-ui/icon@2.4.17(classnames@2.2.5)(prop-types@15.8.1)(react-dom@18.1.0)(react@18.1.0):
-    resolution: {integrity: sha512-CrhsAtRR4ModpQbFudq4CH3wWQJRHuwycp1CPHyHlcXQziqlcc+hsiaK/X++FSsCloPMVspchLY9E9wAPfIyVQ==}
+  /@tenx-ui/icon@2.4.27(classnames@2.2.5)(prop-types@15.8.1)(react-dom@18.1.0)(react@18.1.0):
+    resolution: {integrity: sha512-p+JC1/cnZtgMuxW9dqobWtK3tX9Sr7Nu/qRupcvw1J6vjywSBEcY4Oo+1KUG3wau85CjoXtzrsqAMc/YadS+QA==}
     peerDependencies:
       classnames: '>=2.2.5'
       prop-types: '>=15.6.1'
@@ -6603,6 +6653,22 @@ packages:
 
   /@tenx-ui/less@1.0.1:
     resolution: {integrity: sha512-KRr4cj9qOubriyB9mqLT86qceHj+3bj3f4YAhV27lBcwN023Zzc5643g0IMuChzm4MDoJJSmDL6v34hOefNtfA==}
+    dev: false
+
+  /@tenx-ui/materials@1.5.10(antd@5.6.4)(lodash@4.17.21)(prop-types@15.8.1)(react-dom@18.1.0)(react-router-dom@6.14.2)(react@18.1.0):
+    resolution: {integrity: sha512-gVLQ/aErOiubUKa01tqPdjOI3dK7wcyBmDKEueOKC5sUvn6kjmUmo8Tz+1YoTYs0cKDquFTY5ni1Ahifk7bFpw==}
+    peerDependencies:
+      antd: ^5.1.5
+    dependencies:
+      '@tenx-ui/utils': 2.3.1(lodash@4.17.21)(moment@2.29.4)(prop-types@15.8.1)(react-dom@18.1.0)(react-router-dom@6.14.2)(react@18.1.0)
+      antd: 5.6.4(react-dom@18.1.0)(react@18.1.0)
+    transitivePeerDependencies:
+      - lodash
+      - moment
+      - prop-types
+      - react
+      - react-dom
+      - react-router-dom
     dev: false
 
   /@tenx-ui/materials@1.5.8(antd@5.7.1)(lodash@4.17.21)(moment@2.29.4)(prop-types@15.8.1)(react-dom@18.1.0)(react-router-dom@6.14.2)(react@18.1.0):
@@ -6620,22 +6686,6 @@ packages:
       - react-dom
       - react-router-dom
     dev: true
-
-  /@tenx-ui/materials@1.5.9(antd@5.6.4)(lodash@4.17.21)(prop-types@15.8.1)(react-dom@18.1.0)(react-router-dom@6.14.2)(react@18.1.0):
-    resolution: {integrity: sha512-V5QzWB126hyXzjGLJ41dGX0KUKc85/zRbWx8kcyxOYCYJ6SEGFIMMdoLXOJTbaUtW0SH5ENEo2qG5QFTFCxjkw==}
-    peerDependencies:
-      antd: ^5.1.5
-    dependencies:
-      '@tenx-ui/utils': 2.3.1(lodash@4.17.21)(moment@2.29.4)(prop-types@15.8.1)(react-dom@18.1.0)(react-router-dom@6.14.2)(react@18.1.0)
-      antd: 5.6.4(react-dom@18.1.0)(react@18.1.0)
-    transitivePeerDependencies:
-      - lodash
-      - moment
-      - prop-types
-      - react
-      - react-dom
-      - react-router-dom
-    dev: false
 
   /@tenx-ui/request@1.0.0-beta.6:
     resolution: {integrity: sha512-4W4yKKiw+BfXnVOLwpYvJDm/c+csrbR8EyQnDEM7T91KYvSqBB4A60Mh/jR5A7+YQz3LCGgWME4fZEn1Ol3/aw==}
@@ -9333,6 +9383,10 @@ packages:
     dependencies:
       balanced-match: 1.0.2
 
+  /brace@0.11.1:
+    resolution: {integrity: sha1-SJb8ydVE7vRfS7dmDbMg07N5/lg=}
+    dev: false
+
   /braces@3.0.2:
     resolution: {integrity: sha1-NFThpGLujVmeI23zNs2epPiv4Qc=}
     engines: {node: '>=8'}
@@ -10125,6 +10179,15 @@ packages:
       bn.js: 4.12.0
       elliptic: 6.5.4
 
+  /create-event@1.0.14:
+    resolution: {integrity: sha512-bba1TIkMwaN0os7RkemNi0COOQcPczAdS6jWxcnfGKJXLIgZND6bhXQSzOBtiTbpEPQa1Bbzbi5pF8RRZQfDMw==}
+    dependencies:
+      global: 4.4.0
+      keycode: 2.2.1
+      lodash.assign: 4.2.0
+      lodash.isstring: 4.0.1
+    dev: false
+
   /create-hash@1.2.0:
     resolution: {integrity: sha1-iJB4rxGmN1a8+1m9IhmWvjqe8ZY=}
     dependencies:
@@ -10615,6 +10678,10 @@ packages:
     engines: {node: '>=4.5.0'}
     dependencies:
       streamsearch: 0.1.2
+    dev: false
+
+  /diff-match-patch@1.0.5:
+    resolution: {integrity: sha1-q7WE1fEM0Rlt/FWqA3AVkq4/ezc=}
     dev: false
 
   /diff-sequences@26.6.2:
@@ -12572,6 +12639,10 @@ packages:
 
   /fs.realpath@1.0.0:
     resolution: {integrity: sha1-FQStJSMVjKpA20onh8sBQRmU6k8=}
+
+  /fscreen@1.2.0:
+    resolution: {integrity: sha1-GoyI4GvBage0c62WGW+wbWZX9Z4=}
+    dev: false
 
   /fsevents@2.3.2:
     resolution: {integrity: sha1-ilJveLj99GI7cJ4Ll1xSwkwC/Ro=}
@@ -15186,6 +15257,10 @@ packages:
       safe-buffer: 5.2.1
     dev: false
 
+  /keycode@2.2.1:
+    resolution: {integrity: sha1-CcI7K+BhHSYRfqJQHCw5GgHznv8=}
+    dev: false
+
   /kind-of@6.0.3:
     resolution: {integrity: sha1-B8BQNKbDSfoG4k+jWqdttFgM5N0=}
     engines: {node: '>=0.10.0'}
@@ -15457,6 +15532,10 @@ packages:
     resolution: {integrity: sha1-Q+YmxG5lkbd1C+srUBFzkMYJ4+4=}
     dev: false
 
+  /lodash.assign@4.2.0:
+    resolution: {integrity: sha1-DZnzzNem0mHRm9rrkkUAXShYCOc=}
+    dev: false
+
   /lodash.camelcase@4.3.0:
     resolution: {integrity: sha1-soqmKIorn8ZRA1x3EfZathkDMaY=}
 
@@ -15471,7 +15550,6 @@ packages:
 
   /lodash.isequal@4.5.0:
     resolution: {integrity: sha1-QVxEePK8wwEgwizhDtMib30+GOA=}
-    dev: true
 
   /lodash.isfunction@3.0.9:
     resolution: {integrity: sha1-Bt4l302zJ6yTGYHRvbBn5a9o0FE=}
@@ -15480,6 +15558,10 @@ packages:
   /lodash.isplainobject@4.0.6:
     resolution: {integrity: sha1-fFJqUtibRcRcxpC4gWO+BJf1UMs=}
     dev: true
+
+  /lodash.isstring@4.0.1:
+    resolution: {integrity: sha1-1SfftUVuynzJu5XV2ur4i6VKVFE=}
+    dev: false
 
   /lodash.kebabcase@4.1.1:
     resolution: {integrity: sha1-hImxyw0p/4gZXM7KRI/21swpXDY=}
@@ -18611,6 +18693,22 @@ packages:
       rc-util: 5.37.0(react-dom@18.1.0)(react@18.1.0)
       react: 18.1.0
       react-dom: 18.1.0(react@18.1.0)
+
+  /react-ace@6.6.0(react-dom@18.1.0)(react@18.1.0):
+    resolution: {integrity: sha1-p5RX7wPDsfjU/FmKADsdatRk8aA=}
+    peerDependencies:
+      react: ^0.13.0 || ^0.14.0 || ^15.0.1 || ^16.0.0
+      react-dom: ^0.13.0 || ^0.14.0 || ^15.0.1 || ^16.0.0
+    dependencies:
+      '@babel/polyfill': 7.12.1
+      brace: 0.11.1
+      diff-match-patch: 1.0.5
+      lodash.get: 4.4.2
+      lodash.isequal: 4.5.0
+      prop-types: 15.8.1
+      react: 18.1.0
+      react-dom: 18.1.0(react@18.1.0)
+    dev: false
 
   /react-dom@18.1.0(react@18.1.0):
     resolution: {integrity: sha512-fU1Txz7Budmvamp7bshe4Zi32d0ll7ect+ccxNu9FlObT605GOEB8BfO4tmRJ39R5Zj831VCpvQ05QPBW5yb+w==}

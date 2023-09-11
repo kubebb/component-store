@@ -782,7 +782,7 @@ class ComponentsWarehouseCreate$$Page extends React.Component {
                   style={{}}
                   fieldProps={{
                     name: 'info',
-                    title: this.i18n('i18n-cau0sbxf') /*   */,
+                    title: this.i18n('i18n-cau0sbxf') /*     */,
                     'x-component': 'FormilyFormItem',
                     'x-validator': [],
                   }}

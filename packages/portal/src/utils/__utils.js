@@ -161,12 +161,14 @@ utils.getComponentInstallMethods = function __getComponentInstallMethods() {
   return (pageThis, isStatus) => {
     return [
       {
-        [isStatus ? 'id' : 'value']: '手动',
+        [isStatus ? 'id' : 'value']: 'manual', // 手动
         [isStatus ? 'children' : 'text']: pageThis.i18n('i18n-giwyayqp'),
+        [isStatus ? 'children' : 'label']: pageThis.i18n('i18n-giwyayqp'),
       },
       {
-        [isStatus ? 'id' : 'value']: '自动',
+        [isStatus ? 'id' : 'value']: 'auto', // 自动
         [isStatus ? 'children' : 'text']: pageThis.i18n('i18n-rwa0ty3e'),
+        [isStatus ? 'children' : 'label']: pageThis.i18n('i18n-rwa0ty3e'),
       },
     ];
   };
@@ -197,30 +199,84 @@ utils.getComponentInstallStatus = function __getComponentInstallStatus() {
   return (pageThis, isStatus) => {
     return [
       {
-        [isStatus ? 'id' : 'value']: '待安装',
-        type: 'disabled',
-        [isStatus ? 'children' : 'text']: pageThis.i18n('i18n-jmkpjhx8'),
+        [isStatus ? 'id' : 'value']: 'Failed', // 失败
+        type: 'error',
+        [isStatus ? 'children' : 'text']: pageThis.i18n('i18n-nt0mpn4p'),
       },
       {
-        [isStatus ? 'id' : 'value']: '安装成功',
+        [isStatus ? 'id' : 'value']: 'InstallFailed', // 安装失败
+        type: 'error',
+        [isStatus ? 'children' : 'text']: pageThis.i18n('i18n-r147hejk'),
+      },
+      {
+        [isStatus ? 'id' : 'value']: 'InstallSuccess', // 安装成功
         type: 'success',
         [isStatus ? 'children' : 'text']: pageThis.i18n('i18n-ydulo8tp'),
       },
       {
-        [isStatus ? 'id' : 'value']: '安装中',
+        [isStatus ? 'id' : 'value']: 'Installing', // 安装中
         type: 'primary',
         [isStatus ? 'children' : 'text']: pageThis.i18n('i18n-7fw4lwae'),
       },
       {
-        [isStatus ? 'id' : 'value']: '安装失败',
+        [isStatus ? 'id' : 'value']: 'RollBackFailed', // 回滚失败
         type: 'error',
-        [isStatus ? 'children' : 'text']: pageThis.i18n('i18n-r147hejk'),
-        tooltip: pageThis.i18n('i18n-mrohje35'),
+        [isStatus ? 'children' : 'text']: pageThis.i18n('i18n-cxitfly5'),
       },
       {
-        [isStatus ? 'id' : 'value']: '可升级',
-        type: 'warning',
-        [isStatus ? 'children' : 'text']: pageThis.i18n('i18n-81c0tben'),
+        [isStatus ? 'id' : 'value']: 'RollBackSuccess', // 回滚成功
+        type: 'success',
+        [isStatus ? 'children' : 'text']: pageThis.i18n('i18n-eoqtcx1y'),
+      },
+      {
+        [isStatus ? 'id' : 'value']: 'RollingBack', // 回滚中
+        type: 'primary',
+        [isStatus ? 'children' : 'text']: pageThis.i18n('i18n-jvkp71jw'),
+      },
+      {
+        [isStatus ? 'id' : 'value']: 'Succeeded', // 成功
+        type: 'success',
+        [isStatus ? 'children' : 'text']: pageThis.i18n('i18n-wfe2nzks'),
+      },
+      {
+        [isStatus ? 'id' : 'value']: 'UninstallFailed', // 卸载失败
+        type: 'error',
+        [isStatus ? 'children' : 'text']: pageThis.i18n('i18n-w8dmnzsr'),
+      },
+      {
+        [isStatus ? 'id' : 'value']: 'UninstallSuccess', // 卸载成功
+        type: 'success',
+        [isStatus ? 'children' : 'text']: pageThis.i18n('i18n-ybpkzm3q'),
+      },
+      {
+        [isStatus ? 'id' : 'value']: 'Uninstalling', // 卸载中
+        type: 'primary',
+        [isStatus ? 'children' : 'text']: pageThis.i18n('i18n-nlrvh6x6'),
+      },
+      {
+        [isStatus ? 'id' : 'value']: 'Unknown', // 未知
+        type: 'disabled',
+        [isStatus ? 'children' : 'text']: pageThis.i18n('i18n-tc7m2mdu'),
+      },
+      {
+        [isStatus ? 'id' : 'value']: 'UpgradeFailed', // 升级失败
+        type: 'error',
+        [isStatus ? 'children' : 'text']: pageThis.i18n('i18n-m6vy7crn'),
+      },
+      {
+        [isStatus ? 'id' : 'value']: 'UpgradeSuccess', // 升级成功
+        type: 'success',
+        [isStatus ? 'children' : 'text']: pageThis.i18n('i18n-iyegtmdr'),
+      },
+      {
+        [isStatus ? 'id' : 'value']: 'Upgrading', // 升级中
+        type: 'primary',
+        [isStatus ? 'children' : 'text']: pageThis.i18n('i18n-3qncl7ec'),
+      },
+      {
+        [isStatus ? 'id' : 'value']: 'WaitDo', // 前置步骤失败
+        type: 'error',
+        [isStatus ? 'children' : 'text']: pageThis.i18n('i18n-ya5jz87v'),
       },
     ];
   };
@@ -311,6 +367,113 @@ utils.validator = function __validator() {
 export const validator = utils.validator;
 
 utils.bffSdk = bffSdk;
+
+/** 日期转Cron {loopType： ‘’， time： ''} */
+utils.dateChangeToCron = function __dateChangeToCron() {
+  return dates => {
+    dates.time = new Date(dates.time);
+    //dates 为传进来的整个日期类型的对象 time:yyyy-MM-d:h为执行时间点
+    let m = '';
+    let s = '';
+    let h = '';
+    let w = dates.wloopValue || '';
+    let mo = dates.mloopValue || '';
+    if (dates.time) {
+      h = dates.time.getHours();
+      m = dates.time.getMinutes();
+      s = dates.time.getSeconds();
+    }
+    let loopType = dates.loopType || 'DAILY';
+    //loopType :[{value: 'ONE_TIME', label: '单次执行'},
+    //  {value: 'DAILY', label: '按天循环'},
+    // {value: 'WEEKLY', label: '按周循环'},
+    // {value: 'MONTHLY', label: '按月循环'}]
+    var cron = '';
+    if (loopType === 'DAILY') {
+      cron = s + ' ' + m + ' ' + h + ' * * ? *';
+    } else if (loopType === 'WEEKLY') {
+      // 星期天为1，星期6为7
+      cron = s + ' ' + m + ' ' + h + ' * * ' + w.join(',') + ' *';
+    } else if (loopType === 'MONTHLY') {
+      // 1-31
+      cron = s + ' ' + m + ' ' + h + ' ' + mo.join(',') + ' * ? *';
+    }
+    return cron;
+    //  console.log（cron）      19 30 16 * * 2,3 *
+  };
+}.apply(utils);
+export const dateChangeToCron = utils.dateChangeToCron;
+
+/** cron 转日期 */
+utils.cronChangeToDate = function __cronChangeToDate() {
+  return str => {
+    // cron表达式转成循环条件
+    // cron 为空的为单次循环
+    // 29 29 16 * * ? * 按天
+    // 19 30 16 * * 2,3 * 按周
+    // 44 30 16 2,4,21 * ? * 按月
+    // 提取特殊字符串长度（scrstr 源字符串 armstr 特殊字符）
+    // 统计字符串中包含某个字符的个数
+    const getPlaceholderCount = strSource => {
+      let count1 = 0; // ?的个数
+      let count2 = 0; // *的个数
+      strSource.replace(/\*|\?/g, function (m, i) {
+        if (m === '?') {
+          count1++;
+        } else if (m === '*') {
+          count2++;
+        }
+      });
+      let obj = {};
+      obj.count1 = count1;
+      obj.count2 = count2;
+      return obj; //返回一个对象，根据需要得到想要的值
+    };
+    let toDate = {};
+    if (!str) {
+      toDate.loopType = '单次循环';
+    } else {
+      let result = str.split(' ').join('');
+      let nArr = str.split(' ');
+      let countData = this.getPlaceholderCount(result);
+      if (!countData.count1) {
+        // 没有'?'则是按周循环
+        toDate.loopType = '周循环';
+        let keys = nArr[5];
+        let en2cnMap = {
+          1: '周天',
+          2: '周一',
+          3: '周二',
+          4: '周三',
+          5: '周四',
+          6: '周五',
+          7: '周六',
+        };
+        let cnKeys = keys.split(',').map(function (key, idx) {
+          return en2cnMap[key];
+        });
+        toDate.loopValue = cnKeys.join(',');
+      } else if (countData.count1 + countData.count2 === 3) {
+        toDate.loopType = '月循环';
+        let mot = [];
+        let mkeys = nArr[3].split(',');
+        for (let i = 0; i < mkeys.length; i++) {
+          let mo = mkeys[i] + '号';
+          mot.push(mo);
+        }
+        toDate.loopValue = mot.join(',');
+      } else {
+        toDate.loopType = '天循环';
+      }
+      toDate.loopTime = nArr[2] + ':' + nArr[1] + ':' + nArr[0];
+    }
+
+    return toDate;
+
+    // console.log(toDate)  {loopType: "月循环", loopValue: "2号,4号,21号", loopTime: "16:30:44"}
+  };
+}.apply(utils);
+export const cronChangeToDate = utils.cronChangeToDate;
 
 export class RefsManager {
   constructor() {
@@ -403,4 +566,8 @@ export default {
   validator,
 
   bffSdk,
+
+  dateChangeToCron,
+
+  cronChangeToDate,
 };
