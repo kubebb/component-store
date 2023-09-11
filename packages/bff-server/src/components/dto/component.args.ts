@@ -1,6 +1,7 @@
 import { SortDirection } from '@/common/models/sort-direction.enum';
 import { ArgsType, Field } from '@nestjs/graphql';
 import { PaginationArgs } from 'src/common/models/pagination.args';
+import { ComponentSource } from '../models/component-source.enum';
 
 @ArgsType()
 export class ComponentArgs extends PaginationArgs {
@@ -13,8 +14,8 @@ export class ComponentArgs extends PaginationArgs {
   /** 关键词 */
   keyword?: string;
 
-  // TODO
   /** 来源（多选） */
+  source?: ComponentSource;
 
   /** 当前状态（多选） */
 

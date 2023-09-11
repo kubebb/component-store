@@ -107,12 +107,17 @@ export class RepositoryService {
     cluster?: string
   ): Promise<Repository[]> {
     let fieldSelector: string;
+    let labelSelector: string;
     if (args?.name) {
       fieldSelector = `metadata.name=${args.name}`;
+    }
+    if (args?.source) {
+      labelSelector = `kubebb.repository.source=${args.source}`;
     }
     const k8s = await this.k8sService.getClient(auth, { cluster });
     const { body } = await k8s.repository.list(this.kubebbNS, {
       fieldSelector,
+      labelSelector,
     });
     return body.items?.map(item => this.formatRepository(item, cluster));
   }

@@ -33,7 +33,7 @@ export class SubscriptionService {
       chartName: component?.chartName,
       latestVersion: component?.latestVersion,
       updatedAt: component?.updatedAt,
-      component: component || (sub.spec?.component as Component),
+      component: component,
       repository: sub.spec?.repository?.name,
       componentPlanInstallMethod: sub.spec?.componentPlanInstallMethod,
       releaseName: sub.spec?.name,
@@ -58,7 +58,7 @@ export class SubscriptionService {
   ): Promise<Subscription[]> {
     const k8s = await this.k8sService.getClient(auth, { cluster });
     const { body } = await k8s.subscription.list(namespace);
-    const components = await this.componentsService.listComponents(auth, cluster);
+    const components = await this.componentsService.list(auth, cluster);
     return body.items
       ?.map(item => {
         const specComponent = item.spec?.component;
