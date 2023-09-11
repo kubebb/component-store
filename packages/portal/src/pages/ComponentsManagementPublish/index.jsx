@@ -87,6 +87,7 @@ class ComponentsManagementPublish$$Page extends React.Component {
       searchValue: undefined,
       modalLoading: false,
       uploadVisible: true,
+      clusterLoading: true,
     };
   }
 
@@ -161,6 +162,7 @@ class ComponentsManagementPublish$$Page extends React.Component {
       {
         clusters,
         cluster: clusters?.[0]?.value,
+        clusterLoading: false,
       },
       this.handleQueryChange
     );
@@ -974,8 +976,9 @@ class ComponentsManagementPublish$$Page extends React.Component {
                     ]}
                     loading={__$$eval(
                       () =>
-                        this.props.useComponents?.isLoading ||
-                        this.props?.useComponents?.loading ||
+                        this.props.useGetComponents?.isLoading ||
+                        this.props?.useGetComponents?.loading ||
+                        this.state.clusterLoading ||
                         false
                     )}
                     onChange={function () {

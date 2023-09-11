@@ -20,7 +20,7 @@ export default defineConfig({
   proxy: {
     '/component-store-apis': {
       /** 目标地址 */
-      target: 'https://portal.172.22.96.209.nip.io',
+      target: 'https://portal.192.168.90.217.nip.io',
       /** 是否改变请求的 origin 为目标地址 */
       changeOrigin: true,
       /** https 证书校验 */
@@ -32,7 +32,7 @@ export default defineConfig({
     },
     '/bff': {
       /** 目标地址 */
-      target: 'https://portal.172.22.96.209.nip.io',
+      target: 'https://portal.192.168.90.217.nip.io',
       /** 是否改变请求的 origin 为目标地址 */
       changeOrigin: true,
       /** https 证书校验 */

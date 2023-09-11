@@ -32,6 +32,21 @@ const routes = [
         path: '/components/management/subscription',
         component: '@/pages/ComponentsManagementSubscription',
       },
+      {
+        name: '组件管理-我安装的',
+        path: '/components/management/install',
+        component: '@/pages/ComponentsManagementInstall',
+      },
+      {
+        // name: '组件管理-我安装的-创建更新',
+        path: '/components/:page/:subPage/management-action/:action/:id',
+        component: '@/pages/ComponentsActions',
+      },
+      {
+        // name: '组件管理-我安装的-详情',
+        path: '/components/management/install/detail/:id',
+        component: '@/pages/ComponentsManagementInstallDetail',
+      },
     ],
   },
 ];

@@ -77,6 +77,7 @@ class ComponentsMarket$$Page extends React.Component {
       searchKey: 'chartName',
       pagination: undefined,
       searchValue: undefined,
+      clusterLoading: true,
     };
   }
 
@@ -130,6 +131,7 @@ class ComponentsMarket$$Page extends React.Component {
       {
         clusters,
         cluster: clusters?.[0]?.value,
+        clusterLoading: false,
       },
       this.handleQueryChange
     );
@@ -411,6 +413,7 @@ class ComponentsMarket$$Page extends React.Component {
                       () =>
                         this.props.useGetComponents?.isLoading ||
                         this.props?.useGetComponents?.loading ||
+                        this.state.clusterLoading ||
                         false
                     )}
                     bordered={false}

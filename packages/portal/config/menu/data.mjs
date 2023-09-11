@@ -1,6 +1,8 @@
 // ⚠️ import 时候需要指定扩展名，即加上 .js
-import BaasMain from "@tenx-ui/icon/lib/BaasMain.js";
-import BaasOrganization from "@tenx-ui/icon/lib/BaasOrganization.js";
+import KubebbComponents from "@tenx-ui/icon/lib/KubebbComponents.js";
+import KubebbMarket from "@tenx-ui/icon/lib/KubebbMarket.js";
+import KubebbWarehouse from "@tenx-ui/icon/lib/KubebbWarehouse.js";
+
 
 export const User = 'User'
 export const TENANT_ADMIN = 'TenantAdmin'
@@ -13,7 +15,7 @@ const data = [
     type: 'all-product',
     text: '组件市场',
     textEn: 'Component Market',
-    icon: BaasMain,
+    icon: KubebbMarket,
     column: 1,
     children: [
       {
@@ -25,7 +27,7 @@ const data = [
             id: 'component-store-repository',
             text: '组件仓库管理',
             textEn: 'Component Repository',
-            icon: BaasOrganization,
+            icon: KubebbWarehouse,
             pathname: '/components/warehouse',
             tenant: false,
           },
@@ -33,7 +35,7 @@ const data = [
             id: 'component-store-market',
             text: '组件市场',
             textEn: 'Component Market',
-            icon: BaasOrganization,
+            icon: KubebbMarket,
             pathname: '/components/market',
             tenant: false,
           },
@@ -41,6 +43,7 @@ const data = [
             id: 'component-store-management',
             text: '组件管理',
             textEn: 'Component Management',
+            icon: KubebbComponents,
             children: [
               {
                 id: 'component-store-management-publish',
