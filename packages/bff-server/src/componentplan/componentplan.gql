@@ -55,6 +55,26 @@ query getComponentplan($name: String!, $namespace: String!, $cluster: String) {
   }
 }
 
+# 「安装组件」详情-历史版本列表
+query getComponentplanHistory($name: String!, $namespace: String!, $cluster: String) {
+  componentplan(name: $name, namespace: $namespace, cluster: $cluster) {
+    namespace
+    status
+    releaseName
+    component {
+      chartName
+    }
+    history {
+      name
+      creationTimestamp
+      version
+      subscription {
+        componentPlanInstallMethod
+      }
+    }
+  }
+}
+
 # 创建「安装组件」
 mutation createComponentplan($namespace: String!, $componentplan: CreateComponentplanInput!, $cluster: String){
   componentplanCreate(namespace: $namespace, componentplan: $componentplan, cluster: $cluster)
@@ -68,4 +88,9 @@ mutation updateComponentplan($name: String!, $namespace: String!, $componentplan
 # 删除「安装组件」
 mutation deleteComponentplan($name: String!, $namespace: String!, $cluster: String){
   componentplanRemove(name: $name, namespace: $namespace, cluster: $cluster)
+}
+
+# 回滚「安装组件」
+mutation rollbackComponentplan($name: String!, $namespace: String!, $cluster: String){
+  componentplanRollback(name: $name, namespace: $namespace, cluster: $cluster)
 }

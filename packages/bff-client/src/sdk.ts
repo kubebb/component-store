@@ -118,6 +118,10 @@ export type Componentplan = {
   component?: Maybe<Component>;
   /** 创建时间 */
   creationTimestamp: Scalars['String']['output'];
+  /** 历史版本 */
+  history?: Maybe<Array<Componentplan>>;
+  /** 当前安装 */
+  latest?: Maybe<Scalars['Boolean']['output']>;
   /** 组件名称 */
   name: Scalars['ID']['output'];
   /** 项目 */
@@ -287,6 +291,8 @@ export type Mutation = {
   componentplanCreate: Scalars['Boolean']['output'];
   /** 安装组件删除 */
   componentplanRemove: Scalars['Boolean']['output'];
+  /** 安装组件回滚 */
+  componentplanRollback: Scalars['Boolean']['output'];
   /** 安装组件更新 */
   componentplanUpdate: Scalars['Boolean']['output'];
   /** 创建仓库 */
@@ -323,6 +329,12 @@ export type MutationComponentplanCreateArgs = {
 };
 
 export type MutationComponentplanRemoveArgs = {
+  cluster?: InputMaybe<Scalars['String']['input']>;
+  name: Scalars['String']['input'];
+  namespace: Scalars['String']['input'];
+};
+
+export type MutationComponentplanRollbackArgs = {
   cluster?: InputMaybe<Scalars['String']['input']>;
   name: Scalars['String']['input'];
   namespace: Scalars['String']['input'];
@@ -645,7 +657,7 @@ export type Subscription = {
   /** 组件名称 */
   chartName?: Maybe<Scalars['String']['output']>;
   /** 组件 */
-  component: Component;
+  component?: Maybe<Component>;
   /** 更新方式 */
   componentPlanInstallMethod?: Maybe<InstallMethod>;
   /** 订阅时间 */
@@ -791,6 +803,33 @@ export type GetComponentplanQuery = {
   };
 };
 
+export type GetComponentplanHistoryQueryVariables = Exact<{
+  name: Scalars['String']['input'];
+  namespace: Scalars['String']['input'];
+  cluster?: InputMaybe<Scalars['String']['input']>;
+}>;
+
+export type GetComponentplanHistoryQuery = {
+  __typename?: 'Query';
+  componentplan: {
+    __typename?: 'Componentplan';
+    namespace: string;
+    status?: ComponentplanStatus | null;
+    releaseName: string;
+    component?: { __typename?: 'Component'; chartName: string } | null;
+    history?: Array<{
+      __typename?: 'Componentplan';
+      name: string;
+      creationTimestamp: string;
+      version?: string | null;
+      subscription?: {
+        __typename?: 'Subscription';
+        componentPlanInstallMethod?: InstallMethod | null;
+      } | null;
+    }> | null;
+  };
+};
+
 export type CreateComponentplanMutationVariables = Exact<{
   namespace: Scalars['String']['input'];
   componentplan: CreateComponentplanInput;
@@ -815,6 +854,17 @@ export type DeleteComponentplanMutationVariables = Exact<{
 }>;
 
 export type DeleteComponentplanMutation = { __typename?: 'Mutation'; componentplanRemove: boolean };
+
+export type RollbackComponentplanMutationVariables = Exact<{
+  name: Scalars['String']['input'];
+  namespace: Scalars['String']['input'];
+  cluster?: InputMaybe<Scalars['String']['input']>;
+}>;
+
+export type RollbackComponentplanMutation = {
+  __typename?: 'Mutation';
+  componentplanRollback: boolean;
+};
 
 export type GetComponentsQueryVariables = Exact<{
   page?: InputMaybe<Scalars['Float']['input']>;
@@ -1158,14 +1208,14 @@ export type GetSubscriptionsPagedQuery = {
       latestVersion?: string | null;
       updatedAt?: string | null;
       repository: string;
-      component: {
+      component?: {
         __typename?: 'Component';
         name: string;
         chartName: string;
         latestVersion?: string | null;
         updatedAt?: string | null;
         repository: string;
-      };
+      } | null;
     }> | null;
   };
 };
@@ -1182,7 +1232,7 @@ export type GetSubscriptionsQuery = {
     name: string;
     namespace: string;
     releaseName?: string | null;
-    component: { __typename?: 'Component'; name: string };
+    component?: { __typename?: 'Component'; name: string } | null;
   }>;
 };
 
@@ -1278,6 +1328,26 @@ export const GetComponentplanDocument = gql`
     }
   }
 `;
+export const GetComponentplanHistoryDocument = gql`
+  query getComponentplanHistory($name: String!, $namespace: String!, $cluster: String) {
+    componentplan(name: $name, namespace: $namespace, cluster: $cluster) {
+      namespace
+      status
+      releaseName
+      component {
+        chartName
+      }
+      history {
+        name
+        creationTimestamp
+        version
+        subscription {
+          componentPlanInstallMethod
+        }
+      }
+    }
+  }
+`;
 export const CreateComponentplanDocument = gql`
   mutation createComponentplan(
     $namespace: String!
@@ -1305,6 +1375,11 @@ export const UpdateComponentplanDocument = gql`
 export const DeleteComponentplanDocument = gql`
   mutation deleteComponentplan($name: String!, $namespace: String!, $cluster: String) {
     componentplanRemove(name: $name, namespace: $namespace, cluster: $cluster)
+  }
+`;
+export const RollbackComponentplanDocument = gql`
+  mutation rollbackComponentplan($name: String!, $namespace: String!, $cluster: String) {
+    componentplanRollback(name: $name, namespace: $namespace, cluster: $cluster)
   }
 `;
 export const GetComponentsDocument = gql`
@@ -1681,6 +1756,20 @@ export function getSdk(client: GraphQLClient, withWrapper: SdkFunctionWrapper = 
         'query'
       );
     },
+    getComponentplanHistory(
+      variables: GetComponentplanHistoryQueryVariables,
+      requestHeaders?: GraphQLClientRequestHeaders
+    ): Promise<GetComponentplanHistoryQuery> {
+      return withWrapper(
+        wrappedRequestHeaders =>
+          client.request<GetComponentplanHistoryQuery>(GetComponentplanHistoryDocument, variables, {
+            ...requestHeaders,
+            ...wrappedRequestHeaders,
+          }),
+        'getComponentplanHistory',
+        'query'
+      );
+    },
     createComponentplan(
       variables: CreateComponentplanMutationVariables,
       requestHeaders?: GraphQLClientRequestHeaders
@@ -1720,6 +1809,20 @@ export function getSdk(client: GraphQLClient, withWrapper: SdkFunctionWrapper = 
             ...wrappedRequestHeaders,
           }),
         'deleteComponentplan',
+        'mutation'
+      );
+    },
+    rollbackComponentplan(
+      variables: RollbackComponentplanMutationVariables,
+      requestHeaders?: GraphQLClientRequestHeaders
+    ): Promise<RollbackComponentplanMutation> {
+      return withWrapper(
+        wrappedRequestHeaders =>
+          client.request<RollbackComponentplanMutation>(RollbackComponentplanDocument, variables, {
+            ...requestHeaders,
+            ...wrappedRequestHeaders,
+          }),
+        'rollbackComponentplan',
         'mutation'
       );
     },
@@ -2032,6 +2135,16 @@ export function getSdkWithHooks(
       return useSWR<GetComponentplanQuery, ClientError>(
         genKey<GetComponentplanQueryVariables>('GetComponentplan', variables),
         () => sdk.getComponentplan(variables),
+        config
+      );
+    },
+    useGetComponentplanHistory(
+      variables: GetComponentplanHistoryQueryVariables,
+      config?: SWRConfigInterface<GetComponentplanHistoryQuery, ClientError>
+    ) {
+      return useSWR<GetComponentplanHistoryQuery, ClientError>(
+        genKey<GetComponentplanHistoryQueryVariables>('GetComponentplanHistory', variables),
+        () => sdk.getComponentplanHistory(variables),
         config
       );
     },

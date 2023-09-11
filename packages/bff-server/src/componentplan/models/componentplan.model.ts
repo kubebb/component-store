@@ -26,7 +26,7 @@ export class Componentplan {
   @Field(() => ComponentplanStatus, { description: '状态' })
   status?: string;
 
-  @HideField()
+  /** 当前安装 */
   latest?: boolean;
 
   @HideField()
