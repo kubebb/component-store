@@ -88,6 +88,18 @@ class ComponentsManagementInstallDetail$$Page extends React.Component {
     return cluster;
   }
 
+  async loadDetail(record) {
+    const res = await this.props.appHelper?.utils?.bff?.getComponentplan({
+      name: record?.name,
+      namespace: this.utils.getAuthData()?.project,
+      cluster: this.utils.getAuthData()?.cluster,
+    });
+    const componentplan = res?.componentplan;
+    this.setState({
+      componentplan,
+    });
+  }
+
   async loadCluster() {
     const res = await this.props.appHelper?.utils?.bffSdk?.getCluster({
       name: this.getCluster(),
@@ -108,6 +120,7 @@ class ComponentsManagementInstallDetail$$Page extends React.Component {
       isOpenModal: true,
       modalType: 'detail',
     });
+    this.loadDetail(record);
   }
 
   openRollBackModal(e, { record }) {
@@ -124,9 +137,11 @@ class ComponentsManagementInstallDetail$$Page extends React.Component {
       modalLoading: true,
     });
     try {
-      // await this.utils.bff.deleteComponent({
-      //   cluster: data?.cluster || this.getCluster()
-      // })
+      await this.utils.bff.rollbackComponentplan({
+        name: this.state.record?.name,
+        namespace: this.utils.getAuthData()?.project,
+        cluster: this.utils.getAuthData()?.cluster,
+      });
       this.closeModal();
       this.utils.notification.success({
         message: this.i18n('i18n-m9qnleli'),
@@ -135,6 +150,7 @@ class ComponentsManagementInstallDetail$$Page extends React.Component {
         modalLoading: false,
       });
       this.props.useGetComponentplan.mutate();
+      this.props.useGetComponentplanHistory.mutate();
     } catch (error) {
       this.setState({
         modalLoading: false,
@@ -155,171 +171,6 @@ class ComponentsManagementInstallDetail$$Page extends React.Component {
     const { state } = __$$context;
     return (
       <Page>
-        <Modal
-          mask={true}
-          onOk={function () {
-            return this.openRollBackModal.apply(
-              this,
-              Array.prototype.slice.call(arguments).concat([])
-            );
-          }.bind(this)}
-          open={__$$eval(() => this.state.isOpenModal && this.state.modalType === 'rollback')}
-          title={this.i18n('i18n-v53vxn1j') /* 回滚组件 */}
-          footer={
-            <Space align="center" direction="horizontal" __component_name="Space">
-              <Button
-                block={false}
-                ghost={false}
-                shape="default"
-                danger={false}
-                onClick={function () {
-                  return this.closeModal.apply(
-                    this,
-                    Array.prototype.slice.call(arguments).concat([])
-                  );
-                }.bind(this)}
-                disabled={false}
-                __component_name="Button"
-              >
-                {this.i18n('i18n-46k1aoak') /* 取消 */}
-              </Button>
-              <Button
-                type="primary"
-                block={false}
-                ghost={false}
-                shape="default"
-                danger={false}
-                loading={__$$eval(() => this.state.modalLoading)}
-                onClick={function () {
-                  return this.confirmRollBackModal.apply(
-                    this,
-                    Array.prototype.slice.call(arguments).concat([])
-                  );
-                }.bind(this)}
-                disabled={false}
-                __component_name="Button"
-              >
-                {this.i18n('i18n-mgpcpuj5') /* 确定 */}
-              </Button>
-              <Button
-                type="primary"
-                block={false}
-                ghost={false}
-                shape="default"
-                danger={false}
-                onClick={function () {
-                  return this.closeModal.apply(
-                    this,
-                    Array.prototype.slice.call(arguments).concat([])
-                  );
-                }.bind(this)}
-                disabled={false}
-                __component_name="Button"
-              >
-                {this.i18n('i18n-z71nrt4j') /* 我知道了 */}
-              </Button>
-            </Space>
-          }
-          centered={false}
-          keyboard={true}
-          onCancel={function () {
-            return this.closeModal.apply(this, Array.prototype.slice.call(arguments).concat([]));
-          }.bind(this)}
-          forceRender={false}
-          maskClosable={false}
-          confirmLoading={__$$eval(() => this.state.modalLoading)}
-          destroyOnClose={true}
-          __component_name="Modal"
-        >
-          <Alert
-            type="warning"
-            message={[
-              <Row wrap={true} gutter={[0, 0]} __component_name="Row" key="node_oclma60ftb1">
-                <Col span={24} __component_name="Col">
-                  <Space align="center" direction="horizontal" __component_name="Space">
-                    <Typography.Text
-                      style={{ fontSize: '' }}
-                      strong={false}
-                      disabled={false}
-                      ellipsis={true}
-                      __component_name="Typography.Text"
-                    >
-                      {this.i18n('i18n-171v81ky') /* 组件 */}
-                    </Typography.Text>
-                    <Typography.Text
-                      style={{ fontSize: '' }}
-                      strong={false}
-                      disabled={false}
-                      ellipsis={true}
-                      __component_name="Typography.Text"
-                    >
-                      -
-                    </Typography.Text>
-                    <Typography.Text
-                      style={{ fontSize: '' }}
-                      strong={false}
-                      disabled={false}
-                      ellipsis={true}
-                      __component_name="Typography.Text"
-                    >
-                      {this.i18n('i18n-8vw2o9ww') /* 将回滚至版本 */}
-                    </Typography.Text>
-                    <Typography.Text
-                      style={{ fontSize: '' }}
-                      strong={false}
-                      disabled={false}
-                      ellipsis={true}
-                      __component_name="Typography.Text"
-                    >
-                      text
-                    </Typography.Text>
-                    <Typography.Text
-                      style={{ fontSize: '' }}
-                      strong={false}
-                      disabled={false}
-                      ellipsis={true}
-                      __component_name="Typography.Text"
-                    >
-                      {this.i18n('i18n-qad8sipi') /* ，回滚后，更新方式变成<手动更新>。 */}
-                    </Typography.Text>
-                  </Space>
-                </Col>
-                <Col span={24} __component_name="Col">
-                  <Typography.Text
-                    style={{ fontSize: '' }}
-                    strong={false}
-                    disabled={false}
-                    ellipsis={true}
-                    __component_name="Typography.Text"
-                  >
-                    {this.i18n('i18n-x21ce7rc') /* 确定回滚吗？ */}
-                  </Typography.Text>
-                </Col>
-              </Row>,
-              <Row wrap={true} gutter={[0, 0]} __component_name="Row" key="node_oclmeavsua36">
-                <Col span={24} __component_name="Col">
-                  <Space align="center" direction="horizontal" __component_name="Space">
-                    <Typography.Text
-                      style={{ fontSize: '' }}
-                      strong={false}
-                      disabled={false}
-                      ellipsis={true}
-                      __component_name="Typography.Text"
-                    >
-                      {
-                        this.i18n(
-                          'i18n-bgv6xgor'
-                        ) /* 当前组件正在安装中，请安装完成后，再进行回滚。 */
-                      }
-                    </Typography.Text>
-                  </Space>
-                </Col>
-              </Row>,
-            ]}
-            showIcon={true}
-            __component_name="Alert"
-          />
-        </Modal>
         <Drawer
           mask={true}
           open={__$$eval(() => this.state.isOpenModal && this.state.modalType === 'detail')}
@@ -344,31 +195,73 @@ class ComponentsManagementInstallDetail$$Page extends React.Component {
                     key: '3jcvyze4yyx',
                     span: 1,
                     label: this.i18n('i18n-cuf6u4di') /* 组件名称 */,
-                    children: null,
+                    children: (
+                      <Typography.Text
+                        style={{ fontSize: '' }}
+                        strong={false}
+                        disabled={false}
+                        ellipsis={true}
+                        __component_name="Typography.Text"
+                      >
+                        {__$$eval(
+                          () =>
+                            this.props.useGetComponentplanHistory?.data?.componentplan?.component
+                              ?.chartName || []
+                        )}
+                      </Typography.Text>
+                    ),
                   },
                   {
                     key: 'e2jwe7g7qe9',
                     span: 1,
                     label: this.i18n('i18n-1po87kgw') /* 组件仓库 */,
-                    children: null,
+                    children: (
+                      <Typography.Text
+                        style={{ fontSize: '' }}
+                        strong={false}
+                        disabled={false}
+                        ellipsis={true}
+                        __component_name="Typography.Text"
+                      >
+                        {__$$eval(
+                          () =>
+                            this.props.useGetComponentplanHistory?.data?.componentplan?.component
+                              ?.repository || '-'
+                        )}
+                      </Typography.Text>
+                    ),
                   },
                   {
                     key: 'rusuyx13gj',
                     span: 1,
                     label: this.i18n('i18n-ekp8efeq') /* 组件版本 */,
-                    children: null,
+                    children: (
+                      <Typography.Text
+                        style={{ fontSize: '' }}
+                        strong={false}
+                        disabled={false}
+                        ellipsis={true}
+                        __component_name="Typography.Text"
+                      >
+                        text
+                      </Typography.Text>
+                    ),
                   },
                   {
                     key: '86jag7lsmvt',
                     span: 1,
                     label: this.i18n('i18n-5u3ohmy6') /* 更新方式 */,
-                    children: null,
-                  },
-                  {
-                    key: 'rg5xoekgj6',
-                    span: 1,
-                    label: this.i18n('i18n-l46z9szm') /* 安装位置 */,
-                    children: null,
+                    children: (
+                      <Typography.Text
+                        style={{ fontSize: '' }}
+                        strong={false}
+                        disabled={false}
+                        ellipsis={true}
+                        __component_name="Typography.Text"
+                      >
+                        text
+                      </Typography.Text>
+                    ),
                   },
                 ]}
                 title={this.i18n('i18n-tff20aee') /* 安装信息 */}
@@ -393,7 +286,7 @@ class ComponentsManagementInstallDetail$$Page extends React.Component {
                       ellipsis={true}
                       __component_name="Typography.Text"
                     >
-                      text
+                      {__$$eval(() => this.state?.componentplan?.component?.chartName || '-')}
                     </Typography.Text>
                   }
                 </Descriptions.Item>
@@ -410,7 +303,7 @@ class ComponentsManagementInstallDetail$$Page extends React.Component {
                       ellipsis={true}
                       __component_name="Typography.Text"
                     >
-                      text
+                      {__$$eval(() => this.state?.componentplan?.component?.repository || '-')}
                     </Typography.Text>
                   }
                 </Descriptions.Item>
@@ -427,7 +320,7 @@ class ComponentsManagementInstallDetail$$Page extends React.Component {
                       ellipsis={true}
                       __component_name="Typography.Text"
                     >
-                      text
+                      {__$$eval(() => this.state?.componentplan?.version || '-')}
                     </Typography.Text>
                   }
                 </Descriptions.Item>
@@ -444,24 +337,17 @@ class ComponentsManagementInstallDetail$$Page extends React.Component {
                       ellipsis={true}
                       __component_name="Typography.Text"
                     >
-                      text
-                    </Typography.Text>
-                  }
-                </Descriptions.Item>
-                <Descriptions.Item
-                  key="rg5xoekgj6"
-                  span={1}
-                  label={this.i18n('i18n-l46z9szm') /* 安装位置 */}
-                >
-                  {
-                    <Typography.Text
-                      style={{ fontSize: '' }}
-                      strong={false}
-                      disabled={false}
-                      ellipsis={true}
-                      __component_name="Typography.Text"
-                    >
-                      text
+                      {__$$eval(
+                        () =>
+                          this.utils
+                            .getComponentInstallMethods(this)
+                            ?.find(
+                              item =>
+                                item.value ===
+                                  this.state?.componentplan?.subscription
+                                    ?.componentPlanInstallMethod || 'manual'
+                            )?.text || '-'
+                      )}
                     </Typography.Text>
                   }
                 </Descriptions.Item>
@@ -568,6 +454,211 @@ class ComponentsManagementInstallDetail$$Page extends React.Component {
             </Col>
           </Row>
         </Drawer>
+        <Modal
+          mask={true}
+          onOk={function () {
+            return this.openRollBackModal.apply(
+              this,
+              Array.prototype.slice.call(arguments).concat([])
+            );
+          }.bind(this)}
+          open={__$$eval(() => this.state.isOpenModal && this.state.modalType === 'rollback')}
+          title={this.i18n('i18n-v53vxn1j') /* 回滚组件 */}
+          footer={
+            <Space align="center" direction="horizontal" __component_name="Space">
+              {!!__$$eval(
+                () =>
+                  this.props.useGetComponentplanHistory?.data?.componentplan?.status !==
+                  'Installing'
+              ) && (
+                <Button
+                  block={false}
+                  ghost={false}
+                  shape="default"
+                  danger={false}
+                  onClick={function () {
+                    return this.closeModal.apply(
+                      this,
+                      Array.prototype.slice.call(arguments).concat([])
+                    );
+                  }.bind(this)}
+                  disabled={false}
+                  __component_name="Button"
+                >
+                  {this.i18n('i18n-46k1aoak') /* 取消 */}
+                </Button>
+              )}
+              {!!__$$eval(
+                () =>
+                  this.props.useGetComponentplanHistory?.data?.componentplan?.status !==
+                  'Installing'
+              ) && (
+                <Button
+                  type="primary"
+                  block={false}
+                  ghost={false}
+                  shape="default"
+                  danger={false}
+                  loading={__$$eval(() => this.state.modalLoading)}
+                  onClick={function () {
+                    return this.confirmRollBackModal.apply(
+                      this,
+                      Array.prototype.slice.call(arguments).concat([])
+                    );
+                  }.bind(this)}
+                  disabled={false}
+                  __component_name="Button"
+                >
+                  {this.i18n('i18n-mgpcpuj5') /* 确定 */}
+                </Button>
+              )}
+              {!!__$$eval(
+                () =>
+                  this.props.useGetComponentplanHistory?.data?.componentplan?.status ===
+                  'Installing'
+              ) && (
+                <Button
+                  type="primary"
+                  block={false}
+                  ghost={false}
+                  shape="default"
+                  danger={false}
+                  onClick={function () {
+                    return this.closeModal.apply(
+                      this,
+                      Array.prototype.slice.call(arguments).concat([])
+                    );
+                  }.bind(this)}
+                  disabled={false}
+                  __component_name="Button"
+                >
+                  {this.i18n('i18n-z71nrt4j') /* 我知道了 */}
+                </Button>
+              )}
+            </Space>
+          }
+          centered={false}
+          keyboard={true}
+          onCancel={function () {
+            return this.closeModal.apply(this, Array.prototype.slice.call(arguments).concat([]));
+          }.bind(this)}
+          forceRender={false}
+          maskClosable={false}
+          confirmLoading={__$$eval(() => this.state.modalLoading)}
+          destroyOnClose={true}
+          __component_name="Modal"
+        >
+          <Alert
+            type="warning"
+            message={[
+              !!__$$eval(
+                () =>
+                  this.props.useGetComponentplanHistory?.data?.componentplan?.status !==
+                  'Installing'
+              ) && (
+                <Row wrap={true} gutter={[0, 0]} __component_name="Row" key="node_oclma60ftb1">
+                  <Col span={24} __component_name="Col">
+                    <Space align="center" direction="horizontal" __component_name="Space">
+                      <Typography.Text
+                        style={{ fontSize: '' }}
+                        strong={false}
+                        disabled={false}
+                        ellipsis={true}
+                        __component_name="Typography.Text"
+                      >
+                        {this.i18n('i18n-171v81ky') /* 组件 */}
+                      </Typography.Text>
+                      {!!__$$eval(
+                        () =>
+                          this.props.useGetComponentplanHistory?.data?.componentplan?.component
+                            ?.chartName || '-'
+                      ) && (
+                        <Typography.Text
+                          style={{ fontSize: '' }}
+                          strong={false}
+                          disabled={false}
+                          ellipsis={true}
+                          __component_name="Typography.Text"
+                        >
+                          {__$$eval(
+                            () =>
+                              this.props.useGetComponentplanHistory?.data?.componentplan?.component
+                                ?.chartName || '-'
+                          )}
+                        </Typography.Text>
+                      )}
+                      <Typography.Text
+                        style={{ fontSize: '' }}
+                        strong={false}
+                        disabled={false}
+                        ellipsis={true}
+                        __component_name="Typography.Text"
+                      >
+                        {this.i18n('i18n-8vw2o9ww') /* 将回滚至版本 */}
+                      </Typography.Text>
+                      <Typography.Text
+                        style={{ fontSize: '' }}
+                        strong={false}
+                        disabled={false}
+                        ellipsis={true}
+                        __component_name="Typography.Text"
+                      >
+                        {__$$eval(() => this.state.record?.version || '-')}
+                      </Typography.Text>
+                      <Typography.Text
+                        style={{ fontSize: '' }}
+                        strong={false}
+                        disabled={false}
+                        ellipsis={true}
+                        __component_name="Typography.Text"
+                      >
+                        {this.i18n('i18n-qad8sipi') /* ，回滚后，更新方式变成<手动更新>。 */}
+                      </Typography.Text>
+                    </Space>
+                  </Col>
+                  <Col span={24} __component_name="Col">
+                    <Typography.Text
+                      style={{ fontSize: '' }}
+                      strong={false}
+                      disabled={false}
+                      ellipsis={true}
+                      __component_name="Typography.Text"
+                    >
+                      {this.i18n('i18n-x21ce7rc') /* 确定回滚吗？ */}
+                    </Typography.Text>
+                  </Col>
+                </Row>
+              ),
+              <Row wrap={true} gutter={[0, 0]} __component_name="Row" key="node_oclmeavsua36">
+                {!!__$$eval(
+                  () =>
+                    this.props.useGetComponentplanHistory?.data?.componentplan?.status ===
+                    'Installing'
+                ) && (
+                  <Col span={24} __component_name="Col">
+                    <Space align="center" direction="horizontal" __component_name="Space">
+                      <Typography.Text
+                        style={{ fontSize: '' }}
+                        strong={false}
+                        disabled={false}
+                        ellipsis={true}
+                        __component_name="Typography.Text"
+                      >
+                        {
+                          this.i18n(
+                            'i18n-bgv6xgor'
+                          ) /* 当前组件正在安装中，请安装完成后，再进行回滚。 */
+                        }
+                      </Typography.Text>
+                    </Space>
+                  </Col>
+                )}
+              </Row>,
+            ]}
+            showIcon={true}
+            __component_name="Alert"
+          />
+        </Modal>
         <Row wrap={true} __component_name="Row">
           <Col span={24} __component_name="Col">
             <Space align="center" direction="horizontal">
@@ -577,28 +668,32 @@ class ComponentsManagementInstallDetail$$Page extends React.Component {
                 __component_name="Button.Back"
               />
             </Space>
-            <Tag
-              color="rgba(0,0,0,0.65)"
-              style={{
-                position: 'relative',
-                marginTop: '-5px',
-                marginLeft: '16px',
-                marginRight: '0px',
-                borderRadius: '0',
-              }}
-              closable={false}
-              __component_name="Tag"
-            >
-              {this.i18n('i18n-yfkq2xqq') /* 集群 */}
-            </Tag>
-            <Tag
-              color="default"
-              style={{ position: 'relative', marginTop: '-5px', borderRadius: '0' }}
-              closable={false}
-              __component_name="Tag"
-            >
-              {__$$eval(() => this.getClusterInfo()?.fullName || '-')}
-            </Tag>
+            {!!false && (
+              <Tag
+                color="rgba(0,0,0,0.65)"
+                style={{
+                  position: 'relative',
+                  marginTop: '-5px',
+                  marginLeft: '16px',
+                  marginRight: '0px',
+                  borderRadius: '0',
+                }}
+                closable={false}
+                __component_name="Tag"
+              >
+                {this.i18n('i18n-yfkq2xqq') /* 集群 */}
+              </Tag>
+            )}
+            {!!false && (
+              <Tag
+                color="default"
+                style={{ position: 'relative', marginTop: '-5px', borderRadius: '0' }}
+                closable={false}
+                __component_name="Tag"
+              >
+                {__$$eval(() => this.getClusterInfo()?.fullName || '-')}
+              </Tag>
+            )}
           </Col>
           <Col span={24} __component_name="Col">
             <Card
@@ -845,22 +940,6 @@ class ComponentsManagementInstallDetail$$Page extends React.Component {
                               </Typography.Text>
                             ),
                           },
-                          {
-                            key: 'b978k0bqvq4',
-                            span: 1,
-                            label: this.i18n('i18n-l46z9szm') /* 安装位置 */,
-                            children: (
-                              <Typography.Text
-                                style={{ fontSize: '' }}
-                                strong={false}
-                                disabled={false}
-                                ellipsis={true}
-                                __component_name="Typography.Text"
-                              >
-                                text
-                              </Typography.Text>
-                            ),
-                          },
                         ]}
                         title=""
                         column={1}
@@ -955,27 +1034,10 @@ class ComponentsManagementInstallDetail$$Page extends React.Component {
                                     ?.find(
                                       item =>
                                         item.value ===
-                                        this.props.useGetComponentplan?.data?.componentplan
-                                          ?.subscription?.componentPlanInstallMethod
+                                          this.props.useGetComponentplan?.data?.componentplan
+                                            ?.subscription?.componentPlanInstallMethod || 'manual'
                                     )?.text || '-'
                               )}
-                            </Typography.Text>
-                          }
-                        </Descriptions.Item>
-                        <Descriptions.Item
-                          key="b978k0bqvq4"
-                          span={1}
-                          label={this.i18n('i18n-l46z9szm') /* 安装位置 */}
-                        >
-                          {
-                            <Typography.Text
-                              style={{ fontSize: '' }}
-                              strong={false}
-                              disabled={false}
-                              ellipsis={true}
-                              __component_name="Typography.Text"
-                            >
-                              text
                             </Typography.Text>
                           }
                         </Descriptions.Item>
@@ -1138,15 +1200,47 @@ class ComponentsManagementInstallDetail$$Page extends React.Component {
                                   disabled={false}
                                   __component_name="Button"
                                 >
-                                  创建
+                                  {__$$eval(
+                                    () =>
+                                      __$$context.props.useGetComponentplanHistory?.data
+                                        ?.componentplan?.component?.chartName || '-'
+                                  )}
                                 </Button>
                               ))(__$$createChildContext(__$$context, { text, record, index })),
                             dataIndex: 'name',
                           },
                           {
-                            key: 'age',
+                            key: 'version',
                             title: this.i18n('i18n-7e7t3bw9') /* 版本 */,
-                            dataIndex: 'age',
+                            render: (text, record, index) =>
+                              (__$$context => (
+                                <Space
+                                  align="center"
+                                  direction="horizontal"
+                                  __component_name="Space"
+                                >
+                                  <Typography.Text
+                                    style={{ fontSize: '' }}
+                                    strong={false}
+                                    disabled={false}
+                                    ellipsis={true}
+                                    __component_name="Typography.Text"
+                                  >
+                                    {__$$eval(() => record?.version || '-')}
+                                  </Typography.Text>
+                                  {!!__$$eval(
+                                    () =>
+                                      record?.version ===
+                                      __$$context.props.useGetComponentplan?.data?.componentplan
+                                        ?.version
+                                  ) && (
+                                    <Tag color="processing" closable={false} __component_name="Tag">
+                                      {this.i18n('i18n-0tv3gn9e') /* 当前版本 */}
+                                    </Tag>
+                                  )}
+                                </Space>
+                              ))(__$$createChildContext(__$$context, { text, record, index })),
+                            dataIndex: 'version',
                           },
                           {
                             title: this.i18n('i18n-5u3ohmy6') /* 更新方式 */,
@@ -1163,7 +1257,12 @@ class ComponentsManagementInstallDetail$$Page extends React.Component {
                                     () =>
                                       __$$context.utils
                                         .getComponentInstallMethods(__$$context)
-                                        ?.find(item => item.value === '')?.text || '-'
+                                        ?.find(
+                                          item =>
+                                            item.value ===
+                                              record?.subscription?.componentPlanInstallMethod ||
+                                            'manual'
+                                        )?.text || '-'
                                   )}
                                 </Typography.Text>
                               ))(__$$createChildContext(__$$context, { text, record, index })),
@@ -1171,11 +1270,12 @@ class ComponentsManagementInstallDetail$$Page extends React.Component {
                             dataIndex: 'fs',
                           },
                           {
+                            key: 'creationTimestamp',
                             title: this.i18n('i18n-txxiyeog') /* 安装时间 */,
                             render: (text, record, index) =>
                               (__$$context => (
                                 <Typography.Time
-                                  time=""
+                                  time={__$$eval(() => record?.creationTimestamp)}
                                   format=""
                                   relativeTime={false}
                                   __component_name="Typography.Time"
@@ -1183,12 +1283,12 @@ class ComponentsManagementInstallDetail$$Page extends React.Component {
                               ))(__$$createChildContext(__$$context, { text, record, index })),
                             sorter: false,
                             ellipsis: { showTitle: false },
-                            dataIndex: 'sj',
+                            dataIndex: 'creationTimestamp',
                           },
                           {
                             key: 'op',
                             title: this.i18n('i18n-ioy0ge9h') /* 操作 */,
-                            width: 100,
+                            width: 170,
                             render: (text, record, index) =>
                               (__$$context => (
                                 <Space
@@ -1196,41 +1296,71 @@ class ComponentsManagementInstallDetail$$Page extends React.Component {
                                   direction="horizontal"
                                   __component_name="Space"
                                 >
-                                  <Button
-                                    block={false}
-                                    ghost={false}
-                                    shape="default"
-                                    danger={false}
-                                    onClick={function () {
-                                      return this.openRollBackModal.apply(
-                                        this,
-                                        Array.prototype.slice.call(arguments).concat([
-                                          {
-                                            record: record,
-                                          },
-                                        ])
-                                      );
-                                    }.bind(__$$context)}
-                                    disabled={false}
-                                    __component_name="Button"
-                                  >
-                                    {this.i18n('i18n-xbsrk4fe') /* 回滚 */}
-                                  </Button>
+                                  {!!__$$eval(
+                                    () =>
+                                      record?.version ===
+                                      __$$context.props.useGetComponentplan?.data?.componentplan
+                                        ?.version
+                                  ) && (
+                                    <Button
+                                      block={false}
+                                      ghost={false}
+                                      shape="default"
+                                      danger={false}
+                                      onClick={function () {
+                                        return this.openDetailModal.apply(
+                                          this,
+                                          Array.prototype.slice.call(arguments).concat([
+                                            {
+                                              record: record,
+                                            },
+                                          ])
+                                        );
+                                      }.bind(__$$context)}
+                                      disabled={false}
+                                      __component_name="Button"
+                                    >
+                                      {this.i18n('i18n-paerzt3q') /* 查看 */}
+                                    </Button>
+                                  )}
+                                  {!!__$$eval(
+                                    () =>
+                                      record?.version !==
+                                      __$$context.props.useGetComponentplan?.data?.componentplan
+                                        ?.version
+                                  ) && (
+                                    <Button
+                                      block={false}
+                                      ghost={false}
+                                      shape="default"
+                                      danger={false}
+                                      onClick={function () {
+                                        return this.openRollBackModal.apply(
+                                          this,
+                                          Array.prototype.slice.call(arguments).concat([
+                                            {
+                                              record: record,
+                                            },
+                                          ])
+                                        );
+                                      }.bind(__$$context)}
+                                      disabled={false}
+                                      __component_name="Button"
+                                    >
+                                      {this.i18n('i18n-xbsrk4fe') /* 回滚 */}
+                                    </Button>
+                                  )}
                                 </Space>
                               ))(__$$createChildContext(__$$context, { text, record, index })),
                             dataIndex: 'op',
                           },
                         ]}
-                        dataSource={[
-                          { id: '1', age: 32, name: '胡彦斌', address: '西湖区湖底公园1号' },
-                          { id: '2', age: 28, name: '王一博', address: '滨江区网商路699号' },
-                        ]}
-                        pagination={{
-                          size: 'default',
-                          simple: false,
-                          showQuickJumper: false,
-                          showSizeChanger: false,
-                        }}
+                        dataSource={__$$eval(
+                          () =>
+                            this.props.useGetComponentplanHistory?.data?.componentplan?.history ||
+                            []
+                        )}
+                        pagination={false}
                         showHeader={true}
                         __component_name="Table"
                       />
@@ -1279,6 +1409,17 @@ const PageWrapper = () => {
       sdkSwrFuncs={[
         {
           func: 'useGetComponentplan',
+          params: function applyThis() {
+            return {
+              name: this.appHelper?.match?.params?.id,
+              namespace: this.utils.getAuthData()?.project,
+              cluster: this.utils.getAuthData()?.cluster,
+            };
+          }.apply(self),
+          enableLocationSearch: undefined,
+        },
+        {
+          func: 'useGetComponentplanHistory',
           params: function applyThis() {
             return {
               name: this.appHelper?.match?.params?.id,

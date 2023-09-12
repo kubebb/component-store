@@ -520,7 +520,8 @@ class ComponentsWarehouseCreate$$Page extends React.Component {
                   }}
                   componentProps={{
                     'x-component-props': {
-                      placeholder: this.i18n('i18n-1lkuumnu') /* 请填写组件仓库的 URL 地址 */,
+                      placeholder:
+                        this.i18n('i18n-1lkuumnu') /* 请填写组件仓库地址，例http://ip(host):port */,
                     },
                   }}
                   decoratorProps={{ 'x-decorator-props': { asterisk: true } }}

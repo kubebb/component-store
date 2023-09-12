@@ -90,7 +90,7 @@ class ComponentsMarket$$Page extends React.Component {
   };
 
   getType() {
-    return this.state.type || this.utils.getComponentTypes(this)?.[0]?.value;
+    return this.state.type || 'ALL';
   }
 
   goDetail(e, { record }) {
@@ -150,10 +150,13 @@ class ComponentsMarket$$Page extends React.Component {
     );
   }
 
-  handleTypeChange(v) {
-    this.setState({
-      type: v,
-    });
+  handleTypeChange(e) {
+    this.setState(
+      {
+        type: e?.target?.value,
+      },
+      this.handleQueryChange
+    );
   }
 
   handleQueryChange() {
@@ -165,6 +168,9 @@ class ComponentsMarket$$Page extends React.Component {
       sortDirection: this.state.sorter || 'descend',
       sortField: 'updatedAt',
     };
+    if (this.state.type && this.state.type !== 'ALL') {
+      params.source = this.state.type;
+    }
     this.utils?.changeLocationQuery(this, 'useGetComponents', params);
   }
 
@@ -354,10 +360,17 @@ class ComponentsMarket$$Page extends React.Component {
                           size="middle"
                           value={__$$eval(() => this.getType())}
                           options={__$$eval(() =>
-                            this.utils.getComponentTypes(this)?.map(item => ({
-                              ...item,
-                              label: item.text,
-                            }))
+                            [
+                              {
+                                label: this.i18n('i18n-fwgym0zs'),
+                                value: 'ALL',
+                              },
+                            ].concat(
+                              this.utils.getComponentTypes(this)?.map(item => ({
+                                ...item,
+                                label: item.text,
+                              }))
+                            )
                           )}
                           disabled={false}
                           onChange={function () {
