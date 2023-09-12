@@ -866,28 +866,6 @@ class ComponentsManagementPublish$$Page extends React.Component {
                         dataIndex: 'version',
                       },
                       {
-                        key: 'source',
-                        title: this.i18n('i18n-gyax19ni') /* 类型 */,
-                        render: (text, record, index) =>
-                          (__$$context => (
-                            <Typography.Text
-                              style={{ fontSize: '' }}
-                              strong={false}
-                              disabled={false}
-                              ellipsis={true}
-                              __component_name="Typography.Text"
-                            >
-                              {__$$eval(
-                                () =>
-                                  __$$context.utils
-                                    .getComponentTypes(__$$context)
-                                    ?.find(item => item.value === record.source)?.text || '-'
-                              )}
-                            </Typography.Text>
-                          ))(__$$createChildContext(__$$context, { text, record, index })),
-                        dataIndex: 'source',
-                      },
-                      {
                         key: 'chartName',
                         title: this.i18n('i18n-1po87kgw') /* 组件仓库 */,
                         dataIndex: 'repository',

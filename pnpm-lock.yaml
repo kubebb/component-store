@@ -311,8 +311,8 @@ importers:
         specifier: 1.1.2
         version: 1.1.2(@babel/core@7.22.9)(antd@5.6.4)(classnames@2.2.5)(prop-types@15.8.1)(react-dom@18.1.0)(react@18.1.0)
       '@tenx-ui/component-store-bff-client':
-        specifier: 0.0.18
-        version: 0.0.18(@tenx-ui/materials@1.5.10)(antd@5.6.4)(react@18.1.0)(swr@2.0.0)
+        specifier: 0.0.20
+        version: 0.0.20(@tenx-ui/materials@1.5.10)(antd@5.6.4)(react@18.1.0)(swr@2.0.0)
       '@tenx-ui/editor':
         specifier: 3.0.2-beta
         version: 3.0.2-beta(antd@5.6.4)(classnames@2.2.5)(prop-types@15.8.1)(react-dom@18.1.0)(react@18.1.0)
@@ -6562,8 +6562,8 @@ packages:
       - supports-color
     dev: false
 
-  /@tenx-ui/component-store-bff-client@0.0.18(@tenx-ui/materials@1.5.10)(antd@5.6.4)(react@18.1.0)(swr@2.0.0):
-    resolution: {integrity: sha512-CKdpKJmrQiXtztiCzALKRqam31lRQlMNdL9YX5+/esIfwn2Uzs+dbiIdtzQl6MZzBuu9g5pdB8naZtwXxMWUsg==}
+  /@tenx-ui/component-store-bff-client@0.0.20(@tenx-ui/materials@1.5.10)(antd@5.6.4)(react@18.1.0)(swr@2.0.0):
+    resolution: {integrity: sha512-uKPxGQfKyyQKo/2USNRsQqUCjziT14yVlHcrrB4todiVR77BreRnC//5vJYbpdL9JyM45akMNDtO4Z28o1vnmg==}
     peerDependencies:
       '@tenx-ui/materials': '>=1.5.8'
       antd: '>=5.4.0'

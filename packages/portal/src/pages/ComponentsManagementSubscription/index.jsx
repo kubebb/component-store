@@ -228,15 +228,21 @@ class ComponentsManagementSubscription$$Page extends React.Component {
             message={
               <Row wrap={true} gutter={[0, 0]} __component_name="Row">
                 <Col span={24} __component_name="Col">
-                  <Typography.Text
-                    style={{ fontSize: '' }}
-                    strong={false}
-                    disabled={false}
-                    ellipsis={true}
-                    __component_name="Typography.Text"
-                  >
-                    {this.i18n('i18n-iy3bimfg') /* 取消订阅会同步修改组件更新方式为 <手动更新>。 */}
-                  </Typography.Text>
+                  {!!__$$eval(() => this.state.record?.componentPlanInstallMethod === 'auto') && (
+                    <Typography.Text
+                      style={{ fontSize: '' }}
+                      strong={false}
+                      disabled={false}
+                      ellipsis={true}
+                      __component_name="Typography.Text"
+                    >
+                      {
+                        this.i18n(
+                          'i18n-iy3bimfg'
+                        ) /* 取消订阅会同步修改组件更新方式为 <手动更新>。 */
+                      }
+                    </Typography.Text>
+                  )}
                 </Col>
                 <Col span={24} __component_name="Col">
                   <Space size={0} align="center" direction="horizontal">

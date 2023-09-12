@@ -110,7 +110,7 @@ class ComponentsManagementInstall$$Page extends React.Component {
   }
 
   handleQueryChange() {
-    const {} = this.state.filters || {};
+    const { status } = this.state.filters || {};
     const params = {
       page: this.state?.current || 1,
       pageSize: this.state?.pageSize || 10,
@@ -122,6 +122,9 @@ class ComponentsManagementInstall$$Page extends React.Component {
       params.sortField = this.state.sorter?.field;
       params.sortDirection = this.state.sorter?.order;
     }
+    // if (status?.length > 0) {
+    //   params.statuses = status
+    // }
     this.utils?.changeLocationQuery(this, 'useGetComponentplansPaged', params);
   }
 
@@ -479,7 +482,8 @@ class ComponentsManagementInstall$$Page extends React.Component {
                               </Typography.Text>
                               {!!__$$eval(
                                 () =>
-                                  (new Date().getTime() - new Date(record?.updatedAt).getTime()) /
+                                  (new Date().getTime() -
+                                    new Date(record?.creationTimestamp).getTime()) /
                                     1000 /
                                     60 /
                                     60 /
@@ -513,7 +517,28 @@ class ComponentsManagementInstall$$Page extends React.Component {
                       {
                         key: 'type',
                         title: this.i18n('i18n-5u3ohmy6') /* 更新方式 */,
-                        filters: __$$eval(() => this.utils.getComponentTypes(this)),
+                        render: (text, record, index) =>
+                          (__$$context => (
+                            <Typography.Text
+                              style={{ fontSize: '' }}
+                              strong={false}
+                              disabled={false}
+                              ellipsis={true}
+                              __component_name="Typography.Text"
+                            >
+                              {__$$eval(
+                                () =>
+                                  __$$context.utils
+                                    .getComponentInstallMethods(__$$context)
+                                    ?.find(
+                                      item =>
+                                        item.value ===
+                                          record?.subscription?.componentPlanInstallMethod ||
+                                        'manual'
+                                    )?.text
+                              )}
+                            </Typography.Text>
+                          ))(__$$createChildContext(__$$context, { text, record, index })),
                         dataIndex: 'type',
                       },
                       {
@@ -538,17 +563,18 @@ class ComponentsManagementInstall$$Page extends React.Component {
                         render: (text, record, index) =>
                           (__$$context => (
                             <Typography.Time
-                              time={__$$eval(() => record?.updatedAt)}
+                              time={__$$eval(() => record?.creationTimestamp)}
                               format=""
                               relativeTime={false}
                               __component_name="Typography.Time"
                             />
                           ))(__$$createChildContext(__$$context, { text, record, index })),
                         sorter: true,
-                        dataIndex: 'updatedAt',
+                        dataIndex: 'creationTimestamp',
                       },
                       {
                         title: this.i18n('i18n-ioy0ge9h') /* 操作 */,
+                        width: 150,
                         render: (text, record, index) =>
                           (__$$context => (
                             <Space size={12} align="center" direction="horizontal">

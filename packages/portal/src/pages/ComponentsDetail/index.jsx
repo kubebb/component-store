@@ -23,6 +23,7 @@ import {
   Tag,
   Tooltip,
   Typography,
+  UnifiedLink,
 } from '@tenx-ui/materials';
 
 import {
@@ -179,18 +180,22 @@ class ComponentsDetail$$Page extends React.Component {
   }
 
   async validatorInstall(value) {
-    // try {
-    //   if (value) {
-    //     const res = await this.props?.appHelper?.utils?.bff?.getSubscriptions({
-    //       namespace: value,
-    //       cluster: this.getCluster()
-    //     })
-    //     if (res?.repository?.name) {
-    //       return this.i18n('i18n-52vob0jn')
-    //     }
-    //   }
-    // } catch (e) {
-    // }
+    try {
+      if (value) {
+        const res = await this.props?.appHelper?.utils?.bff?.getSubscriptions({
+          namespace: value,
+          cluster: this.getCluster(),
+        });
+        const name = this.props.useGetComponent?.data?.component?.name;
+        if (
+          res?.subscriptions?.some(
+            item => item.component?.name === name && item?.releaseName === name
+          )
+        ) {
+          return this.i18n('i18n-k6pq1phn');
+        }
+      }
+    } catch (e) {}
   }
 
   async confirmDeleteModal(e, payload) {
@@ -1167,15 +1172,13 @@ class ComponentsDetail$$Page extends React.Component {
                   label={this.i18n('i18n-f34yu3md') /* 组件官网 */}
                 >
                   {
-                    <Typography.Text
-                      style={{ fontSize: '' }}
-                      strong={false}
-                      disabled={false}
-                      ellipsis={true}
-                      __component_name="Typography.Text"
+                    <UnifiedLink
+                      to={__$$eval(() => this.props.useGetComponent?.data?.component?.home || '-')}
+                      target="_blank"
+                      __component_name="UnifiedLink"
                     >
                       {__$$eval(() => this.props.useGetComponent?.data?.component?.home || '-')}
-                    </Typography.Text>
+                    </UnifiedLink>
                   }
                 </Descriptions.Item>
                 <Descriptions.Item
@@ -1190,19 +1193,13 @@ class ComponentsDetail$$Page extends React.Component {
                       ).map((item, index) =>
                         (__$$context => (
                           <Col span={24} __component_name="Col">
-                            <Typography.Text
-                              style={{ width: '800px' }}
-                              strong={false}
-                              copyable={{
-                                text: __$$eval(() => item),
-                                _unsafe_MixedSetter_text_select: 'VariableSetter',
-                              }}
-                              disabled={false}
-                              ellipsis={true}
-                              __component_name="Typography.Text"
+                            <UnifiedLink
+                              to={__$$eval(() => item)}
+                              target="_blank"
+                              __component_name="UnifiedLink"
                             >
-                              {__$$eval(() => item)}
-                            </Typography.Text>
+                              {__$$eval(() => item || '-')}
+                            </UnifiedLink>
                           </Col>
                         ))(__$$createChildContext(__$$context, { item, index }))
                       )}
@@ -1416,15 +1413,13 @@ class ComponentsDetail$$Page extends React.Component {
                       label={this.i18n('i18n-2lcystak') /* 网站 */}
                     >
                       {
-                        <Typography.Text
-                          style={{ width: '800px', fontSize: '' }}
-                          strong={false}
-                          disabled={false}
-                          ellipsis={true}
-                          __component_name="Typography.Text"
+                        <UnifiedLink
+                          to={__$$eval(() => item?.url || '-')}
+                          target="_blank"
+                          __component_name="UnifiedLink"
                         >
                           {__$$eval(() => item?.url || '-')}
-                        </Typography.Text>
+                        </UnifiedLink>
                       }
                     </Descriptions.Item>
                   </Descriptions>

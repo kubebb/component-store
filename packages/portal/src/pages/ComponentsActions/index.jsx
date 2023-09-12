@@ -170,7 +170,7 @@ class ComponentsActions$$Page extends React.Component {
         version: v.version,
         // edit
         method: {
-          componentPlanInstallMethod: v.componentPlanInstallMethod,
+          componentPlanInstallMethod: v.componentPlanInstallMethod || 'manual',
           schedule: v.schedule && this.utils.cronChangeToDate(v.schedule),
         },
         // edit
@@ -260,7 +260,12 @@ class ComponentsActions$$Page extends React.Component {
           newTag: item.newTag,
         })),
       };
-      const namespace = v.position?.namespace;
+      if (!isCreate) {
+        delete params.repository;
+        delete params.chartName;
+        delete params.releaseName;
+      }
+      const namespace = v.position?.namespace || this.utils.getAuthData()?.project;
       const api = {
         create: {
           name: 'createComponentplan',
@@ -341,28 +346,32 @@ class ComponentsActions$$Page extends React.Component {
                 __component_name="Button.Back"
               />
             </Space>
-            <Tag
-              color="rgba(0,0,0,0.65)"
-              style={{
-                position: 'relative',
-                marginTop: '-5px',
-                marginLeft: '16px',
-                marginRight: '0px',
-                borderRadius: '0',
-              }}
-              closable={false}
-              __component_name="Tag"
-            >
-              {this.i18n('i18n-yfkq2xqq') /* 集群 */}
-            </Tag>
-            <Tag
-              color="default"
-              style={{ position: 'relative', marginTop: '-5px', borderRadius: '0' }}
-              closable={false}
-              __component_name="Tag"
-            >
-              {__$$eval(() => this.getClusterInfo()?.fullName || '-')}
-            </Tag>
+            {!!__$$eval(() => this.props.appHelper?.match?.params?.action === 'install') && (
+              <Tag
+                color="rgba(0,0,0,0.65)"
+                style={{
+                  position: 'relative',
+                  marginTop: '-5px',
+                  marginLeft: '16px',
+                  marginRight: '0px',
+                  borderRadius: '0',
+                }}
+                closable={false}
+                __component_name="Tag"
+              >
+                {this.i18n('i18n-yfkq2xqq') /* 集群 */}
+              </Tag>
+            )}
+            {!!__$$eval(() => this.props.appHelper?.match?.params?.action === 'install') && (
+              <Tag
+                color="default"
+                style={{ position: 'relative', marginTop: '-5px', borderRadius: '0' }}
+                closable={false}
+                __component_name="Tag"
+              >
+                {__$$eval(() => this.getClusterInfo()?.fullName || '-')}
+              </Tag>
+            )}
           </Col>
           <Col span={24} __component_name="Col">
             <Card
@@ -624,7 +633,14 @@ class ComponentsActions$$Page extends React.Component {
                   />
                   <FormilyTimePicker
                     style={{ width: '680px' }}
-                    fieldProps={{ name: 'schedule', title: '', required: true, 'x-validator': [] }}
+                    fieldProps={{
+                      name: 'schedule',
+                      title: '',
+                      required: true,
+                      'x-display':
+                        "{{$form.values.method?.componentPlanInstallMethod === 'auto' ? 'visible': 'hidden'}}",
+                      'x-validator': [],
+                    }}
                     componentProps={{
                       'x-component-props': {
                         disabled: false,
@@ -635,69 +651,71 @@ class ComponentsActions$$Page extends React.Component {
                     __component_name="FormilyTimePicker"
                   />
                 </FormilyFormItem>
-                <FormilyFormItem
-                  fieldProps={{
-                    name: 'position',
-                    title: this.i18n('i18n-l46z9szm') /* 安装位置 */,
-                    'x-component': 'FormilyFormItem',
-                    'x-validator': [],
-                    _unsafe_MixedSetter_title_select: 'I18nSetter',
-                  }}
-                  componentProps={{ 'x-component-props': {} }}
-                  decoratorProps={{ 'x-decorator-props': { asterisk: true } }}
-                  __component_name="FormilyFormItem"
-                >
-                  <Space align="center" direction="horizontal" __component_name="Space">
-                    <FormilySelect
-                      style={{ width: '330px' }}
-                      fieldProps={{
-                        enum: [],
-                        name: 'tenant',
-                        title: '',
-                        required: true,
-                        'x-pattern': __$$eval(() =>
-                          this.props.appHelper?.match?.params?.action === 'install'
-                            ? 'editable'
-                            : 'disabled'
-                        ),
-                        'x-validator': [],
-                        _unsafe_MixedSetter_enum_select: 'ArraySetter',
-                      }}
-                      componentProps={{
-                        'x-component-props': {
-                          disabled: false,
-                          allowClear: false,
-                          placeholder: this.i18n('i18n-lhvq14lg') /* 请选择租户 */,
-                          _sdkSwrGetFunc: {},
-                        },
-                      }}
-                      __component_name="FormilySelect"
-                    />
-                    <FormilySelect
-                      style={{ width: '340px' }}
-                      fieldProps={{
-                        enum: '{{(() => {return $form?.values?.position?.tenant ? JSON.parse($form?.values?.position?.tenant)?.projects : []})()}}',
-                        name: 'namespace',
-                        required: true,
-                        'x-pattern': __$$eval(() =>
-                          this.props.appHelper?.match?.params?.action === 'install'
-                            ? 'editable'
-                            : 'disabled'
-                        ),
-                        'x-validator': [],
-                      }}
-                      componentProps={{
-                        'x-component-props': {
-                          disabled: false,
-                          allowClear: false,
-                          placeholder: this.i18n('i18n-er0hhc9i') /* 请选择项目 */,
-                          _sdkSwrGetFunc: {},
-                        },
-                      }}
-                      __component_name="FormilySelect"
-                    />
-                  </Space>
-                </FormilyFormItem>
+                {!!__$$eval(() => this.props.appHelper?.match?.params?.action === 'install') && (
+                  <FormilyFormItem
+                    fieldProps={{
+                      name: 'position',
+                      title: this.i18n('i18n-l46z9szm') /* 安装位置 */,
+                      'x-component': 'FormilyFormItem',
+                      'x-validator': [],
+                      _unsafe_MixedSetter_title_select: 'I18nSetter',
+                    }}
+                    componentProps={{ 'x-component-props': {} }}
+                    decoratorProps={{ 'x-decorator-props': { asterisk: true } }}
+                    __component_name="FormilyFormItem"
+                  >
+                    <Space align="center" direction="horizontal" __component_name="Space">
+                      <FormilySelect
+                        style={{ width: '330px' }}
+                        fieldProps={{
+                          enum: [],
+                          name: 'tenant',
+                          title: '',
+                          required: true,
+                          'x-pattern': __$$eval(() =>
+                            this.props.appHelper?.match?.params?.action === 'install'
+                              ? 'editable'
+                              : 'disabled'
+                          ),
+                          'x-validator': [],
+                          _unsafe_MixedSetter_enum_select: 'ArraySetter',
+                        }}
+                        componentProps={{
+                          'x-component-props': {
+                            disabled: false,
+                            allowClear: false,
+                            placeholder: this.i18n('i18n-lhvq14lg') /* 请选择租户 */,
+                            _sdkSwrGetFunc: {},
+                          },
+                        }}
+                        __component_name="FormilySelect"
+                      />
+                      <FormilySelect
+                        style={{ width: '340px' }}
+                        fieldProps={{
+                          enum: '{{(() => {return $form?.values?.position?.tenant ? JSON.parse($form?.values?.position?.tenant)?.projects : []})()}}',
+                          name: 'namespace',
+                          required: true,
+                          'x-pattern': __$$eval(() =>
+                            this.props.appHelper?.match?.params?.action === 'install'
+                              ? 'editable'
+                              : 'disabled'
+                          ),
+                          'x-validator': [],
+                        }}
+                        componentProps={{
+                          'x-component-props': {
+                            disabled: false,
+                            allowClear: false,
+                            placeholder: this.i18n('i18n-er0hhc9i') /* 请选择项目 */,
+                            _sdkSwrGetFunc: {},
+                          },
+                        }}
+                        __component_name="FormilySelect"
+                      />
+                    </Space>
+                  </FormilyFormItem>
+                )}
                 {!!false && (
                   <FormilyRadio
                     fieldProps={{
