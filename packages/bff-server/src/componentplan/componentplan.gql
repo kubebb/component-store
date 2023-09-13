@@ -32,6 +32,11 @@ query getComponentplan($name: String!, $namespace: String!, $cluster: String) {
     namespace
     version
     status
+    images {
+      name
+      newName
+      newTag
+    }
     component {
       chartName
       latestVersion
@@ -43,6 +48,7 @@ query getComponentplan($name: String!, $namespace: String!, $cluster: String) {
     }
     subscription {
       componentPlanInstallMethod
+      schedule
     }
     repository {
       imageOverride {

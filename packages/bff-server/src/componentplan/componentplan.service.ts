@@ -52,6 +52,7 @@ export class ComponentplanService {
       approved: cp.spec?.approved,
       status,
       latest: cp.status?.latest,
+      images: cp.spec?.override?.images,
     };
   }
 
@@ -255,7 +256,7 @@ export class ComponentplanService {
     } else {
       /**
        * 编辑：
-       * 自动：有sub就修改，没有就创建；
+       * 自动：有sub就修改，没有就创建；(自动更新时间？不是立刻的话怎么处理？)
        * 手动：有sub就修改，没有就不处理；
        * 最后修改cpl，同时approved：true;
        */
