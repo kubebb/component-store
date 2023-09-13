@@ -36,6 +36,9 @@ export class Subscription {
   @Field(() => InstallMethod, { description: '更新方式' })
   componentPlanInstallMethod?: string;
 
+  /** 更新时间 */
+  schedule?: string;
+
   /** 组件 */
   component?: Component;
 }

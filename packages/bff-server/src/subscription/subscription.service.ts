@@ -37,6 +37,7 @@ export class SubscriptionService {
       repository: sub.spec?.repository?.name,
       componentPlanInstallMethod: sub.spec?.componentPlanInstallMethod,
       releaseName: sub.spec?.name,
+      schedule: sub.spec?.schedule,
     };
   }
 

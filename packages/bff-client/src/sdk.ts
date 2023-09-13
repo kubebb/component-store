@@ -120,6 +120,8 @@ export type Componentplan = {
   creationTimestamp: Scalars['String']['output'];
   /** 历史版本 */
   history?: Maybe<Array<Componentplan>>;
+  /** 覆盖镜像 */
+  images?: Maybe<Array<ComponentplanImage>>;
   /** 当前安装 */
   latest?: Maybe<Scalars['Boolean']['output']>;
   /** 组件名称 */
@@ -142,6 +144,17 @@ export type ComponentplanEdge = {
   __typename?: 'ComponentplanEdge';
   cursor: Scalars['String']['output'];
   node: Componentplan;
+};
+
+export type ComponentplanImage = {
+  __typename?: 'ComponentplanImage';
+  digest?: Maybe<Scalars['String']['output']>;
+  /** 名称（如：ghcr.io/helm/chartmuseum:v0.16.0 或 ghcr.io/helm/chartmuseum） */
+  name?: Maybe<Scalars['String']['output']>;
+  /** 替换名称（如：172.22.50.223/kubebb/chartmuseum） */
+  newName?: Maybe<Scalars['String']['output']>;
+  /** 替换tag（如：v0.16.0） */
+  newTag?: Maybe<Scalars['String']['output']>;
 };
 
 export type ComponentplanImageInput = {
@@ -674,6 +687,8 @@ export type Subscription = {
   releaseName?: Maybe<Scalars['String']['output']>;
   /** 所属组件仓库 */
   repository: Scalars['String']['output'];
+  /** 更新时间 */
+  schedule?: Maybe<Scalars['String']['output']>;
   /** 组件最近更新时间 */
   updatedAt?: Maybe<Scalars['String']['output']>;
 };
@@ -777,6 +792,12 @@ export type GetComponentplanQuery = {
     namespace: string;
     version?: string | null;
     status?: ComponentplanStatus | null;
+    images?: Array<{
+      __typename?: 'ComponentplanImage';
+      name?: string | null;
+      newName?: string | null;
+      newTag?: string | null;
+    }> | null;
     component?: {
       __typename?: 'Component';
       chartName: string;
@@ -791,6 +812,7 @@ export type GetComponentplanQuery = {
     subscription?: {
       __typename?: 'Subscription';
       componentPlanInstallMethod?: InstallMethod | null;
+      schedule?: string | null;
     } | null;
     repository?: {
       __typename?: 'Repository';
@@ -1308,6 +1330,11 @@ export const GetComponentplanDocument = gql`
       namespace
       version
       status
+      images {
+        name
+        newName
+        newTag
+      }
       component {
         chartName
         latestVersion
@@ -1319,6 +1346,7 @@ export const GetComponentplanDocument = gql`
       }
       subscription {
         componentPlanInstallMethod
+        schedule
       }
       repository {
         imageOverride {

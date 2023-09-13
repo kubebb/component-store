@@ -114,6 +114,9 @@ type Componentplan {
   """历史版本"""
   history: [Componentplan!]
 
+  """覆盖镜像"""
+  images: [ComponentplanImage!]
+
   """当前安装"""
   latest: Boolean
 
@@ -142,6 +145,19 @@ type Componentplan {
 type ComponentplanEdge {
   cursor: String!
   node: Componentplan!
+}
+
+type ComponentplanImage {
+  digest: String
+
+  """名称（如：ghcr.io/helm/chartmuseum:v0.16.0 或 ghcr.io/helm/chartmuseum）"""
+  name: String
+
+  """替换名称（如：172.22.50.223/kubebb/chartmuseum）"""
+  newName: String
+
+  """替换tag（如：v0.16.0）"""
+  newTag: String
 }
 
 input ComponentplanImageInput {
@@ -819,6 +835,9 @@ type Subscription {
 
   """所属组件仓库"""
   repository: String!
+
+  """更新时间"""
+  schedule: String
 
   """组件最近更新时间"""
   updatedAt: String

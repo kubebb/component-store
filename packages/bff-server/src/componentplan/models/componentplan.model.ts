@@ -6,6 +6,16 @@ import { Field, HideField, ID, ObjectType } from '@nestjs/graphql';
 import { ComponentplanStatus } from './status-componentplan.enum';
 
 @ObjectType()
+class ComponentplanImage {
+  /** 名称（如：ghcr.io/helm/chartmuseum:v0.16.0 或 ghcr.io/helm/chartmuseum） */
+  name?: string;
+  /** 替换名称（如：172.22.50.223/kubebb/chartmuseum） */
+  newName?: string;
+  /** 替换tag（如：v0.16.0） */
+  newTag?: string;
+  digest?: string;
+}
+@ObjectType()
 export class Componentplan {
   @Field(() => ID, { description: '组件名称' })
   name: string;
@@ -43,6 +53,9 @@ export class Componentplan {
 
   /** 仓库 */
   repository?: Repository;
+
+  /** 覆盖镜像 */
+  images?: ComponentplanImage[];
 }
 
 @ObjectType({ description: '分页' })
