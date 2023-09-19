@@ -133,7 +133,7 @@ type Componentplan {
   repository: Repository
 
   """状态"""
-  status: ComponentplanStatus
+  status: ExportComponentplanStatus
 
   """订阅"""
   subscription: Subscription
@@ -171,57 +171,6 @@ input ComponentplanImageInput {
 
   """替换tag（如：v0.16.0）"""
   newTag: String
-}
-
-"""组件状态"""
-enum ComponentplanStatus {
-  """失败"""
-  Failed
-
-  """安装失败"""
-  InstallFailed
-
-  """安装成功"""
-  InstallSuccess
-
-  """安装中"""
-  Installing
-
-  """回滚失败"""
-  RollBackFailed
-
-  """回滚成功"""
-  RollBackSuccess
-
-  """回滚中"""
-  RollingBack
-
-  """成功"""
-  Succeeded
-
-  """卸载失败"""
-  UninstallFailed
-
-  """卸载成功"""
-  UninstallSuccess
-
-  """卸载中"""
-  Uninstalling
-
-  """未知"""
-  Unknown
-
-  """升级失败"""
-  UpgradeFailed
-
-  """升级成功"""
-  UpgradeSuccess
-
-  """升级中"""
-  Upgrading
-
-  """前置步骤失败"""
-  WaitDo
 }
 
 """上传组件"""
@@ -330,6 +279,27 @@ input DownloadComponentInput {
 
   """Chart版本"""
   version: String!
+}
+
+"""组件状态"""
+enum ExportComponentplanStatus {
+  """安装失败"""
+  InstallFailed
+
+  """安装成功"""
+  InstallSuccess
+
+  """安装中"""
+  Installing
+
+  """卸载失败"""
+  UninstallFailed
+
+  """卸载中"""
+  Uninstalling
+
+  """未知"""
+  Unknown
 }
 
 """组件更新方式"""
@@ -525,6 +495,9 @@ type Query {
 
     """排序字段"""
     sortField: String
+
+    """状态"""
+    status: [String!]
   ): PaginatedComponentplan!
 
   """组件列表（分页）"""

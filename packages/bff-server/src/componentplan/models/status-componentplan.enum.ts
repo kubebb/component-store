@@ -14,9 +14,6 @@ export enum ComponentplanStatus {
   UpgradeFailed = 'UpgradeFailed',
   RollBackSuccess = 'RollBackSuccess',
   RollBackFailed = 'RollBackFailed',
-  Succeeded = 'Succeeded',
-  Failed = 'Failed',
-  Unknown = 'Unknown',
 }
 
 registerEnumType(ComponentplanStatus, {
@@ -61,15 +58,6 @@ registerEnumType(ComponentplanStatus, {
     },
     RollBackFailed: {
       description: '回滚失败',
-    },
-    Succeeded: {
-      description: '成功',
-    },
-    Failed: {
-      description: '失败',
-    },
-    Unknown: {
-      description: '未知',
     },
   },
 });

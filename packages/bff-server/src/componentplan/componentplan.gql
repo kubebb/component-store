@@ -1,6 +1,6 @@
 # 「安装组件」列表（分页）
-query getComponentplansPaged($namespace: String!, $page: Float = 1, $pageSize: Float = 20, $releaseName: String, $sortDirection: SortDirection, $sortField: String, $cluster: String, $chartName: String, $repository: String) {
-  componentplansPaged(namespace: $namespace, page: $page, pageSize: $pageSize, releaseName: $releaseName, sortDirection: $sortDirection, sortField: $sortField, cluster: $cluster, chartName: $chartName, repository: $repository) {
+query getComponentplansPaged($namespace: String!, $page: Float = 1, $pageSize: Float = 20, $releaseName: String, $sortDirection: SortDirection, $sortField: String, $cluster: String, $chartName: String, $repository: String, $status: [String!]) {
+  componentplansPaged(namespace: $namespace, page: $page, pageSize: $pageSize, releaseName: $releaseName, sortDirection: $sortDirection, sortField: $sortField, cluster: $cluster, chartName: $chartName, repository: $repository, status: $status) {
     nodes {
       name
       releaseName
