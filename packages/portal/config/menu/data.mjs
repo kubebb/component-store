@@ -57,12 +57,18 @@ const data = [
                 text: '我安装的',
                 textEn: 'I Installed',
                 pathname: '/components/management/install',
+                tenant: true,
+                project: true,
+                cluster: true,
               },
               {
                 id: 'component-store-management-subscribed',
                 text: '我订阅的',
                 textEn: 'I Subscribed',
                 pathname: '/components/management/subscription',
+                tenant: true,
+                project: true,
+                cluster: true,
               },
             ]
           }

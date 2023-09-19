@@ -16,6 +16,9 @@ export class ComponentplanArgs extends PaginationArgs {
   /** 组件仓库 */
   repository?: string;
 
+  /** 状态 */
+  status?: string[];
+
   /** 排序方向 */
   @Field(() => SortDirection, { description: '排序方向' })
   sortDirection?: SortDirection;

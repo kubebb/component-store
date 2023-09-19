@@ -13,6 +13,7 @@ import { ComponentplanArgs } from './dto/componentplan.args';
 import { CreateComponentplanInput } from './dto/create-componentplan.input';
 import { UpdateComponentplanInput } from './dto/update-componentplan.input';
 import { Componentplan, PaginatedComponentplan } from './models/componentplan.model';
+import { ExportComponentplanStatus } from './models/export-status-componentplan.enum';
 import { ComponentplanStatus } from './models/status-componentplan.enum';
 
 @Injectable()
@@ -28,16 +29,26 @@ export class ComponentplanService {
   private kubebbNS = this.config.kubebb.namespace;
 
   format(cp: CRD.ComponentPlan, component?: Component): Componentplan {
-    let status = ComponentplanStatus.Unknown;
+    let status = ExportComponentplanStatus.Unknown;
     const conditions = cp.status?.conditions;
     if (conditions) {
       const succeeded = conditions.find(c => c.type === 'Succeeded');
       const actioned = conditions.find(c => c.type === 'Actioned');
       if (succeeded?.status === 'False') {
-        status = ComponentplanStatus[actioned.reason] || ComponentplanStatus.Failed;
+        if (actioned.reason === ComponentplanStatus.UninstallFailed) {
+          status = ExportComponentplanStatus.UninstallFailed;
+        } else {
+          status = ExportComponentplanStatus.InstallFailed;
+        }
       }
       if (succeeded?.status === 'True') {
-        status = ComponentplanStatus[actioned.reason] || ComponentplanStatus.Succeeded;
+        if (actioned.reason === ComponentplanStatus.Uninstalling) {
+          status = ExportComponentplanStatus.Uninstalling;
+        } else if (actioned.reason === ComponentplanStatus.Installing) {
+          status = ExportComponentplanStatus.Installing;
+        } else {
+          status = ExportComponentplanStatus.InstallSuccess;
+        }
       }
     }
 
@@ -102,6 +113,7 @@ export class ComponentplanService {
       namespace,
       chartName,
       repository,
+      status,
     } = args;
     const res = await this.list(auth, namespace, {}, cluster);
     // 过滤出 以releaseName为唯一ID，选择cpl status.latest == true（其中sub创建的cpl（status.latest == null），通过「组件市场」安装入口安装）
@@ -123,7 +135,8 @@ export class ComponentplanService {
       t =>
         (!releaseName || t.releaseName?.includes(releaseName)) &&
         (!chartName || t.component?.chartName?.includes(chartName)) &&
-        (!repository || t.component?.repository?.includes(repository))
+        (!repository || t.component?.repository?.includes(repository)) &&
+        (!status || status?.includes(t.status))
     );
     if (sortField && sortDirection) {
       filteredRes?.sort((a, b) => {

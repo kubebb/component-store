@@ -3,7 +3,7 @@ import { Component } from '@/components/models/component.model';
 import { Repository } from '@/repository/models/repository.model';
 import { Subscription } from '@/subscription/models/subscription.model';
 import { Field, HideField, ID, ObjectType } from '@nestjs/graphql';
-import { ComponentplanStatus } from './status-componentplan.enum';
+import { ExportComponentplanStatus } from './export-status-componentplan.enum';
 
 @ObjectType()
 class ComponentplanImage {
@@ -33,7 +33,7 @@ export class Componentplan {
   releaseName: string;
 
   /** 状态 */
-  @Field(() => ComponentplanStatus, { description: '状态' })
+  @Field(() => ExportComponentplanStatus, { nullable: true, description: '状态' })
   status?: string;
 
   /** 当前安装 */
