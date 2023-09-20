@@ -410,6 +410,8 @@ class ComponentsWarehouseCreate$$Page extends React.Component {
                 marginLeft: '16px',
                 marginRight: '0px',
                 borderRadius: '0',
+                borderTopLeftRadius: '2px',
+                borderBottomLeftRadius: '2px',
               }}
               closable={false}
               __component_name="Tag"
@@ -418,7 +420,14 @@ class ComponentsWarehouseCreate$$Page extends React.Component {
             </Tag>
             <Tag
               color="default"
-              style={{ position: 'relative', marginTop: '-5px', borderRadius: '0' }}
+              style={{
+                position: 'relative',
+                marginTop: '-5px',
+                background: 'white',
+                borderRadius: '0',
+                borderTopRightRadius: '2px',
+                borderBottomRightRadius: '2px',
+              }}
               closable={false}
               __component_name="Tag"
             >
@@ -1558,10 +1567,17 @@ class ComponentsWarehouseCreate$$Page extends React.Component {
                 >
                   高级配置
                 </Divider>
+                <Divider
+                  mode="line"
+                  style={{ width: 'calc(100% + 48px)', marginLeft: '-24px' }}
+                  dashed={false}
+                  defaultOpen={false}
+                  __component_name="Divider"
+                />
                 <FormilyFormItem
                   fieldProps={{
                     name: 'FormilyFormItem1',
-                    title: null,
+                    title: '',
                     'x-component': 'FormilyFormItem',
                     'x-validator': [],
                     _unsafe_MixedSetter_title_select: 'SlotSetter',
@@ -1574,6 +1590,7 @@ class ComponentsWarehouseCreate$$Page extends React.Component {
                       block={false}
                       ghost={false}
                       shape="default"
+                      style={{ marginLeft: '145px' }}
                       danger={false}
                       onClick={function () {
                         return this.onCancel.apply(

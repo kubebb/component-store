@@ -744,7 +744,7 @@ class ComponentsManagementPublish$$Page extends React.Component {
                           }.bind(this)}
                           addonBefore={
                             <Select
-                              style={{ width: '90px' }}
+                              style={{ width: '90px', textAlign: 'left' }}
                               value={__$$eval(() => this.state.searchKey)}
                               options={[
                                 {

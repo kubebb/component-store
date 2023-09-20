@@ -198,55 +198,15 @@ export const getComponentSubscriptionStatus = utils.getComponentSubscriptionStat
 utils.getComponentInstallStatus = function __getComponentInstallStatus() {
   return (pageThis, isStatus) => {
     return [
-      {
-        [isStatus ? 'id' : 'value']: 'Failed', // 失败
-        type: 'error',
-        [isStatus ? 'children' : 'text']: pageThis.i18n('i18n-nt0mpn4p'),
-      },
-      {
-        [isStatus ? 'id' : 'value']: 'InstallFailed', // 安装失败
-        type: 'error',
-        [isStatus ? 'children' : 'text']: pageThis.i18n('i18n-r147hejk'),
-      },
-      {
-        [isStatus ? 'id' : 'value']: 'InstallSuccess', // 安装成功
-        type: 'success',
-        [isStatus ? 'children' : 'text']: pageThis.i18n('i18n-ydulo8tp'),
-      },
+      // {
+      //   [isStatus ? "id" : 'value']: "Failed", // 失败
+      //   "type": "error",
+      //   [isStatus ? "children" : 'text']: pageThis.i18n('i18n-nt0mpn4p'),
+      // },
       {
         [isStatus ? 'id' : 'value']: 'Installing', // 安装中
         type: 'primary',
         [isStatus ? 'children' : 'text']: pageThis.i18n('i18n-7fw4lwae'),
-      },
-      {
-        [isStatus ? 'id' : 'value']: 'RollBackFailed', // 回滚失败
-        type: 'error',
-        [isStatus ? 'children' : 'text']: pageThis.i18n('i18n-cxitfly5'),
-      },
-      {
-        [isStatus ? 'id' : 'value']: 'RollBackSuccess', // 回滚成功
-        type: 'success',
-        [isStatus ? 'children' : 'text']: pageThis.i18n('i18n-eoqtcx1y'),
-      },
-      {
-        [isStatus ? 'id' : 'value']: 'RollingBack', // 回滚中
-        type: 'primary',
-        [isStatus ? 'children' : 'text']: pageThis.i18n('i18n-jvkp71jw'),
-      },
-      {
-        [isStatus ? 'id' : 'value']: 'Succeeded', // 成功
-        type: 'success',
-        [isStatus ? 'children' : 'text']: pageThis.i18n('i18n-wfe2nzks'),
-      },
-      {
-        [isStatus ? 'id' : 'value']: 'UninstallFailed', // 卸载失败
-        type: 'error',
-        [isStatus ? 'children' : 'text']: pageThis.i18n('i18n-w8dmnzsr'),
-      },
-      {
-        [isStatus ? 'id' : 'value']: 'UninstallSuccess', // 卸载成功
-        type: 'success',
-        [isStatus ? 'children' : 'text']: pageThis.i18n('i18n-ybpkzm3q'),
       },
       {
         [isStatus ? 'id' : 'value']: 'Uninstalling', // 卸载中
@@ -254,30 +214,70 @@ utils.getComponentInstallStatus = function __getComponentInstallStatus() {
         [isStatus ? 'children' : 'text']: pageThis.i18n('i18n-nlrvh6x6'),
       },
       {
+        [isStatus ? 'id' : 'value']: 'InstallSuccess', // 安装成功
+        type: 'success',
+        [isStatus ? 'children' : 'text']: pageThis.i18n('i18n-ydulo8tp'),
+      },
+      {
+        [isStatus ? 'id' : 'value']: 'InstallFailed', // 安装失败
+        type: 'error',
+        [isStatus ? 'children' : 'text']: pageThis.i18n('i18n-r147hejk'),
+      },
+      {
+        [isStatus ? 'id' : 'value']: 'UninstallFailed', // 卸载失败
+        type: 'error',
+        [isStatus ? 'children' : 'text']: pageThis.i18n('i18n-w8dmnzsr'),
+      },
+      {
         [isStatus ? 'id' : 'value']: 'Unknown', // 未知
         type: 'disabled',
         [isStatus ? 'children' : 'text']: pageThis.i18n('i18n-tc7m2mdu'),
       },
-      {
-        [isStatus ? 'id' : 'value']: 'UpgradeFailed', // 升级失败
-        type: 'error',
-        [isStatus ? 'children' : 'text']: pageThis.i18n('i18n-m6vy7crn'),
-      },
-      {
-        [isStatus ? 'id' : 'value']: 'UpgradeSuccess', // 升级成功
-        type: 'success',
-        [isStatus ? 'children' : 'text']: pageThis.i18n('i18n-iyegtmdr'),
-      },
-      {
-        [isStatus ? 'id' : 'value']: 'Upgrading', // 升级中
-        type: 'primary',
-        [isStatus ? 'children' : 'text']: pageThis.i18n('i18n-3qncl7ec'),
-      },
-      {
-        [isStatus ? 'id' : 'value']: 'WaitDo', // 前置步骤失败
-        type: 'error',
-        [isStatus ? 'children' : 'text']: pageThis.i18n('i18n-ya5jz87v'),
-      },
+      // {
+      //   [isStatus ? "id" : 'value']: "RollBackFailed", // 回滚失败
+      //   "type": "error",
+      //   [isStatus ? "children" : 'text']: pageThis.i18n('i18n-cxitfly5'),
+      // },
+      // {
+      //   [isStatus ? "id" : 'value']: "RollBackSuccess", // 回滚成功
+      //   "type": "success",
+      //   [isStatus ? "children" : 'text']: pageThis.i18n('i18n-eoqtcx1y'),
+      // },
+      // {
+      //   [isStatus ? "id" : 'value']: "RollingBack", // 回滚中
+      //   "type": "primary",
+      //   [isStatus ? "children" : 'text']: pageThis.i18n('i18n-jvkp71jw'),
+      // },
+      // {
+      //   [isStatus ? "id" : 'value']: "Succeeded", // 成功
+      //   "type": "success",
+      //   [isStatus ? "children" : 'text']: pageThis.i18n('i18n-wfe2nzks'),
+      // },
+      // {
+      //   [isStatus ? "id" : 'value']: "UninstallSuccess", // 卸载成功
+      //   "type": "success",
+      //   [isStatus ? "children" : 'text']: pageThis.i18n('i18n-ybpkzm3q'),
+      // },
+      // {
+      //   [isStatus ? "id" : 'value']: "UpgradeFailed", // 升级失败
+      //   "type": "error",
+      //   [isStatus ? "children" : 'text']: pageThis.i18n('i18n-m6vy7crn'),
+      // },
+      // {
+      //   [isStatus ? "id" : 'value']: "UpgradeSuccess", // 升级成功
+      //   "type": "success",
+      //   [isStatus ? "children" : 'text']: pageThis.i18n('i18n-iyegtmdr'),
+      // },
+      // {
+      //   [isStatus ? "id" : 'value']: "Upgrading", // 升级中
+      //   "type": "primary",
+      //   [isStatus ? "children" : 'text']: pageThis.i18n('i18n-3qncl7ec'),
+      // },
+      // {
+      //   [isStatus ? "id" : 'value']: "WaitDo", // 前置步骤失败
+      //   "type": "error",
+      //   [isStatus ? "children" : 'text']: pageThis.i18n('i18n-ya5jz87v'),
+      // },
     ];
   };
 }.apply(utils);

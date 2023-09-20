@@ -108,6 +108,7 @@ const i18nConfig = {
     'i18n-dggp27hd': 'I subscribed',
     'i18n-dj53cnrp': 'unload',
     'i18n-drs45rlh': 'Is it certified',
+    'i18n-dv03soje': 'Please select an image first',
     'i18n-dx6dp5fl': 'Client certificate',
     'i18n-dzffs2mw':
       'By 3~253 lowercase letters, numbers, hyphens "-" or dots". composition, starting or ending with a letter or number',
@@ -399,6 +400,7 @@ const i18nConfig = {
     'i18n-dggp27hd': '我订阅的',
     'i18n-dj53cnrp': '卸载',
     'i18n-drs45rlh': '是否认证',
+    'i18n-dv03soje': '请先选择镜像',
     'i18n-dx6dp5fl': '客户端证书',
     'i18n-dzffs2mw': '由3~253个小写字母、数字、中划线“-”或点“.”组成，并以字母、数字开头或结尾',
     'i18n-e4qgvfg7': '请完整填写版本',

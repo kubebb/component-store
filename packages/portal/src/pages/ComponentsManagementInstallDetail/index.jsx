@@ -68,8 +68,11 @@ class ComponentsManagementInstallDetail$$Page extends React.Component {
       record: undefined,
       cluster: undefined,
       modalType: 'rollback',
+      valuesYaml: undefined,
       isOpenModal: false,
       modalLoading: false,
+      historyPagination: undefined,
+      historyValuesYaml: undefined,
     };
   }
 
@@ -162,6 +165,16 @@ class ComponentsManagementInstallDetail$$Page extends React.Component {
     }
   }
 
+  handleHistoryTableChange(pagination, filters, sorter, extra) {
+    this.setState({
+      historyPagination: {
+        pagination,
+        filters,
+        sorter,
+      },
+    });
+  }
+
   componentDidMount() {
     this.loadCluster();
   }
@@ -203,11 +216,7 @@ class ComponentsManagementInstallDetail$$Page extends React.Component {
                         ellipsis={true}
                         __component_name="Typography.Text"
                       >
-                        {__$$eval(
-                          () =>
-                            this.props.useGetComponentplanHistory?.data?.componentplan?.component
-                              ?.chartName || []
-                        )}
+                        {__$$eval(() => this.state?.componentplan?.component?.chartName || '-')}
                       </Typography.Text>
                     ),
                   },
@@ -223,11 +232,7 @@ class ComponentsManagementInstallDetail$$Page extends React.Component {
                         ellipsis={true}
                         __component_name="Typography.Text"
                       >
-                        {__$$eval(
-                          () =>
-                            this.props.useGetComponentplanHistory?.data?.componentplan?.component
-                              ?.repository || '-'
-                        )}
+                        {__$$eval(() => this.state?.componentplan?.component?.repository || '-')}
                       </Typography.Text>
                     ),
                   },
@@ -243,7 +248,7 @@ class ComponentsManagementInstallDetail$$Page extends React.Component {
                         ellipsis={true}
                         __component_name="Typography.Text"
                       >
-                        text
+                        {__$$eval(() => this.state?.componentplan?.version || '-')}
                       </Typography.Text>
                     ),
                   },
@@ -252,20 +257,51 @@ class ComponentsManagementInstallDetail$$Page extends React.Component {
                     span: 1,
                     label: this.i18n('i18n-5u3ohmy6') /* 更新方式 */,
                     children: (
-                      <Typography.Text
-                        style={{ fontSize: '' }}
-                        strong={false}
-                        disabled={false}
-                        ellipsis={true}
-                        __component_name="Typography.Text"
-                      >
-                        text
-                      </Typography.Text>
+                      <Row wrap={true} gutter={[0, 0]} __component_name="Row">
+                        <Col span={24} __component_name="Col">
+                          <Typography.Text
+                            style={{ fontSize: '' }}
+                            strong={false}
+                            disabled={false}
+                            ellipsis={true}
+                            __component_name="Typography.Text"
+                          >
+                            {__$$eval(
+                              () =>
+                                this.utils
+                                  .getComponentInstallMethods(this)
+                                  ?.find(
+                                    item =>
+                                      item.value ===
+                                        this.state?.componentplan?.subscription
+                                          ?.componentPlanInstallMethod || 'manual'
+                                  )?.text || '-'
+                            )}
+                          </Typography.Text>
+                        </Col>
+                        <Col span={24} __component_name="Col">
+                          <Typography.Text
+                            style={{ fontSize: '' }}
+                            strong={false}
+                            disabled={false}
+                            ellipsis={true}
+                            __component_name="Typography.Text"
+                          >
+                            {__$$eval(() =>
+                              this.state?.componentplan?.subscription?.schedule
+                                ? this.utils.cronChangeToDate(
+                                    this.state?.componentplan?.subscription?.schedule
+                                  )
+                                : ''
+                            )}
+                          </Typography.Text>
+                        </Col>
+                      </Row>
                     ),
                   },
                 ]}
                 title={this.i18n('i18n-tff20aee') /* 安装信息 */}
-                column={1}
+                column={2}
                 layout="horizontal"
                 bordered={false}
                 labelStyle={{ width: 100 }}
@@ -330,25 +366,46 @@ class ComponentsManagementInstallDetail$$Page extends React.Component {
                   label={this.i18n('i18n-5u3ohmy6') /* 更新方式 */}
                 >
                   {
-                    <Typography.Text
-                      style={{ fontSize: '' }}
-                      strong={false}
-                      disabled={false}
-                      ellipsis={true}
-                      __component_name="Typography.Text"
-                    >
-                      {__$$eval(
-                        () =>
-                          this.utils
-                            .getComponentInstallMethods(this)
-                            ?.find(
-                              item =>
-                                item.value ===
-                                  this.state?.componentplan?.subscription
-                                    ?.componentPlanInstallMethod || 'manual'
-                            )?.text || '-'
-                      )}
-                    </Typography.Text>
+                    <Row wrap={true} gutter={[0, 0]} __component_name="Row">
+                      <Col span={24} __component_name="Col">
+                        <Typography.Text
+                          style={{ fontSize: '' }}
+                          strong={false}
+                          disabled={false}
+                          ellipsis={true}
+                          __component_name="Typography.Text"
+                        >
+                          {__$$eval(
+                            () =>
+                              this.utils
+                                .getComponentInstallMethods(this)
+                                ?.find(
+                                  item =>
+                                    item.value ===
+                                      this.state?.componentplan?.subscription
+                                        ?.componentPlanInstallMethod || 'manual'
+                                )?.text || '-'
+                          )}
+                        </Typography.Text>
+                      </Col>
+                      <Col span={24} __component_name="Col">
+                        <Typography.Text
+                          style={{ fontSize: '' }}
+                          strong={false}
+                          disabled={false}
+                          ellipsis={true}
+                          __component_name="Typography.Text"
+                        >
+                          {__$$eval(() =>
+                            this.state?.componentplan?.subscription?.schedule
+                              ? this.utils.cronChangeToDate(
+                                  this.state?.componentplan?.subscription?.schedule
+                                )
+                              : ''
+                          )}
+                        </Typography.Text>
+                      </Col>
+                    </Row>
                   }
                 </Descriptions.Item>
               </Descriptions>
@@ -365,7 +422,7 @@ class ComponentsManagementInstallDetail$$Page extends React.Component {
               >
                 <Typography.Title
                   bold={true}
-                  level={1}
+                  level={2}
                   style={{ top: '3px', position: 'relative' }}
                   bordered={false}
                   ellipsis={true}
@@ -406,8 +463,71 @@ class ComponentsManagementInstallDetail$$Page extends React.Component {
                   {
                     key: 'emc49godekc',
                     span: 1,
-                    label: this.i18n('i18n-hnyjg86b') /* 镜像 */,
-                    children: null,
+                    label: this.i18n('i18n-trftxv8p') /* 镜像替换 */,
+                    children: (
+                      <Row wrap={true} gutter={[0, 0]} __component_name="Row">
+                        {__$$evalArray(
+                          () => this.state?.componentplan?.component?.images || []
+                        ).map((record, index) =>
+                          (__$$context => (
+                            <Col span={24} __component_name="Col">
+                              <Space
+                                size={0}
+                                align="center"
+                                direction="horizontal"
+                                __component_name="Space"
+                              >
+                                <Typography.Text
+                                  style={{ fontSize: '' }}
+                                  strong={false}
+                                  disabled={false}
+                                  ellipsis={true}
+                                  __component_name="Typography.Text"
+                                >
+                                  {__$$eval(() => record?.name || '-')}
+                                </Typography.Text>
+                                <Typography.Text
+                                  style={{ fontSize: '' }}
+                                  strong={false}
+                                  disabled={false}
+                                  ellipsis={true}
+                                  __component_name="Typography.Text"
+                                >
+                                  /
+                                </Typography.Text>
+                                <Typography.Text
+                                  style={{ fontSize: '' }}
+                                  strong={false}
+                                  disabled={false}
+                                  ellipsis={true}
+                                  __component_name="Typography.Text"
+                                >
+                                  {__$$eval(() => record?.newName || '-')}
+                                </Typography.Text>
+                                <Typography.Text
+                                  style={{ fontSize: '' }}
+                                  strong={false}
+                                  disabled={false}
+                                  ellipsis={true}
+                                  __component_name="Typography.Text"
+                                >
+                                  :
+                                </Typography.Text>
+                                <Typography.Text
+                                  style={{ fontSize: '' }}
+                                  strong={false}
+                                  disabled={false}
+                                  ellipsis={true}
+                                  __component_name="Typography.Text"
+                                >
+                                  {__$$eval(() => record?.newTag || '-')}
+                                </Typography.Text>
+                              </Space>
+                            </Col>
+                          ))(__$$createChildContext(__$$context, { record, index }))
+                        )}
+                      </Row>
+                    ),
                   },
                 ]}
                 title=""
@@ -434,11 +554,15 @@ class ComponentsManagementInstallDetail$$Page extends React.Component {
                           ellipsis={true}
                           __component_name="Typography.Text"
                         >
-                          text
+                          value.yaml
                         </Typography.Text>
                       </Col>
                       <Col span={24} __component_name="Col">
-                        <Editor height="300px" __component_name="Editor" />
+                        <Editor
+                          value={__$$eval(() => this.state?.componentplan?.valuesYaml)}
+                          height="300px"
+                          __component_name="Editor"
+                        />
                       </Col>
                     </Row>
                   }
@@ -446,9 +570,68 @@ class ComponentsManagementInstallDetail$$Page extends React.Component {
                 <Descriptions.Item
                   key="emc49godekc"
                   span={1}
-                  label={this.i18n('i18n-hnyjg86b') /* 镜像 */}
+                  label={this.i18n('i18n-trftxv8p') /* 镜像替换 */}
                 >
-                  {null}
+                  {
+                    <Row wrap={true} gutter={[0, 0]} __component_name="Row">
+                      {__$$evalArray(() => this.state?.componentplan?.component?.images || []).map(
+                        (record, index) =>
+                          (__$$context => (
+                            <Col span={24} __component_name="Col">
+                              <Space
+                                size={0}
+                                align="center"
+                                direction="horizontal"
+                                __component_name="Space"
+                              >
+                                <Typography.Text
+                                  style={{ fontSize: '' }}
+                                  strong={false}
+                                  disabled={false}
+                                  ellipsis={true}
+                                  __component_name="Typography.Text"
+                                >
+                                  {__$$eval(() =>
+                                    (() => {
+                                      const arr = record?.name?.split('/');
+                                      const v = arr?.slice(0, arr?.length - 1)?.join('/') + '/';
+                                      return record?.name ? v : '-';
+                                    })()
+                                  )}
+                                </Typography.Text>
+                                <Typography.Text
+                                  style={{ fontSize: '' }}
+                                  strong={false}
+                                  disabled={false}
+                                  ellipsis={true}
+                                  __component_name="Typography.Text"
+                                >
+                                  {__$$eval(() => record?.newName || '-')}
+                                </Typography.Text>
+                                <Typography.Text
+                                  style={{ fontSize: '' }}
+                                  strong={false}
+                                  disabled={false}
+                                  ellipsis={true}
+                                  __component_name="Typography.Text"
+                                >
+                                  :
+                                </Typography.Text>
+                                <Typography.Text
+                                  style={{ fontSize: '' }}
+                                  strong={false}
+                                  disabled={false}
+                                  ellipsis={true}
+                                  __component_name="Typography.Text"
+                                >
+                                  {__$$eval(() => record?.newTag || '-')}
+                                </Typography.Text>
+                              </Space>
+                            </Col>
+                          ))(__$$createChildContext(__$$context, { record, index }))
+                      )}
+                    </Row>
+                  }
                 </Descriptions.Item>
               </Descriptions>
             </Col>
@@ -919,30 +1102,54 @@ class ComponentsManagementInstallDetail$$Page extends React.Component {
                             span: 1,
                             label: this.i18n('i18n-5u3ohmy6') /* 更新方式 */,
                             children: (
-                              <Typography.Text
-                                style={{ fontSize: '' }}
-                                strong={false}
-                                disabled={false}
-                                ellipsis={true}
-                                __component_name="Typography.Text"
-                              >
-                                {__$$eval(
-                                  () =>
-                                    this.utils
-                                      .getComponentInstallMethods(this)
-                                      ?.find(
-                                        item =>
-                                          item.value ===
-                                          this.props.useGetComponentplan?.data?.componentplan
-                                            ?.subscription?.componentPlanInstallMethod
-                                      )?.text || '-'
-                                )}
-                              </Typography.Text>
+                              <Row wrap={true} gutter={[0, 0]} __component_name="Row">
+                                <Col span={24} __component_name="Col">
+                                  <Typography.Text
+                                    style={{ fontSize: '' }}
+                                    strong={false}
+                                    disabled={false}
+                                    ellipsis={true}
+                                    __component_name="Typography.Text"
+                                  >
+                                    {__$$eval(
+                                      () =>
+                                        this.utils
+                                          .getComponentInstallMethods(this)
+                                          ?.find(
+                                            item =>
+                                              item.value ===
+                                                this.props.useGetComponentplan?.data?.componentplan
+                                                  ?.subscription?.componentPlanInstallMethod ||
+                                              'manual'
+                                          )?.text || '-'
+                                    )}
+                                  </Typography.Text>
+                                </Col>
+                                <Col span={24} __component_name="Col">
+                                  <Typography.Text
+                                    style={{ fontSize: '' }}
+                                    strong={false}
+                                    disabled={false}
+                                    ellipsis={true}
+                                    __component_name="Typography.Text"
+                                  >
+                                    {__$$eval(() =>
+                                      this.props.useGetComponentplan?.data?.componentplan
+                                        ?.subscription?.schedule
+                                        ? this.utils.cronChangeToDate(
+                                            this.props.useGetComponentplan?.data?.componentplan
+                                              ?.subscription?.schedule
+                                          )
+                                        : ''
+                                    )}
+                                  </Typography.Text>
+                                </Col>
+                              </Row>
                             ),
                           },
                         ]}
                         title=""
-                        column={1}
+                        column={3}
                         layout="horizontal"
                         bordered={false}
                         labelStyle={{ width: 130 }}
@@ -1020,25 +1227,49 @@ class ComponentsManagementInstallDetail$$Page extends React.Component {
                           label={this.i18n('i18n-5u3ohmy6') /* 更新方式 */}
                         >
                           {
-                            <Typography.Text
-                              style={{ fontSize: '' }}
-                              strong={false}
-                              disabled={false}
-                              ellipsis={true}
-                              __component_name="Typography.Text"
-                            >
-                              {__$$eval(
-                                () =>
-                                  this.utils
-                                    .getComponentInstallMethods(this)
-                                    ?.find(
-                                      item =>
-                                        item.value ===
+                            <Row wrap={true} gutter={[0, 0]} __component_name="Row">
+                              <Col span={24} __component_name="Col">
+                                <Typography.Text
+                                  style={{ fontSize: '' }}
+                                  strong={false}
+                                  disabled={false}
+                                  ellipsis={true}
+                                  __component_name="Typography.Text"
+                                >
+                                  {__$$eval(
+                                    () =>
+                                      this.utils
+                                        .getComponentInstallMethods(this)
+                                        ?.find(
+                                          item =>
+                                            item.value ===
+                                              this.props.useGetComponentplan?.data?.componentplan
+                                                ?.subscription?.componentPlanInstallMethod ||
+                                            'manual'
+                                        )?.text || '-'
+                                  )}
+                                </Typography.Text>
+                              </Col>
+                              <Col span={24} __component_name="Col">
+                                <Typography.Text
+                                  style={{ fontSize: '' }}
+                                  strong={false}
+                                  disabled={false}
+                                  ellipsis={true}
+                                  __component_name="Typography.Text"
+                                >
+                                  {__$$eval(() =>
+                                    this.props.useGetComponentplan?.data?.componentplan
+                                      ?.subscription?.schedule
+                                      ? this.utils.cronChangeToDate(
                                           this.props.useGetComponentplan?.data?.componentplan
-                                            ?.subscription?.componentPlanInstallMethod || 'manual'
-                                    )?.text || '-'
-                              )}
-                            </Typography.Text>
+                                            ?.subscription?.schedule
+                                        )
+                                      : ''
+                                  )}
+                                </Typography.Text>
+                              </Col>
+                            </Row>
                           }
                         </Descriptions.Item>
                       </Descriptions>,
@@ -1054,7 +1285,7 @@ class ComponentsManagementInstallDetail$$Page extends React.Component {
                       >
                         <Typography.Title
                           bold={true}
-                          level={1}
+                          level={2}
                           style={{ top: '3px', position: 'relative' }}
                           bordered={false}
                           ellipsis={true}
@@ -1083,11 +1314,15 @@ class ComponentsManagementInstallDetail$$Page extends React.Component {
                                     ellipsis={true}
                                     __component_name="Typography.Text"
                                   >
-                                    text
+                                    value.yaml
                                   </Typography.Text>
                                 </Col>
                                 <Col span={24} __component_name="Col">
-                                  <Editor style={{ height: '200px' }} __component_name="Editor" />
+                                  <Editor
+                                    style={{ height: '200px' }}
+                                    readOnly={true}
+                                    __component_name="Editor"
+                                  />
                                 </Col>
                               </Row>
                             ),
@@ -1097,15 +1332,75 @@ class ComponentsManagementInstallDetail$$Page extends React.Component {
                             span: 1,
                             label: this.i18n('i18n-hnyjg86b') /* 镜像 */,
                             children: (
-                              <Typography.Text
-                                style={{ fontSize: '' }}
-                                strong={false}
-                                disabled={false}
-                                ellipsis={true}
-                                __component_name="Typography.Text"
-                              >
-                                text
-                              </Typography.Text>
+                              <Row wrap={true} __component_name="Row">
+                                {__$$evalArray(
+                                  () =>
+                                    this.props.useGetComponentplan?.data?.componentplan?.component
+                                      ?.images || [
+                                      {
+                                        name: '123',
+                                        newTag: 'tag',
+                                      },
+                                      {},
+                                    ]
+                                ).map((record, index) =>
+                                  (__$$context => (
+                                    <Col span={24} __component_name="Col">
+                                      <Space
+                                        align="center"
+                                        direction="horizontal"
+                                        __component_name="Space"
+                                      >
+                                        <Typography.Text
+                                          style={{ fontSize: '' }}
+                                          strong={false}
+                                          disabled={false}
+                                          ellipsis={true}
+                                          __component_name="Typography.Text"
+                                        >
+                                          {__$$eval(() => record?.name || '-')}
+                                        </Typography.Text>
+                                        <Typography.Text
+                                          style={{ fontSize: '' }}
+                                          strong={false}
+                                          disabled={false}
+                                          ellipsis={true}
+                                          __component_name="Typography.Text"
+                                        >
+                                          /
+                                        </Typography.Text>
+                                        <Typography.Text
+                                          style={{ fontSize: '' }}
+                                          strong={false}
+                                          disabled={false}
+                                          ellipsis={true}
+                                          __component_name="Typography.Text"
+                                        >
+                                          /
+                                        </Typography.Text>
+                                        <Typography.Text
+                                          style={{ fontSize: '' }}
+                                          strong={false}
+                                          disabled={false}
+                                          ellipsis={true}
+                                          __component_name="Typography.Text"
+                                        >
+                                          {__$$eval(() => record?.newName || '-')}
+                                        </Typography.Text>
+                                        <Typography.Text
+                                          style={{ fontSize: '' }}
+                                          strong={false}
+                                          disabled={false}
+                                          ellipsis={true}
+                                          __component_name="Typography.Text"
+                                        >
+                                          {__$$eval(() => record?.newTag || '-')}
+                                        </Typography.Text>
+                                      </Space>
+                                    </Col>
+                                  ))(__$$createChildContext(__$$context, { record, index }))
+                                )}
+                              </Row>
                             ),
                           },
                         ]}
@@ -1140,6 +1435,11 @@ class ComponentsManagementInstallDetail$$Page extends React.Component {
                               <Col span={24} __component_name="Col">
                                 <Editor
                                   style={{ height: '200px' }}
+                                  value={__$$eval(
+                                    () =>
+                                      this.props.useGetComponentplan?.data?.componentplan
+                                        ?.valuesYaml
+                                  )}
                                   readOnly={true}
                                   __component_name="Editor"
                                 />
@@ -1153,15 +1453,68 @@ class ComponentsManagementInstallDetail$$Page extends React.Component {
                           label={this.i18n('i18n-hnyjg86b') /* 镜像 */}
                         >
                           {
-                            <Typography.Text
-                              style={{ fontSize: '' }}
-                              strong={false}
-                              disabled={false}
-                              ellipsis={true}
-                              __component_name="Typography.Text"
-                            >
-                              text
-                            </Typography.Text>
+                            <Row wrap={true} gutter={[0, 0]} __component_name="Row">
+                              {__$$evalArray(
+                                () =>
+                                  this.props.useGetComponentplan?.data?.componentplan?.component
+                                    ?.images || []
+                              ).map((record, index) =>
+                                (__$$context => (
+                                  <Col span={24} __component_name="Col">
+                                    <Space
+                                      size={0}
+                                      align="center"
+                                      direction="horizontal"
+                                      __component_name="Space"
+                                    >
+                                      <Typography.Text
+                                        style={{ fontSize: '' }}
+                                        strong={false}
+                                        disabled={false}
+                                        ellipsis={true}
+                                        __component_name="Typography.Text"
+                                      >
+                                        {__$$eval(() =>
+                                          (() => {
+                                            const arr = record?.name?.split('/');
+                                            const v =
+                                              arr?.slice(0, arr?.length - 1)?.join('/') + '/';
+                                            return record?.name ? v : '-';
+                                          })()
+                                        )}
+                                      </Typography.Text>
+                                      <Typography.Text
+                                        style={{ fontSize: '' }}
+                                        strong={false}
+                                        disabled={false}
+                                        ellipsis={true}
+                                        __component_name="Typography.Text"
+                                      >
+                                        {__$$eval(() => record?.newName || '-')}
+                                      </Typography.Text>
+                                      <Typography.Text
+                                        style={{ fontSize: '' }}
+                                        strong={false}
+                                        disabled={false}
+                                        ellipsis={true}
+                                        __component_name="Typography.Text"
+                                      >
+                                        :
+                                      </Typography.Text>
+                                      <Typography.Text
+                                        style={{ fontSize: '' }}
+                                        strong={false}
+                                        disabled={false}
+                                        ellipsis={true}
+                                        __component_name="Typography.Text"
+                                      >
+                                        {__$$eval(() => record?.newTag || '-')}
+                                      </Typography.Text>
+                                    </Space>
+                                  </Col>
+                                ))(__$$createChildContext(__$$context, { record, index }))
+                              )}
+                            </Row>
                           }
                         </Descriptions.Item>
                       </Descriptions>,
@@ -1186,6 +1539,7 @@ class ComponentsManagementInstallDetail$$Page extends React.Component {
                                   block={false}
                                   ghost={false}
                                   shape="default"
+                                  style={{ marginLeft: '-16px' }}
                                   danger={false}
                                   onClick={function () {
                                     return this.openDetailModal.apply(
@@ -1281,7 +1635,7 @@ class ComponentsManagementInstallDetail$$Page extends React.Component {
                                   __component_name="Typography.Time"
                                 />
                               ))(__$$createChildContext(__$$context, { text, record, index })),
-                            sorter: false,
+                            sorter: true,
                             ellipsis: { showTitle: false },
                             dataIndex: 'creationTimestamp',
                           },
@@ -1355,10 +1709,28 @@ class ComponentsManagementInstallDetail$$Page extends React.Component {
                             dataIndex: 'op',
                           },
                         ]}
-                        dataSource={__$$eval(
-                          () =>
+                        onChange={function () {
+                          return this.handleHistoryTableChange.apply(
+                            this,
+                            Array.prototype.slice.call(arguments).concat([])
+                          );
+                        }.bind(this)}
+                        dataSource={__$$eval(() =>
+                          (
                             this.props.useGetComponentplanHistory?.data?.componentplan?.history ||
                             []
+                          )?.sort((a, b) => {
+                            if (this.state?.historyPagination?.sorter?.order !== 'ascend') {
+                              return (
+                                new Date(b.creationTimestamp).getTime() -
+                                new Date(a.creationTimestamp).getTime()
+                              );
+                            }
+                            return (
+                              new Date(a.creationTimestamp).getTime() -
+                              new Date(b.creationTimestamp).getTime()
+                            );
+                          })
                         )}
                         pagination={false}
                         showHeader={true}
