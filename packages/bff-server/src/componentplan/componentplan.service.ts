@@ -1,8 +1,9 @@
 import { SortDirection } from '@/common/models/sort-direction.enum';
-import { genNanoid } from '@/common/utils';
+import { genContentHash, genNanoid } from '@/common/utils';
 import { ComponentsService } from '@/components/components.service';
 import { Component } from '@/components/models/component.model';
 import serverConfig from '@/config/server.config';
+import { ConfigmapService } from '@/configmap/configmap.service';
 import { KubernetesService } from '@/kubernetes/kubernetes.service';
 import { InstallMethod } from '@/subscription/models/installmethod.enum';
 import { SubscriptionService } from '@/subscription/subscription.service';
@@ -22,6 +23,7 @@ export class ComponentplanService {
     private readonly k8sService: KubernetesService,
     private readonly componentsService: ComponentsService,
     private readonly subscriptionService: SubscriptionService,
+    private readonly configmapService: ConfigmapService,
     @Inject(serverConfig.KEY)
     private config: ConfigType<typeof serverConfig>
   ) {}
@@ -64,6 +66,7 @@ export class ComponentplanService {
       status,
       latest: cp.status?.latest,
       images: cp.spec?.override?.images,
+      configmap: cp.spec?.override?.valuesFrom?.filter(v => v.kind === 'ConfigMap')?.[0]?.name,
     };
   }
 
@@ -216,10 +219,24 @@ export class ComponentplanService {
       );
       return true;
     }
-    const k8s = await this.k8sService.getClient(auth, { cluster });
+    let valuesFrom: any[];
     if (valuesYaml) {
-      // TODO 比对不同，则创建configmap
+      const cmName = await this.disposeValuesYaml(
+        auth,
+        namespace,
+        { repository, chartName, version, releaseName, valuesYaml },
+        cluster
+      );
+      if (cmName) {
+        valuesFrom = [
+          {
+            kind: 'ConfigMap',
+            name: cmName,
+          },
+        ];
+      }
     }
+    const k8s = await this.k8sService.getClient(auth, { cluster });
     await k8s.componentplan.create(namespace, {
       metadata: {
         name: genNanoid('cpl'),
@@ -235,6 +252,7 @@ export class ComponentplanService {
         version,
         override: {
           images,
+          valuesFrom,
         },
       },
     });
@@ -253,7 +271,7 @@ export class ComponentplanService {
      * 1. approved: false  -> 修改cpl，同时改 approved: true
      * 2. approved: true -> 创建cpl
      */
-    const { approved, releaseName, subscriptionName, component } = await this.get(
+    const { approved, releaseName, subscriptionName, component, configmap } = await this.get(
       auth,
       name,
       namespace
@@ -298,16 +316,38 @@ export class ComponentplanService {
           );
         }
       }
-      const k8s = await this.k8sService.getClient(auth, { cluster });
+      let valuesFrom: any[];
       if (valuesYaml) {
-        // TODO 比对不同，则创建configmap
+        const cmName = await this.disposeValuesYaml(
+          auth,
+          namespace,
+          {
+            repository: component?.repository,
+            chartName: component?.chartName,
+            version,
+            releaseName,
+            valuesYaml,
+            configmap,
+          },
+          cluster
+        );
+        if (cmName) {
+          valuesFrom = [
+            {
+              kind: 'ConfigMap',
+              name: cmName,
+            },
+          ];
+        }
       }
+      const k8s = await this.k8sService.getClient(auth, { cluster });
       await k8s.componentplan.patchMerge(name, namespace, {
         spec: {
           approved: true,
           version,
           override: {
             images,
+            valuesFrom,
           },
         },
       });
@@ -317,7 +357,7 @@ export class ComponentplanService {
 
   async remove(auth: JwtAuth, name: string, namespace: string, cluster?: string): Promise<boolean> {
     const k8s = await this.k8sService.getClient(auth, { cluster });
-    const { releaseName } = await this.get(auth, name, namespace, cluster);
+    const { releaseName, configmap } = await this.get(auth, name, namespace, cluster);
     const labelSelectors = [`core.kubebb.k8s.com.cn/componentplan-release=${releaseName}`];
     const cpls = await this.list(
       auth,
@@ -326,6 +366,9 @@ export class ComponentplanService {
       cluster
     );
     await Promise.all((cpls || []).map(cpl => k8s.componentplan.delete(cpl.name, namespace)));
+    if (configmap) {
+      await this.configmapService.deleteConfigmap(auth, configmap, namespace, cluster);
+    }
     // 如果有sub，修改sub的自动更新为手动
     const subsName = (cpls || []).map(cpl => cpl.subscriptionName).filter(subN => !!subN);
     await Promise.all(
@@ -359,5 +402,43 @@ export class ComponentplanService {
       },
     });
     return true;
+  }
+
+  async disposeValuesYaml(
+    auth: JwtAuth,
+    namespace: string,
+    { repository, chartName, version, releaseName, valuesYaml, configmap }: any,
+    cluster?: string
+  ): Promise<string> {
+    if (configmap) {
+      const { name } = await this.configmapService.updateConfigmap(
+        auth,
+        configmap,
+        namespace,
+        { 'values.yaml': valuesYaml },
+        cluster
+      );
+      return name;
+    }
+    const { data: rawCM } = await this.configmapService.getConfigmap(
+      auth,
+      `${repository}.${chartName}-${version}`,
+      this.kubebbNS,
+      cluster
+    );
+    const rawVY = rawCM?.['values.yaml'];
+    if (rawVY && genContentHash(rawVY) !== genContentHash(valuesYaml)) {
+      const { name } = await this.configmapService.createConfigmap(
+        auth,
+        `${repository}.${chartName}-${releaseName}`,
+        namespace,
+        {
+          'values.yaml': valuesYaml,
+        },
+        cluster
+      );
+      return name;
+    }
+    return null;
   }
 }

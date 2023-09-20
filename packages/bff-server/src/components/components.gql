@@ -100,3 +100,14 @@ mutation deleteComponent($chart: DeleteComponentInput!, $cluster: String){
 mutation downloadComponent($chart: DownloadComponentInput!, $cluster: String){
   componentDownload(chart: $chart, cluster: $cluster)
 }
+
+# 获取组件的Chart相关信息
+query getComponentChart($name: String!, $version: String!){
+  component(name: $name) {
+    name
+    chart(version: $version) {
+      images
+      valuesYaml
+    }
+  }
+}

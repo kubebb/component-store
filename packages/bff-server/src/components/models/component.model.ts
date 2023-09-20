@@ -31,6 +31,12 @@ class ComponentMaintainer {
   url?: string;
 }
 
+@ObjectType({ description: 'Chart 信息' })
+export class ComponentChart {
+  valuesYaml?: string;
+  images?: string[];
+}
+
 @ObjectType({ description: '组件' })
 export class Component {
   @Field(() => ID, { description: '组件名称' })
@@ -87,6 +93,8 @@ export class Component {
 
   /** 最新版本 */
   latestVersion?: string;
+
+  chart?: ComponentChart;
 }
 
 @ObjectType({ description: '分页' })

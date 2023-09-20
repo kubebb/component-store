@@ -32,6 +32,7 @@ export type Scalars = {
 /** 组件 */
 export type Component = {
   __typename?: 'Component';
+  chart?: Maybe<ComponentChart>;
   /** Chart 名称 */
   chartName: Scalars['String']['output'];
   /** 创建时间 */
@@ -65,6 +66,18 @@ export type Component = {
   updatedAt?: Maybe<Scalars['String']['output']>;
   /** 版本 */
   versions?: Maybe<Array<ComponentVersion>>;
+};
+
+/** 组件 */
+export type ComponentChartArgs = {
+  version: Scalars['String']['input'];
+};
+
+/** Chart 信息 */
+export type ComponentChart = {
+  __typename?: 'ComponentChart';
+  images?: Maybe<Array<Scalars['String']['output']>>;
+  valuesYaml?: Maybe<Scalars['String']['output']>;
 };
 
 export type ComponentEdge = {
@@ -133,9 +146,11 @@ export type Componentplan = {
   /** 仓库 */
   repository?: Maybe<Repository>;
   /** 状态 */
-  status?: Maybe<ComponentplanStatus>;
+  status?: Maybe<ExportComponentplanStatus>;
   /** 订阅 */
   subscription?: Maybe<Subscription>;
+  /** 配置文件values.yaml */
+  valuesYaml?: Maybe<Scalars['String']['output']>;
   /** 安装版本 */
   version?: Maybe<Scalars['String']['output']>;
 };
@@ -166,42 +181,6 @@ export type ComponentplanImageInput = {
   /** 替换tag（如：v0.16.0） */
   newTag?: InputMaybe<Scalars['String']['input']>;
 };
-
-/** 组件状态 */
-export enum ComponentplanStatus {
-  /** 失败 */
-  Failed = 'Failed',
-  /** 安装失败 */
-  InstallFailed = 'InstallFailed',
-  /** 安装成功 */
-  InstallSuccess = 'InstallSuccess',
-  /** 安装中 */
-  Installing = 'Installing',
-  /** 回滚失败 */
-  RollBackFailed = 'RollBackFailed',
-  /** 回滚成功 */
-  RollBackSuccess = 'RollBackSuccess',
-  /** 回滚中 */
-  RollingBack = 'RollingBack',
-  /** 成功 */
-  Succeeded = 'Succeeded',
-  /** 卸载失败 */
-  UninstallFailed = 'UninstallFailed',
-  /** 卸载成功 */
-  UninstallSuccess = 'UninstallSuccess',
-  /** 卸载中 */
-  Uninstalling = 'Uninstalling',
-  /** 未知 */
-  Unknown = 'Unknown',
-  /** 升级失败 */
-  UpgradeFailed = 'UpgradeFailed',
-  /** 升级成功 */
-  UpgradeSuccess = 'UpgradeSuccess',
-  /** 升级中 */
-  Upgrading = 'Upgrading',
-  /** 前置步骤失败 */
-  WaitDo = 'WaitDo',
-}
 
 /** 上传组件 */
 export type CreateComponentInput = {
@@ -283,6 +262,22 @@ export type DownloadComponentInput = {
   /** Chart版本 */
   version: Scalars['String']['input'];
 };
+
+/** 组件状态 */
+export enum ExportComponentplanStatus {
+  /** 安装失败 */
+  InstallFailed = 'InstallFailed',
+  /** 安装成功 */
+  InstallSuccess = 'InstallSuccess',
+  /** 安装中 */
+  Installing = 'Installing',
+  /** 卸载失败 */
+  UninstallFailed = 'UninstallFailed',
+  /** 卸载中 */
+  Uninstalling = 'Uninstalling',
+  /** 未知 */
+  Unknown = 'Unknown',
+}
 
 /** 组件更新方式 */
 export enum InstallMethod {
@@ -476,6 +471,7 @@ export type QueryComponentplansPagedArgs = {
   repository?: InputMaybe<Scalars['String']['input']>;
   sortDirection?: InputMaybe<SortDirection>;
   sortField?: InputMaybe<Scalars['String']['input']>;
+  status?: InputMaybe<Array<Scalars['String']['input']>>;
 };
 
 export type QueryComponentsArgs = {
@@ -745,6 +741,7 @@ export type GetComponentplansPagedQueryVariables = Exact<{
   cluster?: InputMaybe<Scalars['String']['input']>;
   chartName?: InputMaybe<Scalars['String']['input']>;
   repository?: InputMaybe<Scalars['String']['input']>;
+  status?: InputMaybe<Array<Scalars['String']['input']> | Scalars['String']['input']>;
 }>;
 
 export type GetComponentplansPagedQuery = {
@@ -760,7 +757,7 @@ export type GetComponentplansPagedQuery = {
       creationTimestamp: string;
       namespace: string;
       version?: string | null;
-      status?: ComponentplanStatus | null;
+      status?: ExportComponentplanStatus | null;
       component?: {
         __typename?: 'Component';
         name: string;
@@ -791,7 +788,8 @@ export type GetComponentplanQuery = {
     creationTimestamp: string;
     namespace: string;
     version?: string | null;
-    status?: ComponentplanStatus | null;
+    status?: ExportComponentplanStatus | null;
+    valuesYaml?: string | null;
     images?: Array<{
       __typename?: 'ComponentplanImage';
       name?: string | null;
@@ -838,7 +836,7 @@ export type GetComponentplanHistoryQuery = {
   componentplan: {
     __typename?: 'Componentplan';
     namespace: string;
-    status?: ComponentplanStatus | null;
+    status?: ExportComponentplanStatus | null;
     releaseName: string;
     component?: { __typename?: 'Component'; chartName: string } | null;
     history?: Array<{
@@ -1026,6 +1024,24 @@ export type DownloadComponentMutationVariables = Exact<{
 }>;
 
 export type DownloadComponentMutation = { __typename?: 'Mutation'; componentDownload: string };
+
+export type GetComponentChartQueryVariables = Exact<{
+  name: Scalars['String']['input'];
+  version: Scalars['String']['input'];
+}>;
+
+export type GetComponentChartQuery = {
+  __typename?: 'Query';
+  component: {
+    __typename?: 'Component';
+    name: string;
+    chart?: {
+      __typename?: 'ComponentChart';
+      images?: Array<string> | null;
+      valuesYaml?: string | null;
+    } | null;
+  };
+};
 
 export type GetRepositoriesQueryVariables = Exact<{
   page?: InputMaybe<Scalars['Float']['input']>;
@@ -1287,6 +1303,7 @@ export const GetComponentplansPagedDocument = gql`
     $cluster: String
     $chartName: String
     $repository: String
+    $status: [String!]
   ) {
     componentplansPaged(
       namespace: $namespace
@@ -1298,6 +1315,7 @@ export const GetComponentplansPagedDocument = gql`
       cluster: $cluster
       chartName: $chartName
       repository: $repository
+      status: $status
     ) {
       nodes {
         name
@@ -1356,6 +1374,7 @@ export const GetComponentplanDocument = gql`
           newPath
         }
       }
+      valuesYaml
     }
   }
 `;
@@ -1534,6 +1553,17 @@ export const DeleteComponentDocument = gql`
 export const DownloadComponentDocument = gql`
   mutation downloadComponent($chart: DownloadComponentInput!, $cluster: String) {
     componentDownload(chart: $chart, cluster: $cluster)
+  }
+`;
+export const GetComponentChartDocument = gql`
+  query getComponentChart($name: String!, $version: String!) {
+    component(name: $name) {
+      name
+      chart(version: $version) {
+        images
+        valuesYaml
+      }
+    }
   }
 `;
 export const GetRepositoriesDocument = gql`
@@ -1943,6 +1973,20 @@ export function getSdk(client: GraphQLClient, withWrapper: SdkFunctionWrapper = 
         'mutation'
       );
     },
+    getComponentChart(
+      variables: GetComponentChartQueryVariables,
+      requestHeaders?: GraphQLClientRequestHeaders
+    ): Promise<GetComponentChartQuery> {
+      return withWrapper(
+        wrappedRequestHeaders =>
+          client.request<GetComponentChartQuery>(GetComponentChartDocument, variables, {
+            ...requestHeaders,
+            ...wrappedRequestHeaders,
+          }),
+        'getComponentChart',
+        'query'
+      );
+    },
     getRepositories(
       variables?: GetRepositoriesQueryVariables,
       requestHeaders?: GraphQLClientRequestHeaders
@@ -2225,6 +2269,16 @@ export function getSdkWithHooks(
       return useSWR<GetComponentQuery, ClientError>(
         genKey<GetComponentQueryVariables>('GetComponent', variables),
         () => sdk.getComponent(variables),
+        config
+      );
+    },
+    useGetComponentChart(
+      variables: GetComponentChartQueryVariables,
+      config?: SWRConfigInterface<GetComponentChartQuery, ClientError>
+    ) {
+      return useSWR<GetComponentChartQuery, ClientError>(
+        genKey<GetComponentChartQueryVariables>('GetComponentChart', variables),
+        () => sdk.getComponentChart(variables),
         config
       );
     },

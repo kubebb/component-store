@@ -58,6 +58,7 @@ query getComponentplan($name: String!, $namespace: String!, $cluster: String) {
         newPath
       }
     }
+    valuesYaml
   }
 }
 

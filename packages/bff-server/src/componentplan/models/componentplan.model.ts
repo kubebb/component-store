@@ -15,6 +15,7 @@ class ComponentplanImage {
   newTag?: string;
   digest?: string;
 }
+
 @ObjectType()
 export class Componentplan {
   @Field(() => ID, { description: '组件名称' })
@@ -56,6 +57,12 @@ export class Componentplan {
 
   /** 覆盖镜像 */
   images?: ComponentplanImage[];
+
+  @HideField()
+  configmap?: string;
+
+  /** 配置文件values.yaml */
+  valuesYaml?: string;
 }
 
 @ObjectType({ description: '分页' })

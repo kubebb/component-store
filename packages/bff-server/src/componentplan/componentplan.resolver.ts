@@ -1,6 +1,7 @@
 import { Loader } from '@/common/dataloader';
 import { Auth } from '@/common/decorators/auth.decorator';
 import { Component } from '@/components/models/component.model';
+import { ConfigmapService } from '@/configmap/configmap.service';
 import { Repository } from '@/repository/models/repository.model';
 import { RepositoryLoader } from '@/repository/repository.loader';
 import { Subscription } from '@/subscription/models/subscription.model';
@@ -16,7 +17,10 @@ import { Componentplan, PaginatedComponentplan } from './models/componentplan.mo
 
 @Resolver(() => Componentplan)
 export class ComponentplanResolver {
-  constructor(private readonly componentplanService: ComponentplanService) {}
+  constructor(
+    private readonly componentplanService: ComponentplanService,
+    private readonly configmapService: ConfigmapService
+  ) {}
 
   @Query(() => PaginatedComponentplan, { description: '安装组件列表（分页）' })
   async componentplansPaged(
@@ -141,5 +145,20 @@ export class ComponentplanResolver {
     } = info;
     const { namespace, releaseName } = componentplan;
     return this.componentplanService.history(auth, namespace, releaseName, cluster);
+  }
+
+  @ResolveField(() => String, { nullable: true, description: 'Values.yaml' })
+  async valuesYaml(
+    @Auth() auth: JwtAuth,
+    @Info() info: AnyObj,
+    @Parent() componentplan: Componentplan
+  ): Promise<string> {
+    const {
+      variableValues: { cluster },
+    } = info;
+    const { namespace, configmap } = componentplan;
+    if (!configmap) return null;
+    const cm = await this.configmapService.getConfigmap(auth, configmap, namespace, cluster);
+    return cm?.data?.['values.yaml'];
   }
 }

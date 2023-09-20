@@ -6,6 +6,8 @@ directive @upper on FIELD_DEFINITION
 
 """组件"""
 type Component {
+  chart(version: String!): ComponentChart
+
   """Chart 名称"""
   chartName: String!
 
@@ -54,6 +56,12 @@ type Component {
 
   """版本"""
   versions: [ComponentVersion!]
+}
+
+"""Chart 信息"""
+type ComponentChart {
+  images: [String!]
+  valuesYaml: String
 }
 
 type ComponentEdge {
@@ -137,6 +145,9 @@ type Componentplan {
 
   """订阅"""
   subscription: Subscription
+
+  """配置文件values.yaml"""
+  valuesYaml: String
 
   """安装版本"""
   version: String

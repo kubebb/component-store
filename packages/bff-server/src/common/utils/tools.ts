@@ -5,6 +5,8 @@ import * as jwt from 'jsonwebtoken';
 import { Jwt } from 'jsonwebtoken';
 import { customAlphabet } from 'nanoid';
 import { lowercase, numbers } from 'nanoid-dictionary';
+import { BinaryLike, createHash } from 'node:crypto';
+import { Readable } from 'node:stream';
 import type { FileUpload, JwtAuth, K8s, Request } from '../../types';
 import { TokenException } from './errors';
 
@@ -136,6 +138,39 @@ export const convertFileToText = async (file: FileUpload): Promise<string> => {
     readStream.on('error', () => {
       console.error('Error: utils.convertFileToText');
       resolve(null);
+    });
+  });
+};
+
+/**
+ * 根据内容生成hash
+ * @param {BinaryLike} data
+ * @returns
+ */
+export const genContentHash = (data: BinaryLike) => {
+  const hash = createHash('sha256');
+  hash.update(data);
+  return hash.digest('hex');
+};
+
+/**
+ * 根据内容生成hash
+ * @param {Readable} readable
+ * @returns
+ */
+export const genContentHashByReadable = (readable: Readable): Promise<string> => {
+  const hash = createHash('sha256');
+  return new Promise((resolve, reject) => {
+    const stream = readable.pipe(hash).setEncoding('hex');
+    let data = '';
+    stream.on('data', (d: string) => {
+      data += d;
+    });
+    stream.on('end', () => {
+      resolve(data);
+    });
+    stream.on('error', (e: any) => {
+      reject(e);
     });
   });
 };
