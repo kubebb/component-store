@@ -12,7 +12,7 @@ import { DeleteComponentInput } from './dto/delete-component.input';
 import { DownloadComponentInput } from './dto/download-component.input';
 import { ComponentSource } from './models/component-source.enum';
 import { ComponentStatus } from './models/component-status.enum';
-import { Component, PaginatedComponent } from './models/component.model';
+import { Component, ComponentChart, PaginatedComponent } from './models/component.model';
 
 @Resolver(() => Component)
 export class ComponentsResolver {
@@ -125,5 +125,19 @@ export class ComponentsResolver {
       return ComponentSource.official;
     }
     return null;
+  }
+
+  @ResolveField(() => ComponentChart, { description: 'Helm Chart信息' })
+  async chart(
+    @Auth() auth: JwtAuth,
+    @Info() info: AnyObj,
+    @Parent() component: Component,
+    @Args('version') version: string
+  ): Promise<ComponentChart> {
+    const {
+      variableValues: { cluster },
+    } = info;
+    const { name, namespace } = component;
+    return this.componentsService.getChartValues(auth, name, namespace, version, cluster);
   }
 }

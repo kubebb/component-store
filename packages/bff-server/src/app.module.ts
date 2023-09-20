@@ -20,6 +20,7 @@ import { GRAPHQL_PATH } from './common/utils';
 import { ComponentplanModule } from './componentplan/componentplan.module';
 import { ComponentsModule } from './components/components.module';
 import serverConfig from './config/server.config';
+import { ConfigmapModule } from './configmap/configmap.module';
 import { KubernetesModule } from './kubernetes/kubernetes.module';
 import { RepositoryModule } from './repository/repository.module';
 import { SecretModule } from './secret/secret.module';
@@ -88,6 +89,7 @@ import { SubscriptionModule } from './subscription/subscription.module';
     SecretModule,
     SubscriptionModule,
     ComponentplanModule,
+    ConfigmapModule,
   ],
   controllers: [AppController],
   providers: [

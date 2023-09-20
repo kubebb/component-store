@@ -1,6 +1,7 @@
 import { SortDirection } from '@/common/models/sort-direction.enum';
 import { decodeBase64 } from '@/common/utils';
 import serverConfig from '@/config/server.config';
+import { ConfigmapService } from '@/configmap/configmap.service';
 import { KubernetesService } from '@/kubernetes/kubernetes.service';
 import { RepositoryService } from '@/repository/repository.service';
 import { Secret } from '@/secret/models/secret.model';
@@ -15,7 +16,7 @@ import { ComponentArgs } from './dto/component.args';
 import { CreateComponentInput } from './dto/create-component.input';
 import { DeleteComponentInput } from './dto/delete-component.input';
 import { DownloadComponentInput } from './dto/download-component.input';
-import { Component, PaginatedComponent } from './models/component.model';
+import { Component, ComponentChart, PaginatedComponent } from './models/component.model';
 
 @Injectable()
 export class ComponentsService {
@@ -23,6 +24,7 @@ export class ComponentsService {
     private readonly k8sService: KubernetesService,
     private readonly repositoryService: RepositoryService,
     private readonly secretService: SecretService,
+    private readonly configmapService: ConfigmapService,
     @Inject(serverConfig.KEY)
     private config: ConfigType<typeof serverConfig>
   ) {}
@@ -230,5 +232,24 @@ export class ComponentsService {
       throw new HttpException(res, res.status);
     }
     return res;
+  }
+
+  async getChartValues(
+    auth: JwtAuth,
+    name: string,
+    namespace: string,
+    version: string,
+    cluster?: string
+  ): Promise<ComponentChart> {
+    const { data } = await this.configmapService.getConfigmap(
+      auth,
+      `${name}-${version}`,
+      namespace,
+      cluster
+    );
+    return {
+      images: data?.images?.split(','),
+      valuesYaml: data?.['values.yaml'],
+    };
   }
 }
