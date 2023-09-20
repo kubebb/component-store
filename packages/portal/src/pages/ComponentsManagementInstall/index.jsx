@@ -122,9 +122,9 @@ class ComponentsManagementInstall$$Page extends React.Component {
       params.sortField = this.state.sorter?.field;
       params.sortDirection = this.state.sorter?.order;
     }
-    // if (status?.length > 0) {
-    //   params.statuses = status
-    // }
+    if (status?.length > 0) {
+      params.status = status;
+    }
     this.utils?.changeLocationQuery(this, 'useGetComponentplansPaged', params);
   }
 
@@ -230,7 +230,7 @@ class ComponentsManagementInstall$$Page extends React.Component {
           __component_name="Modal"
         >
           <Alert
-            type="info"
+            type="warning"
             message={
               <Row wrap={true} gutter={[0, 0]} __component_name="Row">
                 <Col span={24} __component_name="Col">
@@ -257,7 +257,7 @@ class ComponentsManagementInstall$$Page extends React.Component {
                     </Typography.Text>
                     <Typography.Text
                       style={{ fontSize: '' }}
-                      strong={false}
+                      strong={true}
                       disabled={false}
                       ellipsis={true}
                       __component_name="Typography.Text"

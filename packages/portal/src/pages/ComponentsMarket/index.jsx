@@ -171,6 +171,9 @@ class ComponentsMarket$$Page extends React.Component {
     if (this.state.type && this.state.type !== 'ALL') {
       params.source = this.state.type;
     }
+    if (this.state.type && this.state.type === 'ALL') {
+      params.source = undefined;
+    }
     this.utils?.changeLocationQuery(this, 'useGetComponents', params);
   }
 
@@ -486,7 +489,7 @@ class ComponentsMarket$$Page extends React.Component {
                               );
                             }.bind(__$$context)}
                             bordered={false}
-                            hoverable={false}
+                            hoverable={true}
                           >
                             {!!__$$eval(
                               () =>
@@ -666,14 +669,7 @@ class ComponentsMarket$$Page extends React.Component {
                                               ellipsis={{ rows: 1, expandable: false }}
                                               __component_name="Typography.Text"
                                             >
-                                              {__$$eval(
-                                                () =>
-                                                  record?.versions?.sort(
-                                                    (a, b) =>
-                                                      new Date(a.createdAt).getTime() -
-                                                      new Date(b.createdAt).getTime()
-                                                  )?.[0]?.version || '-'
-                                              )}
+                                              {__$$eval(() => record?.latestVersion || '-')}
                                             </Typography.Text>
                                           ),
                                         },
@@ -699,10 +695,16 @@ class ComponentsMarket$$Page extends React.Component {
                                           label: this.i18n('i18n-yw1xiu88') /* 关键词 */,
                                           children: (
                                             <Typography.Text
-                                              style={{ maxWidth: '150px' }}
+                                              style={{ fontSize: '', maxWidth: '150px' }}
                                               strong={false}
                                               disabled={false}
-                                              ellipsis={true}
+                                              ellipsis={{
+                                                tooltip: __$$eval(() =>
+                                                  record?.keywords?.join('，')
+                                                ),
+                                                _unsafe_MixedSetter_tooltip_select:
+                                                  'ExpressionSetter',
+                                              }}
                                               __component_name="Typography.Text"
                                             >
                                               {__$$eval(() => record?.keywords?.join('，') || '-')}
@@ -710,6 +712,7 @@ class ComponentsMarket$$Page extends React.Component {
                                           ),
                                         },
                                       ]}
+                                      style={{}}
                                       title=""
                                       column={1}
                                       layout="horizontal"
@@ -732,14 +735,7 @@ class ComponentsMarket$$Page extends React.Component {
                                             ellipsis={{ rows: 1, expandable: false }}
                                             __component_name="Typography.Text"
                                           >
-                                            {__$$eval(
-                                              () =>
-                                                record?.versions?.sort(
-                                                  (a, b) =>
-                                                    new Date(a.createdAt).getTime() -
-                                                    new Date(b.createdAt).getTime()
-                                                )?.[0]?.version || '-'
-                                            )}
+                                            {__$$eval(() => record?.latestVersion || '-')}
                                           </Typography.Text>
                                         }
                                       </Descriptions.Item>

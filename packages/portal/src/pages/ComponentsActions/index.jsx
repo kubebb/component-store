@@ -17,6 +17,7 @@ import {
   Page,
   Row,
   Space,
+  Spin,
   Tag,
   Tooltip,
   Typography,
@@ -69,14 +70,15 @@ class ComponentsActions$$Page extends React.Component {
     __$$i18n._inject2(this);
 
     this.state = {
-      isCreate: true,
-      creating: false,
+      data: undefined,
       name: undefined,
       cluster: undefined,
       tenants: [],
+      creating: false,
+      isCreate: true,
       component: undefined,
       valuesYaml: '',
-      data: undefined,
+      yamlLoading: false,
     };
   }
 
@@ -88,109 +90,8 @@ class ComponentsActions$$Page extends React.Component {
     return this._refsManager.getAll(refName);
   };
 
-  setFormValues(values) {
-    if (!this.form()) {
-      setTimeout(() => {
-        this.setFormValues(values);
-      }, 200);
-      return;
-    }
-    this.form().setValues(values);
-  }
-
-  async loadComponent() {
-    const res = await this.props.appHelper?.utils?.bff?.getComponent({
-      name: this.props.appHelper?.match?.params?.id,
-      cluster: this.getCluster(),
-    });
-    this.form()?.setFieldState('version', {
-      dataSource:
-        res?.component?.versions?.map(item => ({
-          value: item.version,
-          label: item.version,
-        })) || [],
-    });
-    this.setFormValues({
-      chartName: res?.component?.chartName,
-      repository: res?.component?.repository,
-    });
-  }
-
-  async loadCluster() {
-    const res = await this.props.appHelper?.utils?.bffSdk?.getCluster({
-      name: this.getCluster(),
-    });
-    const cluster = res?.cluster;
-    this.setState({
-      cluster,
-    });
-  }
-
-  getCluster() {
-    const cluster = this.appHelper?.history?.query?.cluster;
-    return cluster;
-  }
-
-  getClusterInfo() {
-    return this.state.cluster;
-  }
-
-  async loadTenants() {
-    const res = await this.props.appHelper?.utils?.bffSdk?.getCurrentUserTenants();
-    const tenants =
-      res?.userCurrent?.tenants?.map(item => {
-        item.projects =
-          item.projects
-            ?.filter(item => {
-              return item.clusters?.some(cluster => cluster.name === this.getCluster());
-            })
-            ?.map(item => ({
-              label: item.fullName,
-              value: item.name,
-            })) || [];
-        return {
-          label: item.fullName,
-          value: JSON.stringify(item),
-        };
-      }) || [];
-    this.form()?.setFieldState('position.tenant', {
-      dataSource: tenants || [],
-    });
-    this.setState({
-      tenants,
-    });
-  }
-
-  initForms(v) {
-    if (this.form() && !this.state.isCreate) {
-      this.form().setValues({
-        // repository: v.component?.repository,
-        // chartName: v.component?.chartName,
-        releaseName: v.releaseName,
-        version: v.version,
-        // edit
-        method: {
-          componentPlanInstallMethod: v.componentPlanInstallMethod || 'manual',
-          schedule: v.schedule && this.utils.cronChangeToDate(v.schedule),
-        },
-        // edit
-        images: {
-          name: v.images?.name?.map(item => ({
-            name: item.name,
-            newName: item.newName,
-            newTag: item.newTag,
-          })),
-        },
-      });
-      // edit
-      this.setState({
-        valuesYaml: v.valuesYaml,
-      });
-      return;
-    }
-    setTimeout(() => {
-      this.initForms(v);
-    }, 200);
+  form(name) {
+    return this.$(name || 'formily_create')?.formRef?.current?.form;
   }
 
   async initEdit() {
@@ -208,33 +109,8 @@ class ComponentsActions$$Page extends React.Component {
     } catch (e) {}
   }
 
-  async validatorName(value) {
-    try {
-      if (value && this.state.isCreate) {
-        const res = await this.props?.appHelper?.utils?.bff?.getComponentplan({
-          name: this.form?.values?.position?.releaseName,
-          cluster: this.getCluster(),
-          namespace: this.form?.values?.position?.namespace,
-        });
-        if (res?.repository?.name) {
-          return this.i18n('i18n-1y09ypgx');
-        }
-      }
-    } catch (e) {}
-  }
-
   onCancel(event) {
     this.history.go(-1);
-  }
-
-  form(name) {
-    return this.$(name || 'formily_create')?.formRef?.current?.form;
-  }
-
-  handleYamlChange(v) {
-    this.setState({
-      valuesYaml: v,
-    });
   }
 
   onSubmit(event) {
@@ -308,6 +184,181 @@ class ComponentsActions$$Page extends React.Component {
         });
       }
     });
+  }
+
+  initForms(v) {
+    if (this.form() && !this.state.isCreate) {
+      this.form().setValues({
+        // repository: v.component?.repository,
+        // chartName: v.component?.chartName,
+        releaseName: v.releaseName,
+        version: v.version,
+        method: {
+          componentPlanInstallMethod: v?.subscription?.componentPlanInstallMethod || 'manual',
+          schedule:
+            v?.subscription?.schedule && this.utils.cronChangeToDate(v?.subscription?.schedule),
+        },
+        images: {
+          name: v.images?.map(item => {
+            const arr = item?.name?.split('/');
+            const nameReady = arr?.slice(0, arr?.length - 1)?.join('/') + '/';
+            return {
+              nameReady,
+              name: item.name,
+              newName: item.newName,
+              newTag: item.newTag,
+            };
+          }),
+        },
+      });
+      this.setState({
+        valuesYaml: v.valuesYaml,
+      });
+      this.state.editor.setValue(v.valuesYaml);
+      return;
+    }
+    setTimeout(() => {
+      this.initForms(v);
+    }, 200);
+  }
+
+  getCluster() {
+    const cluster = this.appHelper?.history?.query?.cluster;
+    return cluster;
+  }
+
+  async loadCluster() {
+    const res = await this.props.appHelper?.utils?.bffSdk?.getCluster({
+      name: this.getCluster(),
+    });
+    const cluster = res?.cluster;
+    this.setState({
+      cluster,
+    });
+  }
+
+  async loadTenants() {
+    const res = await this.props.appHelper?.utils?.bffSdk?.getCurrentUserTenants();
+    const tenants =
+      res?.userCurrent?.tenants?.map(item => {
+        item.projects =
+          item.projects
+            ?.filter(item => {
+              return item.clusters?.some(cluster => cluster.name === this.getCluster());
+            })
+            ?.map(item => ({
+              label: item.fullName,
+              value: item.name,
+            })) || [];
+        return {
+          label: item.fullName,
+          value: JSON.stringify(item),
+        };
+      }) || [];
+    this.form()?.setFieldState('position.tenant', {
+      dataSource: tenants || [],
+    });
+    this.setState({
+      tenants,
+    });
+  }
+
+  onEditorLoad(editor) {
+    this.setState({
+      editor,
+    });
+  }
+
+  async loadComponent() {
+    const res = await this.props.appHelper?.utils?.bff?.getComponent({
+      name: this.props.appHelper?.match?.params?.id,
+      cluster: this.getCluster(),
+    });
+    this.form()?.setFieldState('version', {
+      dataSource:
+        res?.component?.versions?.map(item => ({
+          value: item.version,
+          label: item.version,
+        })) || [],
+    });
+    this.setFormValues({
+      chartName: res?.component?.chartName,
+      repository: res?.component?.repository,
+      file: 'value.yaml',
+    });
+  }
+
+  setFormValues(values) {
+    if (!this.form()) {
+      setTimeout(() => {
+        this.setFormValues(values);
+      }, 200);
+      return;
+    }
+    this.form().setValues(values);
+  }
+
+  async validatorName(value) {
+    try {
+      if (value && this.state.isCreate) {
+        const res = await this.props?.appHelper?.utils?.bff?.getComponentplan({
+          name: this.form?.values?.position?.releaseName,
+          cluster: this.getCluster(),
+          namespace: this.form?.values?.position?.namespace,
+        });
+        if (res?.repository?.name) {
+          return this.i18n('i18n-1y09ypgx');
+        }
+      }
+    } catch (e) {}
+  }
+
+  getClusterInfo() {
+    return this.state.cluster;
+  }
+
+  handleYamlChange(v) {
+    this.setState({
+      valuesYaml: v,
+    });
+  }
+
+  async handleVersionChange(v) {
+    this.setState({
+      yamlLoading: true,
+    });
+    const res = await this.utils.bff.getComponentChart({
+      name: this.props.appHelper?.match?.params?.id,
+      version: v,
+    });
+    this.state.editor.setValue(res?.component?.chart?.valuesYaml);
+    this.setState({
+      yamlLoading: false,
+      valuesYaml: res?.component?.chart?.valuesYaml,
+    });
+    this.form()?.setValues({
+      // iamges: {
+      //   name: []
+      // },
+      imagesNames: res?.component?.chart?.images?.map(item => ({
+        label: item,
+        value: item,
+      })),
+      imagesNamesRead: res?.component?.chart?.images?.map(item => {
+        const arr = item?.split('/');
+        return {
+          label: arr?.slice(0, arr?.length - 1) + '/',
+          value: item,
+        };
+      }),
+    });
+  }
+
+  async validatorImagesName(value, ...payload) {
+    const curIndex = payload?.[1]?.field?.index;
+    const arr = value?.split('/');
+    const v = arr?.slice(0, arr?.length - 1)?.join('/') + '/';
+    this.form().setValuesIn(`images.name.${curIndex}.nameReady`, v);
   }
 
   componentDidMount() {
@@ -389,7 +440,7 @@ class ComponentsActions$$Page extends React.Component {
                 componentProps={{
                   colon: false,
                   layout: 'horizontal',
-                  labelCol: 4,
+                  labelCol: 3,
                   labelAlign: 'left',
                   wrapperCol: 20,
                 }}
@@ -424,16 +475,14 @@ class ComponentsActions$$Page extends React.Component {
                       {
                         id: 'disabled',
                         type: 'disabled',
-                        message:
-                          this.i18n(
-                            'i18n-j0gqw15r'
-                          ) /* 由3~56个小写字母、数字、中划线“-”或点“.”组成，并以字母、数字开头或结尾 */,
-                        pattern: __$$eval(() =>
-                          this.utils.getNameReg({
-                            max: 56,
-                          })
-                        ),
+                        message: '',
                         children: '未知',
+                        validator: function () {
+                          return this.validatorName.apply(
+                            this,
+                            Array.prototype.slice.call(arguments).concat([])
+                          );
+                        }.bind(this),
                       },
                     ],
                   }}
@@ -492,6 +541,12 @@ class ComponentsActions$$Page extends React.Component {
                   componentProps={{
                     'x-component-props': {
                       disabled: false,
+                      onChange: function () {
+                        return this.handleVersionChange.apply(
+                          this,
+                          Array.prototype.slice.call(arguments).concat([])
+                        );
+                      }.bind(this),
                       allowClear: false,
                       placeholder: this.i18n('i18n-lbw8wy6i') /* 请选择组件版本 */,
                       _sdkSwrGetFunc: {},
@@ -643,6 +698,7 @@ class ComponentsActions$$Page extends React.Component {
                     }}
                     componentProps={{
                       'x-component-props': {
+                        format: 'HH:mm',
                         disabled: false,
                         allowClear: true,
                         placeholder: this.i18n('i18n-ir9ui3a9') /* 请选择时间 */,
@@ -776,6 +832,7 @@ class ComponentsActions$$Page extends React.Component {
                     name: 'file',
                     title: this.i18n('i18n-t6iwy9l2') /* 配置文件 */,
                     'x-validator': [],
+                    _unsafe_MixedSetter_default_select: 'StringSetter',
                   }}
                   componentProps={{
                     'x-component-props': {
@@ -802,23 +859,32 @@ class ComponentsActions$$Page extends React.Component {
                   componentProps={{ 'x-component-props': {} }}
                   __component_name="FormilyFormItem"
                 >
-                  <Editor
-                    value={__$$eval(() => this.state.valuesYaml)}
-                    height="300px"
-                    onChange={function () {
-                      return this.handleYamlChange.apply(
-                        this,
-                        Array.prototype.slice.call(arguments).concat([])
-                      );
-                    }.bind(this)}
-                    placeholder=""
-                    __component_name="Editor"
-                  />
+                  <Spin spinning={__$$eval(() => this.state.yamlLoading)} __component_name="Spin">
+                    <Editor
+                      value={__$$eval(() => this.state.valuesYaml)}
+                      height="300px"
+                      onLoad={function () {
+                        return this.onEditorLoad.apply(
+                          this,
+                          Array.prototype.slice.call(arguments).concat([])
+                        );
+                      }.bind(this)}
+                      onChange={function () {
+                        return this.handleYamlChange.apply(
+                          this,
+                          Array.prototype.slice.call(arguments).concat([])
+                        );
+                      }.bind(this)}
+                      placeholder=""
+                      defaultValue={__$$eval(() => this.state.valuesYaml)}
+                      __component_name="Editor"
+                    />
+                  </Spin>
                 </FormilyFormItem>
                 <FormilyFormItem
                   fieldProps={{
                     name: 'images',
-                    title: '镜像替换',
+                    title: this.i18n('i18n-trftxv8p') /* 镜像替换 */,
                     'x-component': 'FormilyFormItem',
                     'x-validator': [],
                     _unsafe_MixedSetter_title_select: 'I18nSetter',
@@ -870,19 +936,25 @@ class ComponentsActions$$Page extends React.Component {
                         __component_name="Space"
                       >
                         <FormilySelect
-                          style={{ width: '170px' }}
+                          style={{ width: '300px' }}
                           fieldProps={{
-                            enum: [
+                            enum: '{{ $form?.values?.imagesNames|| []}}',
+                            name: 'name',
+                            title: '',
+                            'x-validator': [
                               {
                                 id: 'disabled',
                                 type: 'disabled',
-                                value: 'aaaa',
-                                children: 'aaaaa',
+                                children: '未知',
+                                validator: function () {
+                                  return this.validatorImagesName.apply(
+                                    this,
+                                    Array.prototype.slice.call(arguments).concat([])
+                                  );
+                                }.bind(this),
                               },
                             ],
-                            name: 'name',
-                            title: '',
-                            'x-validator': [],
+                            _unsafe_MixedSetter_enum_select: 'ExpressionSetter',
                           }}
                           componentProps={{
                             'x-component-props': {
@@ -910,42 +982,21 @@ class ComponentsActions$$Page extends React.Component {
                         direction="horizontal"
                         __component_name="Space"
                       >
-                        <Typography.Text
-                          style={{ fontSize: '' }}
-                          strong={false}
-                          disabled={false}
-                          ellipsis={true}
-                          __component_name="Typography.Text"
-                        >
-                          text
-                        </Typography.Text>
-                        <Typography.Text
-                          style={{ fontSize: '' }}
-                          strong={false}
-                          disabled={false}
-                          ellipsis={true}
-                          __component_name="Typography.Text"
-                        >
-                          /
-                        </Typography.Text>
-                        <Typography.Text
-                          style={{ fontSize: '' }}
-                          strong={false}
-                          disabled={false}
-                          ellipsis={true}
-                          __component_name="Typography.Text"
-                        >
-                          text
-                        </Typography.Text>
-                        <Typography.Text
-                          style={{ fontSize: '' }}
-                          strong={false}
-                          disabled={false}
-                          ellipsis={true}
-                          __component_name="Typography.Text"
-                        >
-                          /
-                        </Typography.Text>
+                        <FormilyInput
+                          style={{ width: '170px' }}
+                          fieldProps={{
+                            name: 'nameReady',
+                            title: '',
+                            'x-pattern': 'disabled',
+                            'x-validator': [],
+                          }}
+                          componentProps={{
+                            'x-component-props': {
+                              placeholder: this.i18n('i18n-dv03soje') /* 请先选择镜像 */,
+                            },
+                          }}
+                          __component_name="FormilyInput"
+                        />
                         <FormilyInput
                           style={{ width: '170px' }}
                           fieldProps={{ name: 'newName', title: '', 'x-validator': [] }}
@@ -979,6 +1030,13 @@ class ComponentsActions$$Page extends React.Component {
                     </Space>
                   </FormilyArrayCards>
                 </FormilyFormItem>
+                <Divider
+                  mode="line"
+                  style={{ width: 'calc(100% + 48px)', marginLeft: '-24px' }}
+                  dashed={false}
+                  defaultOpen={false}
+                  __component_name="Divider"
+                />
                 <FormilyFormItem
                   fieldProps={{
                     name: 'FormilyFormItem15',

@@ -24,14 +24,6 @@ const data = [
         textEn: 'Component Market',
         children: [
           {
-            id: 'component-store-repository',
-            text: '组件仓库管理',
-            textEn: 'Component Repository',
-            icon: KubebbWarehouse,
-            pathname: '/components/warehouse',
-            tenant: false,
-          },
-          {
             id: 'component-store-market',
             text: '组件市场',
             textEn: 'Component Market',
@@ -71,7 +63,15 @@ const data = [
                 cluster: true,
               },
             ]
-          }
+          },
+          {
+            id: 'component-store-repository',
+            text: '组件仓库管理',
+            textEn: 'Component Repository',
+            icon: KubebbWarehouse,
+            pathname: '/components/warehouse',
+            tenant: false,
+          },
         ]
       }
     ]
