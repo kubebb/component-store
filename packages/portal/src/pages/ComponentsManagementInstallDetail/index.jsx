@@ -68,11 +68,11 @@ class ComponentsManagementInstallDetail$$Page extends React.Component {
       record: undefined,
       cluster: undefined,
       modalType: 'rollback',
-      valuesYaml: undefined,
+      valuesYaml: '',
       isOpenModal: false,
       modalLoading: false,
       historyPagination: undefined,
-      historyValuesYaml: undefined,
+      historyValuesYaml: '',
     };
   }
 
@@ -559,7 +559,7 @@ class ComponentsManagementInstallDetail$$Page extends React.Component {
                       </Col>
                       <Col span={24} __component_name="Col">
                         <Editor
-                          value={__$$eval(() => this.state?.componentplan?.valuesYaml)}
+                          value={__$$eval(() => this.state?.componentplan?.valuesYaml || '-')}
                           height="300px"
                           __component_name="Editor"
                         />
@@ -1438,7 +1438,7 @@ class ComponentsManagementInstallDetail$$Page extends React.Component {
                                   value={__$$eval(
                                     () =>
                                       this.props.useGetComponentplan?.data?.componentplan
-                                        ?.valuesYaml
+                                        ?.valuesYaml || ''
                                   )}
                                   readOnly={true}
                                   __component_name="Editor"
