@@ -128,10 +128,11 @@ export class ComponentplanService {
       }
     });
     const fRes = res?.filter(
-      t =>
-        !releasenameMap.has(t.releaseName) ||
-        releasenameMap.get(t.releaseName) <= 1 ||
-        t.latest === true
+      t => t.latest === true
+      // !releasenameMap.has(t.releaseName)
+      // || releasenameMap.get(t.releaseName) <= 1
+      // || (releasenameMap.get(t.releaseName) > 1 && t.latest === true)
+      // && t.latest === true
     );
     // 根据搜索条件过滤
     const filteredRes = fRes?.filter(
