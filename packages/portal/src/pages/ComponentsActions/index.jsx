@@ -212,9 +212,9 @@ class ComponentsActions$$Page extends React.Component {
         },
       });
       this.setState({
-        valuesYaml: v.valuesYaml,
+        valuesYaml: v.valuesYaml || '',
       });
-      this.state.editor.setValue(v.valuesYaml);
+      this.state.editor.setValue(v.valuesYaml || '');
       return;
     }
     setTimeout(() => {
@@ -319,7 +319,7 @@ class ComponentsActions$$Page extends React.Component {
 
   handleYamlChange(v) {
     this.setState({
-      valuesYaml: v,
+      valuesYaml: v || '',
     });
   }
 
@@ -331,10 +331,10 @@ class ComponentsActions$$Page extends React.Component {
       name: this.props.appHelper?.match?.params?.id,
       version: v,
     });
-    this.state.editor.setValue(res?.component?.chart?.valuesYaml);
+    this.state.editor.setValue(res?.component?.chart?.valuesYaml || '');
     this.setState({
       yamlLoading: false,
-      valuesYaml: res?.component?.chart?.valuesYaml,
+      valuesYaml: res?.component?.chart?.valuesYaml || '',
     });
     this.form()?.setValues({
       // iamges: {
@@ -691,7 +691,7 @@ class ComponentsActions$$Page extends React.Component {
                     fieldProps={{
                       name: 'schedule',
                       title: '',
-                      required: true,
+                      required: false,
                       'x-display':
                         "{{$form.values.method?.componentPlanInstallMethod === 'auto' ? 'visible': 'hidden'}}",
                       'x-validator': [],
