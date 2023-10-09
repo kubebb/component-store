@@ -16,6 +16,7 @@ import {
   FormilyNumberPicker,
   FormilyPassword,
   FormilySelect,
+  FormilySwitch,
   FormilyUpload,
   Page,
   Row,
@@ -30,7 +31,7 @@ import { AntdIconQuestionCircleOutlined, AntdIconUploadOutlined } from '@tenx-ui
 import { getUnifiedHistory } from '@tenx-ui/utils/es/UnifiedLink/index.prod';
 import { matchPath, useLocation } from '@umijs/max';
 import qs from 'query-string';
-import DataProvider from '../../components/DataProvider';
+import { DataProvider } from 'shared-components';
 
 import utils, { RefsManager } from '../../utils/__utils';
 
@@ -225,7 +226,7 @@ class ComponentsWarehouseCreate$$Page extends React.Component {
     }
     this.form().setValues({
       // repositoryType: 'Git',
-      insecure: ['true'],
+      // insecure: ['true'],
       filter: {
         value: [],
       },
@@ -370,6 +371,12 @@ class ComponentsWarehouseCreate$$Page extends React.Component {
     } catch (e) {}
   }
 
+  async validatorNameCharacter(value) {
+    if (value && (value.includes('.-') || value.includes('-.'))) {
+      return this.i18n('i18n-dofmyljq');
+    }
+  }
+
   componentDidMount() {
     this.loadCluster();
     const isCreate = this.props.appHelper?.match?.params?.id === 'create';
@@ -483,6 +490,18 @@ class ComponentsWarehouseCreate$$Page extends React.Component {
                         children: '未知',
                         required: false,
                         whitespace: false,
+                      },
+                      {
+                        id: 'disabled',
+                        type: 'disabled',
+                        message: this.i18n('i18n-dofmyljq') /* “.”  和 “-” 不能连用 */,
+                        children: '未知',
+                        validator: function () {
+                          return this.validatorNameCharacter.apply(
+                            this,
+                            Array.prototype.slice.call(arguments).concat([])
+                          );
+                        }.bind(this),
                       },
                       {
                         id: 'disabled',
@@ -877,7 +896,7 @@ class ComponentsWarehouseCreate$$Page extends React.Component {
                         {this.i18n('i18n-h2dtugcf') /* 用户名 */}
                       </Typography.Text>
                     ),
-                    required: false,
+                    required: true,
                     'x-display':
                       "{{$form.values.info?.auth?.includes('true') ? 'visible': 'hidden'}}",
                     'x-validator': [
@@ -915,7 +934,7 @@ class ComponentsWarehouseCreate$$Page extends React.Component {
                         {this.i18n('i18n-yufusyzl') /* 密码 */}
                       </Typography.Text>
                     ),
-                    required: false,
+                    required: true,
                     'x-display':
                       "{{$form.values.info?.auth?.includes('true') ? 'visible': 'hidden'}}",
                     'x-validator': [
@@ -1004,6 +1023,7 @@ class ComponentsWarehouseCreate$$Page extends React.Component {
                             }}
                             componentProps={{ 'x-component-props': {} }}
                             __component_name="FormilyFormItem"
+                            decoratorProps={{ 'x-decorator-props': { labelEllipsis: false } }}
                           >
                             <Space
                               size={40}
@@ -1020,6 +1040,7 @@ class ComponentsWarehouseCreate$$Page extends React.Component {
                                 }}
                                 componentProps={{
                                   'x-component-props': {
+                                    min: 1,
                                     addonBefore: this.i18n('i18n-2rvtjegc') /* 时间间隔 */,
                                     placeholder: this.i18n('i18n-n9a8du2a') /* 请输入 */,
                                   },
@@ -1054,6 +1075,7 @@ class ComponentsWarehouseCreate$$Page extends React.Component {
                                 }}
                                 componentProps={{
                                   'x-component-props': {
+                                    min: 1,
                                     addonBefore: this.i18n('i18n-vf2r2t3g') /* 超时时间 */,
                                     placeholder: this.i18n('i18n-n9a8du2a') /* 请输入 */,
                                   },
@@ -1084,6 +1106,7 @@ class ComponentsWarehouseCreate$$Page extends React.Component {
                                 fieldProps={{ name: 'retry', title: '', 'x-validator': [] }}
                                 componentProps={{
                                   'x-component-props': {
+                                    min: 1,
                                     addonBefore: this.i18n('i18n-6p75zmij') /* 重试次数 */,
                                     placeholder: this.i18n('i18n-n9a8du2a') /* 请输入 */,
                                   },
@@ -1155,7 +1178,9 @@ class ComponentsWarehouseCreate$$Page extends React.Component {
                               _unsafe_MixedSetter_title_select: 'SlotSetter',
                             }}
                             componentProps={{ 'x-component-props': {} }}
-                            decoratorProps={{ 'x-decorator-props': { wrapperWidth: '850px' } }}
+                            decoratorProps={{
+                              'x-decorator-props': { wrapperWidth: '850px', labelEllipsis: false },
+                            }}
                             __component_name="FormilyFormItem"
                           >
                             <FormilyArrayTable
@@ -1320,7 +1345,7 @@ class ComponentsWarehouseCreate$$Page extends React.Component {
                                     style={{}}
                                     fieldProps={{
                                       name: 'versions',
-                                      'x-pattern': '',
+                                      'x-pattern': 'disabled',
                                       'x-validator': [],
                                     }}
                                     componentProps={{
@@ -1333,7 +1358,11 @@ class ComponentsWarehouseCreate$$Page extends React.Component {
                                   />
                                   <FormilyInput
                                     style={{}}
-                                    fieldProps={{ name: 'regexp', 'x-validator': [] }}
+                                    fieldProps={{
+                                      name: 'regexp',
+                                      'x-pattern': 'disabled',
+                                      'x-validator': [],
+                                    }}
                                     componentProps={{
                                       'x-component-props': {
                                         placeholder:
@@ -1344,7 +1373,11 @@ class ComponentsWarehouseCreate$$Page extends React.Component {
                                   />
                                   <FormilyInput
                                     style={{}}
-                                    fieldProps={{ name: 'versionConstraint', 'x-validator': [] }}
+                                    fieldProps={{
+                                      name: 'versionConstraint',
+                                      'x-pattern': 'disabled',
+                                      'x-validator': [],
+                                    }}
                                     componentProps={{
                                       'x-component-props': {
                                         placeholder:
@@ -1556,6 +1589,21 @@ class ComponentsWarehouseCreate$$Page extends React.Component {
                               </Space>
                             </FormilyArrayCards>
                           </FormilyFormItem>
+                          <FormilySwitch
+                            fieldProps={{
+                              name: 'pc',
+                              title: this.i18n('i18n-thxp526w') /* 组件评测 */,
+                              description:
+                                this.i18n(
+                                  'i18n-hm90oqjw'
+                                ) /* 开启后，进入组件市场，对仓库内组件发起评测。将从安全性、可靠性、可用性三个方面对组件给出评测结果及建议，供您参考 */,
+                              'x-validator': [],
+                            }}
+                            componentProps={{
+                              'x-component-props': { loading: false, disabled: false },
+                            }}
+                            __component_name="FormilySwitch"
+                          />
                         </Col>
                       </Row>,
                     ],

@@ -39,7 +39,7 @@ const config = {
       Row: { rowVerticalGutter: 16, rowHorizontalGutter: 16 },
       Page: {
         pagePadding: 20,
-        pageBackground: '#F0F0F0',
+        pageBackground: 'transparent',
         pagePaddingTop: 16,
         pagePaddingBottom: 32,
       },

@@ -25,7 +25,7 @@ import { AntdIconPlusOutlined, AntdIconReloadOutlined } from '@tenx-ui/icon-mate
 import { getUnifiedHistory } from '@tenx-ui/utils/es/UnifiedLink/index.prod';
 import { matchPath, useLocation } from '@umijs/max';
 import qs from 'query-string';
-import DataProvider from '../../components/DataProvider';
+import { DataProvider } from 'shared-components';
 
 import utils from '../../utils/__utils';
 
@@ -228,7 +228,9 @@ class ComponentsManagementSubscription$$Page extends React.Component {
             message={
               <Row wrap={true} gutter={[0, 0]} __component_name="Row">
                 <Col span={24} __component_name="Col">
-                  {!!__$$eval(() => this.state.record?.componentPlanInstallMethod === 'auto') && (
+                  {!!__$$eval(
+                    () => this.state.record?.subscription?.componentPlanInstallMethod === 'auto'
+                  ) && (
                     <Typography.Text
                       style={{ fontSize: '' }}
                       strong={false}

@@ -24,7 +24,7 @@ import { AntdIconPlusOutlined, AntdIconReloadOutlined } from '@tenx-ui/icon-mate
 import { getUnifiedHistory } from '@tenx-ui/utils/es/UnifiedLink/index.prod';
 import { matchPath, useLocation } from '@umijs/max';
 import qs from 'query-string';
-import DataProvider from '../../components/DataProvider';
+import { DataProvider } from 'shared-components';
 
 import utils, { RefsManager } from '../../utils/__utils';
 
@@ -572,10 +572,16 @@ class ComponentsWarehouse$$Page extends React.Component {
                   {this.i18n('i18n-lc4oie5j') /* 删除 */}
                 </Typography.Text>
                 <Typography.Text
-                  style={{ fontSize: '' }}
+                  style={{ maxWidth: '180px' }}
                   strong={false}
                   disabled={false}
-                  ellipsis={true}
+                  ellipsis={{
+                    tooltip: {
+                      title: __$$eval(() => this.state.record?.name || '-'),
+                      _unsafe_MixedSetter_title_select: 'VariableSetter',
+                    },
+                    rows: 1,
+                  }}
                   __component_name="Typography.Text"
                 >
                   {__$$eval(() => this.state.record?.name || '-')}
