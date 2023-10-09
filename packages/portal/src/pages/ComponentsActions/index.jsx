@@ -30,7 +30,7 @@ import { default as Editor } from '@tenx-ui/editor';
 import { getUnifiedHistory } from '@tenx-ui/utils/es/UnifiedLink/index.prod';
 import { matchPath, useLocation } from '@umijs/max';
 import qs from 'query-string';
-import DataProvider from '../../components/DataProvider';
+import { DataProvider } from 'shared-components';
 
 import utils, { RefsManager } from '../../utils/__utils';
 
@@ -106,6 +106,7 @@ class ComponentsActions$$Page extends React.Component {
         data: v,
       });
       this.initForms(v);
+      this.initEditor(v);
     } catch (e) {}
   }
 
@@ -126,9 +127,11 @@ class ComponentsActions$$Page extends React.Component {
         repository: v.repository,
         version: v.version,
         componentPlanInstallMethod: v.method?.componentPlanInstallMethod,
-        schedule: this.utils.dateChangeToCron({
-          time: v.method?.schedule,
-        }),
+        schedule:
+          v.method?.schedule &&
+          this.utils.dateChangeToCron({
+            time: v.method?.schedule,
+          }),
         valuesYaml: this.state.valuesYaml,
         images: v.images?.name?.map(item => ({
           name: item.name,
@@ -170,7 +173,12 @@ class ComponentsActions$$Page extends React.Component {
         this.utils.notification.success({
           message: this.i18n(api.successMessage),
         });
-        this.onCancel();
+        // this.onCancel()
+
+        const tenantId =
+          this.form?.values?.position?.tenant || this.utils.getAuthData()?.tenant?.id;
+        const path = `/components/management/install?changeCluster=${this.getCluster()}&changeProject=${namespace}&changeTenant=${tenantId}`;
+        this.appHelper.history?.push(path);
         this.setState({
           creating: false,
         });
@@ -211,10 +219,6 @@ class ComponentsActions$$Page extends React.Component {
           }),
         },
       });
-      this.setState({
-        valuesYaml: v.valuesYaml || '',
-      });
-      this.state.editor.setValue(v.valuesYaml || '');
       return;
     }
     setTimeout(() => {
@@ -225,6 +229,19 @@ class ComponentsActions$$Page extends React.Component {
   getCluster() {
     const cluster = this.appHelper?.history?.query?.cluster;
     return cluster;
+  }
+
+  initEditor(v) {
+    if (this.state.editor && !this.state.isCreate) {
+      this.setState({
+        valuesYaml: v.valuesYaml || '',
+      });
+      this.state.editor.setValue(v.valuesYaml || '');
+      return;
+    }
+    setTimeout(() => {
+      this.initEditor(v);
+    }, 200);
   }
 
   async loadCluster() {
@@ -663,7 +680,7 @@ class ComponentsActions$$Page extends React.Component {
                     _unsafe_MixedSetter_title_select: 'SlotSetter',
                   }}
                   componentProps={{ 'x-component-props': {} }}
-                  decoratorProps={{ 'x-decorator-props': { asterisk: true } }}
+                  decoratorProps={{ 'x-decorator-props': { asterisk: true, labelEllipsis: false } }}
                   __component_name="FormilyFormItem"
                 >
                   <FormilySelect
@@ -701,7 +718,10 @@ class ComponentsActions$$Page extends React.Component {
                         format: 'HH:mm',
                         disabled: false,
                         allowClear: true,
-                        placeholder: this.i18n('i18n-ir9ui3a9') /* 请选择时间 */,
+                        placeholder:
+                          this.i18n(
+                            'i18n-daozlce9'
+                          ) /* 请选择时间（每天），未设置即有新版本发布后立即更新 */,
                       },
                     }}
                     __component_name="FormilyTimePicker"

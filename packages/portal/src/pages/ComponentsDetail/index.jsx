@@ -4,13 +4,13 @@ import React from 'react';
 
 import {
   Alert,
-  Anchor,
   Button,
   Card,
   Col,
   Descriptions,
   Divider,
   Dropdown,
+  Empty,
   FormilyForm,
   FormilyFormItem,
   FormilyInput,
@@ -18,8 +18,11 @@ import {
   Image,
   Modal,
   Page,
+  Rate,
   Row,
   Space,
+  Table,
+  Tabs,
   Tag,
   Tooltip,
   Typography,
@@ -31,12 +34,13 @@ import {
   AntdIconHomeOutlined,
   TenxIconKubebbKeywords,
   TenxIconKubebbVersion,
+  TenxIconTips,
 } from '@tenx-ui/icon-materials';
 
 import { getUnifiedHistory } from '@tenx-ui/utils/es/UnifiedLink/index.prod';
 import { matchPath, useLocation } from '@umijs/max';
 import qs from 'query-string';
-import DataProvider from '../../components/DataProvider';
+import { DataProvider } from 'shared-components';
 
 import utils, { RefsManager } from '../../utils/__utils';
 
@@ -76,12 +80,12 @@ class ComponentsDetail$$Page extends React.Component {
     __$$i18n._inject2(this);
 
     this.state = {
-      isOpenModal: false,
-      modalType: 'delete',
-      version: undefined,
       cluster: undefined,
-      modalLoading: false,
       tenants: [],
+      version: undefined,
+      modalType: 'delete',
+      isOpenModal: false,
+      modalLoading: false,
     };
   }
 
@@ -93,30 +97,19 @@ class ComponentsDetail$$Page extends React.Component {
     return this._refsManager.getAll(refName);
   };
 
+  form(name) {
+    return this.$(name || 'formily_subscription')?.formRef?.current?.form;
+  }
+
   closeModal() {
     this.setState({
       isOpenModal: false,
     });
   }
 
-  openDeleteModal() {
-    this.setState({
-      isOpenModal: true,
-    });
-  }
-
-  handleVersionMenuClick(e) {
-    this.setState({
-      version: e.key,
-    });
-  }
-
-  getVersionInfo() {
-    return (
-      this.props.useGetComponent?.data?.component?.versions.find(item => {
-        return item.version === this.state.version;
-      }) || this.props.useGetComponent?.data?.component?.versions?.[0]
-    );
+  getCluster() {
+    const cluster = this.appHelper?.history?.query?.cluster;
+    return cluster;
   }
 
   async loadCluster() {
@@ -129,57 +122,89 @@ class ComponentsDetail$$Page extends React.Component {
     });
   }
 
-  getCluster() {
-    const cluster = this.appHelper?.history?.query?.cluster;
-    return cluster;
+  async loadTenants() {
+    const res = await this.props.appHelper?.utils?.bffSdk?.getCurrentUserTenants();
+    const tenants =
+      res?.userCurrent?.tenants?.map(item => {
+        item.projects =
+          item.projects
+            ?.filter(item => {
+              return item.clusters?.some(cluster => cluster.name === this.getCluster());
+            })
+            ?.map(item => ({
+              label: item.fullName,
+              value: item.name,
+            })) || [];
+        return {
+          label: item.fullName,
+          value: JSON.stringify(item),
+        };
+      }) || [];
+    this.setState({
+      tenants,
+    });
+  }
+
+  getContainer() {
+    return window;
+  }
+
+  handleRefresh() {
+    this.props.useGetComponent.mutate();
+  }
+
+  setFormValues(values, name) {
+    if (!this.form(name)) {
+      if (this.state.timer) {
+        clearTimeout(this.state.timer);
+      }
+      this.setState({
+        timer: setTimeout(() => this.setFormValues(values, name), 200),
+      });
+      return;
+    }
+    this.form(name).setValues(values);
   }
 
   getClusterInfo() {
     return this.state.cluster;
   }
 
-  handleOprationBtnClick(e) {
-    const pre = this.appHelper?.location?.pathname?.split('/')?.slice(0, 4)?.join('/');
-    this.history.push(
-      `${pre}/management-action/install/${
-        this.props.useGetComponent?.data?.component?.name
-      }?cluster=${this.getCluster()}`
+  getVersionInfo() {
+    return (
+      this.props.useGetComponent?.data?.component?.versions.find(item => {
+        return item.version === this.state.version;
+      }) || this.props.useGetComponent?.data?.component?.versions?.[0]
     );
   }
 
-  async handleOprationMenuClick(e) {
-    if (e?.key === 'subscription') {
-      this.setState(
-        {
-          isOpenModal: true,
-          modalType: 'subscription',
-        },
-        () => {
-          const { chartName } = this.props.useGetComponent?.data?.component || {};
-          this.setFormValues({
-            chartName,
-            version: this.getVersionInfo()?.version,
-          });
-        }
-      );
-    }
-    if (e?.key === 'download') {
-      const { chartName, repository } = this.props.useGetComponent?.data?.component || {};
-      const res = await this.utils.bff.downloadComponent({
-        cluster: this.getCluster(),
-        chart: {
-          chartName,
-          repository,
-          version: this.getVersionInfo()?.version,
-        },
-      });
-      const url = res?.componentDownload;
-      window.open(url);
-    }
+  openDeleteModal() {
+    this.setState({
+      isOpenModal: true,
+    });
   }
 
-  handleRefresh() {
-    this.props.useGetComponent.mutate();
+  getCurrentAnchor(activeLink) {
+    return activeLink || '#description';
+  }
+
+  async validatorInstall(value) {
+    try {
+      if (value) {
+        const res = await this.props?.appHelper?.utils?.bff?.getSubscriptions({
+          namespace: value,
+          cluster: this.getCluster(),
+        });
+        const name = this.props.useGetComponent?.data?.component?.name;
+        if (
+          res?.subscriptions?.some(
+            item => item.component?.name === name && item?.releaseName === name
+          )
+        ) {
+          return this.i18n('i18n-k6pq1phn');
+        }
+      }
+    } catch (e) {}
   }
 
   async confirmDeleteModal(e, payload) {
@@ -219,27 +244,50 @@ class ComponentsDetail$$Page extends React.Component {
     }
   }
 
-  async loadTenants() {
-    const res = await this.props.appHelper?.utils?.bffSdk?.getCurrentUserTenants();
-    const tenants =
-      res?.userCurrent?.tenants?.map(item => {
-        item.projects =
-          item.projects
-            ?.filter(item => {
-              return item.clusters?.some(cluster => cluster.name === this.getCluster());
-            })
-            ?.map(item => ({
-              label: item.fullName,
-              value: item.name,
-            })) || [];
-        return {
-          label: item.fullName,
-          value: JSON.stringify(item),
-        };
-      }) || [];
+  handleOprationBtnClick(e) {
+    const pre = this.appHelper?.location?.pathname?.split('/')?.slice(0, 4)?.join('/');
+    this.history.push(
+      `${pre}/management-action/install/${
+        this.props.useGetComponent?.data?.component?.name
+      }?cluster=${this.getCluster()}`
+    );
+  }
+
+  handleVersionMenuClick(e) {
     this.setState({
-      tenants,
+      version: e.key,
     });
+  }
+
+  async handleOprationMenuClick(e) {
+    if (e?.key === 'subscription') {
+      this.setState(
+        {
+          isOpenModal: true,
+          modalType: 'subscription',
+        },
+        () => {
+          const { chartName } = this.props.useGetComponent?.data?.component || {};
+          this.setFormValues({
+            chartName,
+            version: this.getVersionInfo()?.version,
+          });
+        }
+      );
+    }
+    if (e?.key === 'download') {
+      const { chartName, repository } = this.props.useGetComponent?.data?.component || {};
+      const res = await this.utils.bff.downloadComponent({
+        cluster: this.getCluster(),
+        chart: {
+          chartName,
+          repository,
+          version: this.getVersionInfo()?.version,
+        },
+      });
+      const url = res?.componentDownload;
+      window.open(url);
+    }
   }
 
   async confirmSubscriptionModal(e, payload) {
@@ -275,50 +323,6 @@ class ComponentsDetail$$Page extends React.Component {
         });
       }
     });
-  }
-
-  getCurrentAnchor(activeLink) {
-    return activeLink || '#description';
-  }
-
-  getContainer() {
-    return window;
-  }
-
-  setFormValues(values, name) {
-    if (!this.form(name)) {
-      if (this.state.timer) {
-        clearTimeout(this.state.timer);
-      }
-      this.setState({
-        timer: setTimeout(() => this.setFormValues(values, name), 200),
-      });
-      return;
-    }
-    this.form(name).setValues(values);
-  }
-
-  form(name) {
-    return this.$(name || 'formily_subscription')?.formRef?.current?.form;
-  }
-
-  async validatorInstall(value) {
-    try {
-      if (value) {
-        const res = await this.props?.appHelper?.utils?.bff?.getSubscriptions({
-          namespace: value,
-          cluster: this.getCluster(),
-        });
-        const name = this.props.useGetComponent?.data?.component?.name;
-        if (
-          res?.subscriptions?.some(
-            item => item.component?.name === name && item?.releaseName === name
-          )
-        ) {
-          return this.i18n('i18n-k6pq1phn');
-        }
-      }
-    } catch (e) {}
   }
 
   componentDidMount() {
@@ -377,19 +381,21 @@ class ComponentsDetail$$Page extends React.Component {
               }}
               __component_name="FormilyInput"
             />
-            <FormilyInput
-              fieldProps={{
-                name: 'version',
-                title: this.i18n('i18n-ekp8efeq') /* 组件版本 */,
-                required: true,
-                'x-pattern': 'disabled',
-                'x-validator': [],
-              }}
-              componentProps={{
-                'x-component-props': { placeholder: this.i18n('i18n-n9a8du2a') /* 请输入 */ },
-              }}
-              __component_name="FormilyInput"
-            />
+            {!!false && (
+              <FormilyInput
+                fieldProps={{
+                  name: 'version',
+                  title: this.i18n('i18n-ekp8efeq') /* 组件版本 */,
+                  required: true,
+                  'x-pattern': 'disabled',
+                  'x-validator': [],
+                }}
+                componentProps={{
+                  'x-component-props': { placeholder: this.i18n('i18n-n9a8du2a') /* 请输入 */ },
+                }}
+                __component_name="FormilyInput"
+              />
+            )}
             <FormilyFormItem
               fieldProps={{
                 name: 'info',
@@ -989,457 +995,770 @@ class ComponentsDetail$$Page extends React.Component {
               hoverable={false}
               __component_name="Card"
             >
-              <Anchor
+              <Tabs
+                size="large"
+                type="line"
                 items={[
                   {
-                    key: 'description',
-                    href: '#description',
-                    title: this.i18n('i18n-f6e39rd6') /* 产品介绍 */,
-                  },
-                  {
-                    key: 'versions',
-                    href: '#versions',
-                    title: this.i18n('i18n-7e7t3bw9') /* 版本 */,
-                  },
-                  {
-                    key: 'maintainers',
-                    href: '#maintainers',
-                    title: this.i18n('i18n-xaa077da') /* 维护者信息 */,
-                  },
-                ]}
-                style={{ marginBottom: '32px' }}
-                direction="horizontal"
-                getContainer={function () {
-                  return this.getContainer.apply(
-                    this,
-                    Array.prototype.slice.call(arguments).concat([])
-                  );
-                }.bind(this)}
-                __component_name="Anchor"
-                getCurrentAnchor={function () {
-                  return this.getCurrentAnchor.apply(
-                    this,
-                    Array.prototype.slice.call(arguments).concat([])
-                  );
-                }.bind(this)}
-              />
-              <Descriptions
-                id="description"
-                size="small"
-                colon={false}
-                items={[
-                  {
-                    key: 'pi5m3iilqxj',
-                    span: 1,
-                    label: this.i18n('i18n-fm60ewc6') /* 组件描述 */,
-                    children: (
-                      <Typography.Text
-                        style={{ fontSize: '' }}
-                        strong={false}
-                        disabled={false}
-                        ellipsis={true}
-                        __component_name="Typography.Text"
-                      >
-                        {__$$eval(
-                          () => this.props.useGetComponent?.data?.component?.description || '-'
-                        )}
-                      </Typography.Text>
-                    ),
-                  },
-                  {
-                    key: 'et5s0offl7d',
-                    span: 1,
-                    label: this.i18n('i18n-wuup4l9q') /* 组件创建时间 */,
-                    children: (
-                      <Typography.Time
-                        time={__$$eval(
-                          () => this.props.useGetComponent?.data?.component?.creationTimestamp
-                        )}
-                        format=""
-                        relativeTime={false}
-                        __component_name="Typography.Time"
-                      />
-                    ),
-                  },
-                  {
-                    key: '672hupxnu9c',
-                    span: 1,
-                    label: this.i18n('i18n-j1vviznx') /* 组件更新时间 */,
-                    children: (
-                      <Typography.Time
-                        time={__$$eval(
-                          () => this.props.useGetComponent?.data?.component?.updatedAt
-                        )}
-                        format=""
-                        relativeTime={false}
-                        __component_name="Typography.Time"
-                      />
-                    ),
-                  },
-                  {
-                    key: 'apettitpge7',
-                    span: 1,
-                    label: this.i18n('i18n-f34yu3md') /* 组件官网 */,
-                    children: (
-                      <Typography.Text
-                        style={{ fontSize: '' }}
-                        strong={false}
-                        disabled={false}
-                        ellipsis={true}
-                        __component_name="Typography.Text"
-                      >
-                        {__$$eval(() => this.props.useGetComponent?.data?.component?.home || '-')}
-                      </Typography.Text>
-                    ),
-                  },
-                  {
-                    key: '636ln138sl7',
-                    span: 1,
-                    label: this.i18n('i18n-yzkyg961') /* 源代码地址 */,
+                    key: 'tab-item-1',
+                    label: this.i18n('i18n-f6e39rd6') /* 产品介绍 */,
                     children: (
                       <Row wrap={true} gutter={[0, 0]} __component_name="Row">
-                        {__$$evalArray(
-                          () => this.props.useGetComponent?.data?.component?.sources || []
-                        ).map((item, index) =>
-                          (__$$context => (
-                            <Col span={24} __component_name="Col">
-                              <Typography.Text
-                                style={{ width: '800px' }}
-                                strong={false}
-                                copyable={{
-                                  text: __$$eval(() => item),
-                                  _unsafe_MixedSetter_text_select: 'VariableSetter',
-                                }}
-                                disabled={false}
-                                ellipsis={true}
-                                __component_name="Typography.Text"
+                        <Col span={24} __component_name="Col">
+                          <Descriptions
+                            id="description"
+                            size="small"
+                            colon={false}
+                            items={[
+                              {
+                                key: 'pi5m3iilqxj',
+                                span: 1,
+                                label: this.i18n('i18n-fm60ewc6') /* 组件描述 */,
+                                children: (
+                                  <Typography.Text
+                                    style={{ fontSize: '' }}
+                                    strong={false}
+                                    disabled={false}
+                                    ellipsis={true}
+                                    __component_name="Typography.Text"
+                                  >
+                                    {__$$eval(
+                                      () =>
+                                        this.props.useGetComponent?.data?.component?.description ||
+                                        '-'
+                                    )}
+                                  </Typography.Text>
+                                ),
+                              },
+                              {
+                                key: 'et5s0offl7d',
+                                span: 1,
+                                label: this.i18n('i18n-wuup4l9q') /* 组件创建时间 */,
+                                children: (
+                                  <Typography.Time
+                                    time={__$$eval(
+                                      () =>
+                                        this.props.useGetComponent?.data?.component
+                                          ?.creationTimestamp
+                                    )}
+                                    format=""
+                                    relativeTime={false}
+                                    __component_name="Typography.Time"
+                                  />
+                                ),
+                              },
+                              {
+                                key: '672hupxnu9c',
+                                span: 1,
+                                label: this.i18n('i18n-j1vviznx') /* 组件更新时间 */,
+                                children: (
+                                  <Typography.Time
+                                    time={__$$eval(
+                                      () => this.props.useGetComponent?.data?.component?.updatedAt
+                                    )}
+                                    format=""
+                                    relativeTime={false}
+                                    __component_name="Typography.Time"
+                                  />
+                                ),
+                              },
+                              {
+                                key: 'apettitpge7',
+                                span: 1,
+                                label: this.i18n('i18n-f34yu3md') /* 组件官网 */,
+                                children: (
+                                  <UnifiedLink
+                                    to={__$$eval(
+                                      () => this.props.useGetComponent?.data?.component?.home || '-'
+                                    )}
+                                    target="_blank"
+                                    __component_name="UnifiedLink"
+                                  >
+                                    {__$$eval(
+                                      () => this.props.useGetComponent?.data?.component?.home || '-'
+                                    )}
+                                  </UnifiedLink>
+                                ),
+                              },
+                              {
+                                key: '636ln138sl7',
+                                span: 1,
+                                label: this.i18n('i18n-yzkyg961') /* 源代码地址 */,
+                                children: (
+                                  <Row wrap={true} gutter={[0, 0]} __component_name="Row">
+                                    {__$$evalArray(
+                                      () =>
+                                        this.props.useGetComponent?.data?.component?.sources || []
+                                    ).map((item, index) =>
+                                      (__$$context => (
+                                        <Col span={24} __component_name="Col">
+                                          <UnifiedLink
+                                            to={__$$eval(() => item)}
+                                            target="_blank"
+                                            __component_name="UnifiedLink"
+                                          >
+                                            {__$$eval(() => item || '-')}
+                                          </UnifiedLink>
+                                        </Col>
+                                      ))(__$$createChildContext(__$$context, { item, index }))
+                                    )}
+                                  </Row>
+                                ),
+                              },
+                            ]}
+                            title={this.i18n('i18n-f6e39rd6') /* 产品介绍 */}
+                            column={1}
+                            layout="vertical"
+                            bordered={false}
+                            labelStyle={{ width: 100 }}
+                            borderedBottom={false}
+                            __component_name="Descriptions"
+                            borderedBottomDashed={false}
+                          >
+                            <Descriptions.Item
+                              key="pi5m3iilqxj"
+                              span={1}
+                              label={this.i18n('i18n-fm60ewc6') /* 组件描述 */}
+                            >
+                              {
+                                <Typography.Text
+                                  style={{ fontSize: '' }}
+                                  strong={false}
+                                  disabled={false}
+                                  ellipsis={true}
+                                  __component_name="Typography.Text"
+                                >
+                                  {__$$eval(
+                                    () =>
+                                      this.props.useGetComponent?.data?.component?.description ||
+                                      '-'
+                                  )}
+                                </Typography.Text>
+                              }
+                            </Descriptions.Item>
+                            <Descriptions.Item
+                              key="et5s0offl7d"
+                              span={1}
+                              label={this.i18n('i18n-wuup4l9q') /* 组件创建时间 */}
+                            >
+                              {
+                                <Typography.Time
+                                  time={__$$eval(
+                                    () =>
+                                      this.props.useGetComponent?.data?.component?.creationTimestamp
+                                  )}
+                                  format=""
+                                  relativeTime={false}
+                                  __component_name="Typography.Time"
+                                />
+                              }
+                            </Descriptions.Item>
+                            <Descriptions.Item
+                              key="672hupxnu9c"
+                              span={1}
+                              label={this.i18n('i18n-j1vviznx') /* 组件更新时间 */}
+                            >
+                              {
+                                <Typography.Time
+                                  time={__$$eval(
+                                    () => this.props.useGetComponent?.data?.component?.updatedAt
+                                  )}
+                                  format=""
+                                  relativeTime={false}
+                                  __component_name="Typography.Time"
+                                />
+                              }
+                            </Descriptions.Item>
+                            <Descriptions.Item
+                              key="apettitpge7"
+                              span={1}
+                              label={this.i18n('i18n-f34yu3md') /* 组件官网 */}
+                            >
+                              {
+                                <UnifiedLink
+                                  to={__$$eval(
+                                    () => this.props.useGetComponent?.data?.component?.home || '-'
+                                  )}
+                                  target="_blank"
+                                  __component_name="UnifiedLink"
+                                >
+                                  {__$$eval(
+                                    () => this.props.useGetComponent?.data?.component?.home || '-'
+                                  )}
+                                </UnifiedLink>
+                              }
+                            </Descriptions.Item>
+                            <Descriptions.Item
+                              key="636ln138sl7"
+                              span={1}
+                              label={this.i18n('i18n-yzkyg961') /* 源代码地址 */}
+                            >
+                              {
+                                <Row wrap={true} gutter={[0, 0]} __component_name="Row">
+                                  {__$$evalArray(
+                                    () => this.props.useGetComponent?.data?.component?.sources || []
+                                  ).map((item, index) =>
+                                    (__$$context => (
+                                      <Col span={24} __component_name="Col">
+                                        <UnifiedLink
+                                          to={__$$eval(() => item)}
+                                          target="_blank"
+                                          __component_name="UnifiedLink"
+                                        >
+                                          {__$$eval(() => item || '-')}
+                                        </UnifiedLink>
+                                      </Col>
+                                    ))(__$$createChildContext(__$$context, { item, index }))
+                                  )}
+                                </Row>
+                              }
+                            </Descriptions.Item>
+                          </Descriptions>
+                        </Col>
+                        <Col span={24} __component_name="Col">
+                          <Descriptions
+                            id="versions"
+                            size="small"
+                            colon={false}
+                            items={[
+                              {
+                                key: 'pi5m3iilqxj',
+                                span: 1,
+                                label: this.i18n('i18n-ekp8efeq') /* 组件版本 */,
+                                children: (
+                                  <Typography.Text
+                                    style={{ fontSize: '' }}
+                                    strong={false}
+                                    disabled={false}
+                                    ellipsis={true}
+                                    __component_name="Typography.Text"
+                                  >
+                                    {__$$eval(() =>
+                                      this.getVersionInfo()?.version
+                                        ? `${this.getVersionInfo()?.version} ${
+                                            this.getVersionInfo()?.deprecated ? '（废弃）' : ''
+                                          }`
+                                        : '-'
+                                    )}
+                                  </Typography.Text>
+                                ),
+                              },
+                              {
+                                key: '8ju3wht9i04',
+                                span: 1,
+                                label: this.i18n('i18n-xx4ved6h') /* 各应用版本 */,
+                                children: (
+                                  <Typography.Text
+                                    style={{ fontSize: '' }}
+                                    strong={false}
+                                    disabled={false}
+                                    ellipsis={true}
+                                    __component_name="Typography.Text"
+                                  >
+                                    {__$$eval(() => this.getVersionInfo()?.appVersion || '-')}
+                                  </Typography.Text>
+                                ),
+                              },
+                            ]}
+                            style={{ marginTop: '24px', marginBottom: '24px' }}
+                            title={this.i18n('i18n-7e7t3bw9') /* 版本 */}
+                            column={1}
+                            layout="vertical"
+                            bordered={false}
+                            labelStyle={{ width: 100 }}
+                            borderedBottom={false}
+                            __component_name="Descriptions"
+                            borderedBottomDashed={false}
+                          >
+                            <Descriptions.Item
+                              key="pi5m3iilqxj"
+                              span={1}
+                              label={this.i18n('i18n-ekp8efeq') /* 组件版本 */}
+                            >
+                              {
+                                <Typography.Text
+                                  style={{ fontSize: '' }}
+                                  strong={false}
+                                  disabled={false}
+                                  ellipsis={true}
+                                  __component_name="Typography.Text"
+                                >
+                                  {__$$eval(() =>
+                                    this.getVersionInfo()?.version
+                                      ? `${this.getVersionInfo()?.version} ${
+                                          this.getVersionInfo()?.deprecated ? '（废弃）' : ''
+                                        }`
+                                      : '-'
+                                  )}
+                                </Typography.Text>
+                              }
+                            </Descriptions.Item>
+                            <Descriptions.Item
+                              key="8ju3wht9i04"
+                              span={1}
+                              label={this.i18n('i18n-xx4ved6h') /* 各应用版本 */}
+                            >
+                              {
+                                <Typography.Text
+                                  style={{ fontSize: '' }}
+                                  strong={false}
+                                  disabled={false}
+                                  ellipsis={true}
+                                  __component_name="Typography.Text"
+                                >
+                                  {__$$eval(() => this.getVersionInfo()?.appVersion || '-')}
+                                </Typography.Text>
+                              }
+                            </Descriptions.Item>
+                          </Descriptions>
+                        </Col>
+                        <Col span={24} __component_name="Col">
+                          <Typography.Title
+                            bold={true}
+                            level={2}
+                            style={{}}
+                            bordered={false}
+                            ellipsis={true}
+                            __component_name="Typography.Title"
+                          >
+                            {this.i18n('i18n-xaa077da') /* 维护者信息 */}
+                          </Typography.Title>
+                        </Col>
+                        <Col span={24} __component_name="Col">
+                          {__$$evalArray(
+                            () => this.props.useGetComponent?.data?.component?.maintainers || []
+                          ).map((item, index) =>
+                            (__$$context => (
+                              <Descriptions
+                                id="maintainers"
+                                size="small"
+                                colon={false}
+                                items={[
+                                  {
+                                    key: 'pi5m3iilqxj',
+                                    span: 1,
+                                    label: this.i18n('i18n-xql84ibj') /* 姓名 */,
+                                    children: (
+                                      <Typography.Text
+                                        style={{ fontSize: '' }}
+                                        strong={false}
+                                        disabled={false}
+                                        ellipsis={true}
+                                        __component_name="Typography.Text"
+                                      >
+                                        {__$$eval(() => item?.name || '-')}
+                                      </Typography.Text>
+                                    ),
+                                  },
+                                  {
+                                    key: '3v0s08uuplw',
+                                    span: 1,
+                                    label: this.i18n('i18n-3szzvcl7') /* 邮箱 */,
+                                    children: (
+                                      <Typography.Text
+                                        style={{ fontSize: '' }}
+                                        strong={false}
+                                        disabled={false}
+                                        ellipsis={true}
+                                        __component_name="Typography.Text"
+                                      >
+                                        {__$$eval(() => item?.email || '-')}
+                                      </Typography.Text>
+                                    ),
+                                  },
+                                  {
+                                    key: 'plk75u4i8vt',
+                                    span: 1,
+                                    label: this.i18n('i18n-2lcystak') /* 网站 */,
+                                    children: (
+                                      <UnifiedLink
+                                        to={__$$eval(() => item?.url || '-')}
+                                        target="_blank"
+                                        __component_name="UnifiedLink"
+                                      >
+                                        {__$$eval(() => item?.url || '-')}
+                                      </UnifiedLink>
+                                    ),
+                                  },
+                                ]}
+                                title=""
+                                column={1}
+                                layout="vertical"
+                                bordered={false}
+                                labelStyle={{ width: 100 }}
+                                borderedBottom={false}
+                                __component_name="Descriptions"
+                                borderedBottomDashed={false}
                               >
-                                {__$$eval(() => item)}
-                              </Typography.Text>
-                            </Col>
-                          ))(__$$createChildContext(__$$context, { item, index }))
-                        )}
+                                <Descriptions.Item
+                                  key="pi5m3iilqxj"
+                                  span={1}
+                                  label={this.i18n('i18n-xql84ibj') /* 姓名 */}
+                                >
+                                  {
+                                    <Typography.Text
+                                      style={{ fontSize: '' }}
+                                      strong={false}
+                                      disabled={false}
+                                      ellipsis={true}
+                                      __component_name="Typography.Text"
+                                    >
+                                      {__$$eval(() => item?.name || '-')}
+                                    </Typography.Text>
+                                  }
+                                </Descriptions.Item>
+                                <Descriptions.Item
+                                  key="3v0s08uuplw"
+                                  span={1}
+                                  label={this.i18n('i18n-3szzvcl7') /* 邮箱 */}
+                                >
+                                  {
+                                    <Typography.Text
+                                      style={{ fontSize: '' }}
+                                      strong={false}
+                                      disabled={false}
+                                      ellipsis={true}
+                                      __component_name="Typography.Text"
+                                    >
+                                      {__$$eval(() => item?.email || '-')}
+                                    </Typography.Text>
+                                  }
+                                </Descriptions.Item>
+                                <Descriptions.Item
+                                  key="plk75u4i8vt"
+                                  span={1}
+                                  label={this.i18n('i18n-2lcystak') /* 网站 */}
+                                >
+                                  {
+                                    <UnifiedLink
+                                      to={__$$eval(() => item?.url || '-')}
+                                      target="_blank"
+                                      __component_name="UnifiedLink"
+                                    >
+                                      {__$$eval(() => item?.url || '-')}
+                                    </UnifiedLink>
+                                  }
+                                </Descriptions.Item>
+                              </Descriptions>
+                            ))(__$$createChildContext(__$$context, { item, index }))
+                          )}
+                        </Col>
+                      </Row>
+                    ),
+                  },
+                  {
+                    key: 'tab-item-2',
+                    label: this.i18n('i18n-thxp526w') /* 组件评测 */,
+                    children: (
+                      <Row wrap={true} __component_name="Row">
+                        <Col span={24} __component_name="Col">
+                          <Alert
+                            icon={
+                              <TenxIconTips
+                                color="#8ae52b"
+                                style={{ marginRight: '3px' }}
+                                __component_name="TenxIconTips"
+                              />
+                            }
+                            type="success"
+                            message={
+                              <Space align="center" direction="horizontal" __component_name="Space">
+                                <Typography.Text
+                                  style={{ fontSize: '' }}
+                                  strong={false}
+                                  disabled={false}
+                                  ellipsis={true}
+                                  __component_name="Typography.Text"
+                                >
+                                  {
+                                    this.i18n(
+                                      'i18n-xy8qhguk'
+                                    ) /* 使用智能 AI 对组件从安全性、可靠性、可用性三方面进行综合评测，为您的选择提供参考数据。 */
+                                  }
+                                </Typography.Text>
+                                <UnifiedLink to="" target="_blank" __component_name="UnifiedLink">
+                                  评测说明
+                                </UnifiedLink>
+                              </Space>
+                            }
+                            showIcon={true}
+                            __component_name="Alert"
+                          />
+                        </Col>
+                        <Col span={24} __component_name="Col">
+                          <Space align="center" direction="horizontal" __component_name="Space">
+                            <Button
+                              type="primary"
+                              block={false}
+                              ghost={false}
+                              shape="default"
+                              danger={false}
+                              disabled={false}
+                              __component_name="Button"
+                            >
+                              {this.i18n('i18n-99fynr0e') /* 发起评测 */}
+                            </Button>
+                          </Space>
+                        </Col>
+                        <Col span={24} __component_name="Col">
+                          <Empty
+                            description={
+                              this.i18n('i18n-q2lat5ib') /* 组件当前版本还未进行评测，请耐心等待 */
+                            }
+                            __component_name="Empty"
+                          />
+                        </Col>
+                        <Col span={24} __component_name="Col">
+                          <Descriptions
+                            id=""
+                            size="default"
+                            colon={false}
+                            items={[
+                              {
+                                key: '20vwa4mw25w',
+                                span: 1,
+                                label: this.i18n('i18n-fghbypr5') /* 组件评测得分 */,
+                                children: (
+                                  <Rate
+                                    style={{ fontSize: '12px' }}
+                                    value={2}
+                                    __component_name="Rate"
+                                  />
+                                ),
+                              },
+                              {
+                                key: 's2sj8l83ptb',
+                                span: 1,
+                                label: this.i18n('i18n-cqhehb0a') /* 最近一次评测 */,
+                                children: (
+                                  <Typography.Time
+                                    time=""
+                                    format=""
+                                    relativeTime={false}
+                                    __component_name="Typography.Time"
+                                  />
+                                ),
+                              },
+                              {
+                                key: 'fyzu14bnuei',
+                                span: 1,
+                                label: this.i18n('i18n-gipku83c') /* 组件评测报告 */,
+                                children: (
+                                  <Table
+                                    size="default"
+                                    rowKey="id"
+                                    scroll={{ scrollToFirstRowOnChange: true }}
+                                    columns={[
+                                      { key: 'name', title: '姓名', dataIndex: 'name' },
+                                      { key: 'age', title: '年龄', dataIndex: 'age' },
+                                      { title: '标题' },
+                                      { title: '标题' },
+                                    ]}
+                                    dataSource={[
+                                      {
+                                        id: '1',
+                                        age: 32,
+                                        name: '胡彦斌',
+                                        address: '西湖区湖底公园1号',
+                                      },
+                                      {
+                                        id: '2',
+                                        age: 28,
+                                        name: '王一博',
+                                        address: '滨江区网商路699号',
+                                      },
+                                    ]}
+                                    expandable={{
+                                      expandedRowRender: (record, index, indent, expanded) =>
+                                        (__$$context => (
+                                          <Descriptions
+                                            id=""
+                                            size="default"
+                                            colon={true}
+                                            items={[
+                                              {
+                                                key: 'an2oj3zs06',
+                                                span: 1,
+                                                label: '标签项',
+                                                children: null,
+                                              },
+                                            ]}
+                                            title="用户信息"
+                                            column={3}
+                                            layout="horizontal"
+                                            bordered={false}
+                                            labelStyle={{ width: 100 }}
+                                            borderedBottom={false}
+                                            __component_name="Descriptions"
+                                            borderedBottomDashed={false}
+                                          >
+                                            <Descriptions.Item
+                                              key="an2oj3zs06"
+                                              span={1}
+                                              label="标签项"
+                                            >
+                                              {null}
+                                            </Descriptions.Item>
+                                          </Descriptions>
+                                        ))(
+                                          __$$createChildContext(__$$context, {
+                                            record,
+                                            index,
+                                            indent,
+                                            expanded,
+                                          })
+                                        ),
+                                    }}
+                                    pagination={{
+                                      size: 'default',
+                                      total: 15,
+                                      simple: false,
+                                      current: 1,
+                                      pageSize: 10,
+                                      showQuickJumper: false,
+                                      showSizeChanger: false,
+                                    }}
+                                    showHeader={true}
+                                    __component_name="Table"
+                                  />
+                                ),
+                              },
+                            ]}
+                            style={{}}
+                            title=""
+                            column={1}
+                            layout="horizontal"
+                            bordered={false}
+                            labelStyle={{ width: 100 }}
+                            borderedBottom={false}
+                            __component_name="Descriptions"
+                            borderedBottomDashed={false}
+                          >
+                            <Descriptions.Item
+                              key="20vwa4mw25w"
+                              span={1}
+                              label={this.i18n('i18n-fghbypr5') /* 组件评测得分 */}
+                            >
+                              {
+                                <Rate
+                                  style={{ fontSize: '12px' }}
+                                  value={2}
+                                  __component_name="Rate"
+                                />
+                              }
+                            </Descriptions.Item>
+                            <Descriptions.Item
+                              key="s2sj8l83ptb"
+                              span={1}
+                              label={this.i18n('i18n-cqhehb0a') /* 最近一次评测 */}
+                            >
+                              {
+                                <Typography.Time
+                                  time=""
+                                  format=""
+                                  relativeTime={false}
+                                  __component_name="Typography.Time"
+                                />
+                              }
+                            </Descriptions.Item>
+                            <Descriptions.Item
+                              key="fyzu14bnuei"
+                              span={1}
+                              label={this.i18n('i18n-gipku83c') /* 组件评测报告 */}
+                              style={{}}
+                            >
+                              {
+                                <Table
+                                  size="default"
+                                  style={{ width: '1000px' }}
+                                  rowKey="id"
+                                  scroll={{ scrollToFirstRowOnChange: true }}
+                                  columns={[
+                                    { key: 'name', title: '姓名', dataIndex: 'name' },
+                                    { key: 'age', title: '年龄', dataIndex: 'age' },
+                                    { title: '标题' },
+                                    { title: '标题' },
+                                  ]}
+                                  dataSource={[
+                                    {
+                                      id: '1',
+                                      age: 32,
+                                      name: '胡彦斌',
+                                      address: '西湖区湖底公园1号',
+                                    },
+                                    {
+                                      id: '2',
+                                      age: 28,
+                                      name: '王一博',
+                                      address: '滨江区网商路699号',
+                                    },
+                                  ]}
+                                  expandable={{
+                                    expandedRowRender: (record, index, indent, expanded) =>
+                                      (__$$context => (
+                                        <Descriptions
+                                          id=""
+                                          size="default"
+                                          colon={true}
+                                          items={[
+                                            {
+                                              key: 'an2oj3zs06',
+                                              span: 1,
+                                              label: '标签项',
+                                              children: null,
+                                            },
+                                          ]}
+                                          title="用户信息"
+                                          column={3}
+                                          layout="horizontal"
+                                          bordered={false}
+                                          labelStyle={{ width: 100 }}
+                                          borderedBottom={false}
+                                          __component_name="Descriptions"
+                                          borderedBottomDashed={false}
+                                        >
+                                          <Descriptions.Item
+                                            key="an2oj3zs06"
+                                            span={1}
+                                            label="标签项"
+                                          >
+                                            {null}
+                                          </Descriptions.Item>
+                                        </Descriptions>
+                                      ))(
+                                        __$$createChildContext(__$$context, {
+                                          record,
+                                          index,
+                                          indent,
+                                          expanded,
+                                        })
+                                      ),
+                                  }}
+                                  pagination={{
+                                    size: 'default',
+                                    total: 15,
+                                    simple: false,
+                                    current: 1,
+                                    pageSize: 10,
+                                    showQuickJumper: false,
+                                    showSizeChanger: false,
+                                  }}
+                                  showHeader={true}
+                                  __component_name="Table"
+                                />
+                              }
+                            </Descriptions.Item>
+                          </Descriptions>
+                        </Col>
                       </Row>
                     ),
                   },
                 ]}
-                title={this.i18n('i18n-f6e39rd6') /* 产品介绍 */}
-                column={1}
-                layout="vertical"
-                bordered={false}
-                labelStyle={{ width: 100 }}
-                borderedBottom={false}
-                __component_name="Descriptions"
-                borderedBottomDashed={false}
-              >
-                <Descriptions.Item
-                  key="pi5m3iilqxj"
-                  span={1}
-                  label={this.i18n('i18n-fm60ewc6') /* 组件描述 */}
-                >
-                  {
-                    <Typography.Text
-                      style={{ fontSize: '' }}
-                      strong={false}
-                      disabled={false}
-                      ellipsis={true}
-                      __component_name="Typography.Text"
-                    >
-                      {__$$eval(
-                        () => this.props.useGetComponent?.data?.component?.description || '-'
-                      )}
-                    </Typography.Text>
-                  }
-                </Descriptions.Item>
-                <Descriptions.Item
-                  key="et5s0offl7d"
-                  span={1}
-                  label={this.i18n('i18n-wuup4l9q') /* 组件创建时间 */}
-                >
-                  {
-                    <Typography.Time
-                      time={__$$eval(
-                        () => this.props.useGetComponent?.data?.component?.creationTimestamp
-                      )}
-                      format=""
-                      relativeTime={false}
-                      __component_name="Typography.Time"
-                    />
-                  }
-                </Descriptions.Item>
-                <Descriptions.Item
-                  key="672hupxnu9c"
-                  span={1}
-                  label={this.i18n('i18n-j1vviznx') /* 组件更新时间 */}
-                >
-                  {
-                    <Typography.Time
-                      time={__$$eval(() => this.props.useGetComponent?.data?.component?.updatedAt)}
-                      format=""
-                      relativeTime={false}
-                      __component_name="Typography.Time"
-                    />
-                  }
-                </Descriptions.Item>
-                <Descriptions.Item
-                  key="apettitpge7"
-                  span={1}
-                  label={this.i18n('i18n-f34yu3md') /* 组件官网 */}
-                >
-                  {
-                    <UnifiedLink
-                      to={__$$eval(() => this.props.useGetComponent?.data?.component?.home || '-')}
-                      target="_blank"
-                      __component_name="UnifiedLink"
-                    >
-                      {__$$eval(() => this.props.useGetComponent?.data?.component?.home || '-')}
-                    </UnifiedLink>
-                  }
-                </Descriptions.Item>
-                <Descriptions.Item
-                  key="636ln138sl7"
-                  span={1}
-                  label={this.i18n('i18n-yzkyg961') /* 源代码地址 */}
-                >
-                  {
-                    <Row wrap={true} gutter={[0, 0]} __component_name="Row">
-                      {__$$evalArray(
-                        () => this.props.useGetComponent?.data?.component?.sources || []
-                      ).map((item, index) =>
-                        (__$$context => (
-                          <Col span={24} __component_name="Col">
-                            <UnifiedLink
-                              to={__$$eval(() => item)}
-                              target="_blank"
-                              __component_name="UnifiedLink"
-                            >
-                              {__$$eval(() => item || '-')}
-                            </UnifiedLink>
-                          </Col>
-                        ))(__$$createChildContext(__$$context, { item, index }))
-                      )}
-                    </Row>
-                  }
-                </Descriptions.Item>
-              </Descriptions>
-              <Descriptions
-                id="versions"
-                size="small"
-                colon={false}
-                items={[
-                  {
-                    key: 'pi5m3iilqxj',
-                    span: 1,
-                    label: this.i18n('i18n-ekp8efeq') /* 组件版本 */,
-                    children: (
-                      <Typography.Text
-                        style={{ fontSize: '' }}
-                        strong={false}
-                        disabled={false}
-                        ellipsis={true}
-                        __component_name="Typography.Text"
-                      >
-                        {__$$eval(() => this.getVersionInfo()?.version || '-')}
-                      </Typography.Text>
-                    ),
-                  },
-                  {
-                    key: '8ju3wht9i04',
-                    span: 1,
-                    label: this.i18n('i18n-xx4ved6h') /* 各应用版本 */,
-                    children: (
-                      <Typography.Text
-                        style={{ fontSize: '' }}
-                        strong={false}
-                        disabled={false}
-                        ellipsis={true}
-                        __component_name="Typography.Text"
-                      >
-                        {__$$eval(() => this.getVersionInfo()?.appVersion || '-')}
-                      </Typography.Text>
-                    ),
-                  },
-                ]}
-                style={{ marginTop: '24px', marginBottom: '24px' }}
-                title={this.i18n('i18n-7e7t3bw9') /* 版本 */}
-                column={1}
-                layout="vertical"
-                bordered={false}
-                labelStyle={{ width: 100 }}
-                borderedBottom={false}
-                __component_name="Descriptions"
-                borderedBottomDashed={false}
-              >
-                <Descriptions.Item
-                  key="pi5m3iilqxj"
-                  span={1}
-                  label={this.i18n('i18n-ekp8efeq') /* 组件版本 */}
-                >
-                  {
-                    <Typography.Text
-                      style={{ fontSize: '' }}
-                      strong={false}
-                      disabled={false}
-                      ellipsis={true}
-                      __component_name="Typography.Text"
-                    >
-                      {__$$eval(() =>
-                        this.getVersionInfo()?.version
-                          ? `${this.getVersionInfo()?.version} ${
-                              this.getVersionInfo()?.deprecated ? '（废弃）' : ''
-                            }`
-                          : '-'
-                      )}
-                    </Typography.Text>
-                  }
-                </Descriptions.Item>
-                <Descriptions.Item
-                  key="8ju3wht9i04"
-                  span={1}
-                  label={this.i18n('i18n-xx4ved6h') /* 各应用版本 */}
-                >
-                  {
-                    <Typography.Text
-                      style={{ fontSize: '' }}
-                      strong={false}
-                      disabled={false}
-                      ellipsis={true}
-                      __component_name="Typography.Text"
-                    >
-                      {__$$eval(() => this.getVersionInfo()?.appVersion || '-')}
-                    </Typography.Text>
-                  }
-                </Descriptions.Item>
-              </Descriptions>
-              <Typography.Title
-                bold={true}
-                level={2}
-                style={{}}
-                bordered={false}
-                ellipsis={true}
-                __component_name="Typography.Title"
-              >
-                {this.i18n('i18n-xaa077da') /* 维护者信息 */}
-              </Typography.Title>
-              {__$$evalArray(
-                () => this.props.useGetComponent?.data?.component?.maintainers || []
-              ).map((item, index) =>
-                (__$$context => (
-                  <Descriptions
-                    id="maintainers"
-                    size="small"
-                    colon={false}
-                    items={[
-                      {
-                        key: 'pi5m3iilqxj',
-                        span: 1,
-                        label: this.i18n('i18n-xql84ibj') /* 姓名 */,
-                        children: (
-                          <Typography.Text
-                            style={{ fontSize: '' }}
-                            strong={false}
-                            disabled={false}
-                            ellipsis={true}
-                            __component_name="Typography.Text"
-                          >
-                            {__$$eval(() => item?.name || '-')}
-                          </Typography.Text>
-                        ),
-                      },
-                      {
-                        key: '3v0s08uuplw',
-                        span: 1,
-                        label: this.i18n('i18n-3szzvcl7') /* 邮箱 */,
-                        children: (
-                          <Typography.Text
-                            style={{ fontSize: '' }}
-                            strong={false}
-                            disabled={false}
-                            ellipsis={true}
-                            __component_name="Typography.Text"
-                          >
-                            {__$$eval(() => item?.email || '-')}
-                          </Typography.Text>
-                        ),
-                      },
-                      {
-                        key: 'plk75u4i8vt',
-                        span: 1,
-                        label: this.i18n('i18n-2lcystak') /* 网站 */,
-                        children: (
-                          <Typography.Text
-                            style={{ width: '800px', fontSize: '' }}
-                            strong={false}
-                            disabled={false}
-                            ellipsis={true}
-                            __component_name="Typography.Text"
-                          >
-                            {__$$eval(() => item?.url || '-')}
-                          </Typography.Text>
-                        ),
-                      },
-                    ]}
-                    title=""
-                    column={1}
-                    layout="vertical"
-                    bordered={false}
-                    labelStyle={{ width: 100 }}
-                    borderedBottom={false}
-                    __component_name="Descriptions"
-                    borderedBottomDashed={false}
-                  >
-                    <Descriptions.Item
-                      key="pi5m3iilqxj"
-                      span={1}
-                      label={this.i18n('i18n-xql84ibj') /* 姓名 */}
-                    >
-                      {
-                        <Typography.Text
-                          style={{ fontSize: '' }}
-                          strong={false}
-                          disabled={false}
-                          ellipsis={true}
-                          __component_name="Typography.Text"
-                        >
-                          {__$$eval(() => item?.name || '-')}
-                        </Typography.Text>
-                      }
-                    </Descriptions.Item>
-                    <Descriptions.Item
-                      key="3v0s08uuplw"
-                      span={1}
-                      label={this.i18n('i18n-3szzvcl7') /* 邮箱 */}
-                    >
-                      {
-                        <Typography.Text
-                          style={{ fontSize: '' }}
-                          strong={false}
-                          disabled={false}
-                          ellipsis={true}
-                          __component_name="Typography.Text"
-                        >
-                          {__$$eval(() => item?.email || '-')}
-                        </Typography.Text>
-                      }
-                    </Descriptions.Item>
-                    <Descriptions.Item
-                      key="plk75u4i8vt"
-                      span={1}
-                      label={this.i18n('i18n-2lcystak') /* 网站 */}
-                    >
-                      {
-                        <UnifiedLink
-                          to={__$$eval(() => item?.url || '-')}
-                          target="_blank"
-                          __component_name="UnifiedLink"
-                        >
-                          {__$$eval(() => item?.url || '-')}
-                        </UnifiedLink>
-                      }
-                    </Descriptions.Item>
-                  </Descriptions>
-                ))(__$$createChildContext(__$$context, { item, index }))
-              )}
+                activeKey=""
+                tabPosition="top"
+                __component_name="Tabs"
+                destroyInactiveTabPane="true"
+              />
             </Card>
           </Col>
         </Row>

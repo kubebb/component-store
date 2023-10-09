@@ -26,7 +26,7 @@ import { AntdIconPlusOutlined, AntdIconReloadOutlined } from '@tenx-ui/icon-mate
 import { getUnifiedHistory } from '@tenx-ui/utils/es/UnifiedLink/index.prod';
 import { matchPath, useLocation } from '@umijs/max';
 import qs from 'query-string';
-import DataProvider from '../../components/DataProvider';
+import { DataProvider } from 'shared-components';
 
 import utils from '../../utils/__utils';
 
@@ -124,6 +124,8 @@ class ComponentsManagementInstall$$Page extends React.Component {
     }
     if (status?.length > 0) {
       params.status = status;
+    } else {
+      delete params.status;
     }
     this.utils?.changeLocationQuery(this, 'useGetComponentplansPaged', params);
   }
@@ -533,8 +535,8 @@ class ComponentsManagementInstall$$Page extends React.Component {
                                     ?.find(
                                       item =>
                                         item.value ===
-                                          record?.subscription?.componentPlanInstallMethod ||
-                                        'manual'
+                                        (record?.subscription?.componentPlanInstallMethod ||
+                                          'manual')
                                     )?.text
                               )}
                             </Typography.Text>

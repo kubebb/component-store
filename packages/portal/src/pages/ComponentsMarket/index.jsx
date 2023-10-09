@@ -27,7 +27,7 @@ import { AntdIconQuestionCircleOutlined } from '@tenx-ui/icon-materials';
 import { getUnifiedHistory } from '@tenx-ui/utils/es/UnifiedLink/index.prod';
 import { matchPath, useLocation } from '@umijs/max';
 import qs from 'query-string';
-import DataProvider from '../../components/DataProvider';
+import { DataProvider } from 'shared-components';
 
 import utils, { RefsManager } from '../../utils/__utils';
 
@@ -67,7 +67,7 @@ class ComponentsMarket$$Page extends React.Component {
     __$$i18n._inject2(this);
 
     this.state = {
-      size: 10,
+      size: 12,
       type: undefined,
       record: {},
       sorter: undefined,

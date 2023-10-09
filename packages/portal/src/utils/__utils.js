@@ -324,7 +324,7 @@ export const changeLocationQuery = utils.changeLocationQuery;
 /** 名称校验(由min~max个小写字母、数字、中划线“-”或点“.”组成，并以字母、数字开头或结尾) */
 utils.getNameReg = function __getNameReg() {
   return ({ min = 3, max = 63 }) => {
-    return `^([a-z0-9]{1}[-a-z0-9.]{${min > 2 ? min - 2 : 0},${max - 2}})?[a-z0-9]{1}$`;
+    return `^([a-z0-9]{1}[-a-z0-9.]{${min > 2 ? min - 2 : 0},${max - 2}})[a-z0-9]{1}$`;
   };
 }.apply(utils);
 export const getNameReg = utils.getNameReg;
@@ -390,7 +390,8 @@ utils.dateChangeToCron = function __dateChangeToCron() {
     // {value: 'MONTHLY', label: '按月循环'}]
     var cron = '';
     if (loopType === 'DAILY') {
-      cron = s + ' ' + m + ' ' + h + ' * * ? *';
+      // cron = s + ' ' + m + ' ' + h + ' * * ? *'
+      cron = m + ' ' + h + ' * * *';
     } else if (loopType === 'WEEKLY') {
       // 星期天为1，星期6为7
       cron = s + ' ' + m + ' ' + h + ' * * ' + w.join(',') + ' *';
@@ -415,6 +416,7 @@ utils.cronChangeToDate = function __cronChangeToDate() {
     // 提取特殊字符串长度（scrstr 源字符串 armstr 特殊字符）
     // 统计字符串中包含某个字符的个数
     const getPlaceholderCount = strSource => {
+      strSource = strSource?.split(' ')?.slice(0, 2)?.join(' ') + ' * * ? *';
       let count1 = 0; // ?的个数
       let count2 = 0; // *的个数
       strSource.replace(/\*|\?/g, function (m, i) {
