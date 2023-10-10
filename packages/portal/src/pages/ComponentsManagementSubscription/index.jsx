@@ -258,10 +258,16 @@ class ComponentsManagementSubscription$$Page extends React.Component {
                       {this.i18n('i18n-bwr35q3y') /* 确定取消订阅 */}
                     </Typography.Text>
                     <Typography.Text
-                      style={{ fontSize: '' }}
+                      style={{ maxWidth: '330px' }}
                       strong={false}
                       disabled={false}
-                      ellipsis={true}
+                      ellipsis={{
+                        rows: 1,
+                        tooltip: {
+                          title: __$$eval(() => this.state.record?.chartName || '-'),
+                          _unsafe_MixedSetter_title_select: 'VariableSetter',
+                        },
+                      }}
                       __component_name="Typography.Text"
                     >
                       {__$$eval(() => this.state.record?.chartName || '-')}
@@ -428,7 +434,7 @@ class ComponentsManagementSubscription$$Page extends React.Component {
                 </Col>
                 <Col span={24} __component_name="Col">
                   <Table
-                    size="default"
+                    size="middle"
                     rowKey="chartName"
                     scroll={{ scrollToFirstRowOnChange: true }}
                     columns={[
@@ -472,7 +478,8 @@ class ComponentsManagementSubscription$$Page extends React.Component {
                               </Typography.Text>
                               {!!__$$eval(
                                 () =>
-                                  (new Date().getTime() - new Date(record?.updatedAt).getTime()) /
+                                  (new Date().getTime() -
+                                    new Date(record?.component?.updatedAt).getTime()) /
                                     1000 /
                                     60 /
                                     60 /

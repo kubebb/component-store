@@ -2,6 +2,7 @@
 import KubebbComponents from "@tenx-ui/icon/lib/KubebbComponents.js";
 import KubebbMarket from "@tenx-ui/icon/lib/KubebbMarket.js";
 import KubebbWarehouse from "@tenx-ui/icon/lib/KubebbWarehouse.js";
+import KubebbStore from "@tenx-ui/icon/lib/KubebbStore.js";
 
 
 export const User = 'User'
@@ -15,7 +16,7 @@ const data = [
     type: 'all-product',
     text: '组件市场',
     textEn: 'Component Market',
-    icon: KubebbMarket,
+    icon: KubebbStore,
     column: 1,
     children: [
       {

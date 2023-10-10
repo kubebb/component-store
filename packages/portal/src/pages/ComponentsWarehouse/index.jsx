@@ -386,7 +386,7 @@ class ComponentsWarehouse$$Page extends React.Component {
                 <Col span={24} __component_name="Col">
                   <Table
                     ref={this._refsManager.linkRef('table-ba33c713')}
-                    size="default"
+                    size="middle"
                     rowKey="id"
                     scroll={{ scrollToFirstRowOnChange: true }}
                     columns={[
@@ -576,11 +576,11 @@ class ComponentsWarehouse$$Page extends React.Component {
                   strong={false}
                   disabled={false}
                   ellipsis={{
+                    rows: 1,
                     tooltip: {
                       title: __$$eval(() => this.state.record?.name || '-'),
                       _unsafe_MixedSetter_title_select: 'VariableSetter',
                     },
-                    rows: 1,
                   }}
                   __component_name="Typography.Text"
                 >

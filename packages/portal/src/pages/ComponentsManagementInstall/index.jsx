@@ -258,10 +258,16 @@ class ComponentsManagementInstall$$Page extends React.Component {
                       {this.i18n('i18n-z9a1zfy4') /* 确定卸载 */}
                     </Typography.Text>
                     <Typography.Text
-                      style={{ fontSize: '' }}
+                      style={{ maxWidth: '350px' }}
                       strong={true}
                       disabled={false}
-                      ellipsis={true}
+                      ellipsis={{
+                        rows: 1,
+                        tooltip: {
+                          title: __$$eval(() => this.state?.record?.releaseName || '-'),
+                          _unsafe_MixedSetter_title_select: 'VariableSetter',
+                        },
+                      }}
                       __component_name="Typography.Text"
                     >
                       {__$$eval(() => this.state?.record?.releaseName || '-')}
@@ -428,7 +434,7 @@ class ComponentsManagementInstall$$Page extends React.Component {
                 </Col>
                 <Col span={24} __component_name="Col">
                   <Table
-                    size="default"
+                    size="middle"
                     rowKey="releaseName"
                     scroll={{ scrollToFirstRowOnChange: true }}
                     columns={[
@@ -483,14 +489,7 @@ class ComponentsManagementInstall$$Page extends React.Component {
                                 {__$$eval(() => record.version || '-')}
                               </Typography.Text>
                               {!!__$$eval(
-                                () =>
-                                  (new Date().getTime() -
-                                    new Date(record?.creationTimestamp).getTime()) /
-                                    1000 /
-                                    60 /
-                                    60 /
-                                    24 <
-                                  7
+                                () => record?.version !== record?.component?.latestVersion
                               ) && (
                                 <Tag color="success" closable={false} __component_name="Tag">
                                   New

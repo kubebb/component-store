@@ -561,6 +561,7 @@ class ComponentsManagementInstallDetail$$Page extends React.Component {
                         <Editor
                           value={__$$eval(() => this.state?.componentplan?.valuesYaml || '-')}
                           height="300px"
+                          styleVersion="kubebb"
                           __component_name="Editor"
                         />
                       </Col>
@@ -757,10 +758,20 @@ class ComponentsManagementInstallDetail$$Page extends React.Component {
                             ?.chartName || '-'
                       ) && (
                         <Typography.Text
-                          style={{ fontSize: '' }}
+                          style={{ maxWidth: '70px' }}
                           strong={false}
                           disabled={false}
-                          ellipsis={true}
+                          ellipsis={{
+                            rows: 1,
+                            tooltip: {
+                              title: __$$eval(
+                                () =>
+                                  this.props.useGetComponentplanHistory?.data?.componentplan
+                                    ?.component?.chartName || '-'
+                              ),
+                              _unsafe_MixedSetter_title_select: 'VariableSetter',
+                            },
+                          }}
                           __component_name="Typography.Text"
                         >
                           {__$$eval(
@@ -849,6 +860,7 @@ class ComponentsManagementInstallDetail$$Page extends React.Component {
                 type="primary"
                 title={this.i18n('i18n-ye37je6n') /* 组件安装详情 */}
                 __component_name="Button.Back"
+                name={this.i18n('i18n-86so9ago') /* 返回 */}
               />
             </Space>
             {!!false && (
@@ -1025,7 +1037,7 @@ class ComponentsManagementInstallDetail$$Page extends React.Component {
               __component_name="Card"
             >
               <Tabs
-                size="large"
+                size="default"
                 type="line"
                 items={[
                   {
@@ -1441,6 +1453,7 @@ class ComponentsManagementInstallDetail$$Page extends React.Component {
                                         ?.valuesYaml || ''
                                   )}
                                   readOnly={true}
+                                  styleVersion="kubebb"
                                   __component_name="Editor"
                                 />
                               </Col>
@@ -1525,7 +1538,7 @@ class ComponentsManagementInstallDetail$$Page extends React.Component {
                     label: this.i18n('i18n-2pv9lt4n') /* 历史版本 */,
                     children: (
                       <Table
-                        size="default"
+                        size="middle"
                         rowKey="id"
                         scroll={{ scrollToFirstRowOnChange: true }}
                         columns={[
