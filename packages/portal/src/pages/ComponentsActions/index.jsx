@@ -412,6 +412,7 @@ class ComponentsActions$$Page extends React.Component {
                     : this.i18n('i18n-2ugh3v5e')
                 )}
                 __component_name="Button.Back"
+                name={this.i18n('i18n-86so9ago') /* 返回 */}
               />
             </Space>
             {!!__$$eval(() => this.props.appHelper?.match?.params?.action === 'install') && (
@@ -666,6 +667,7 @@ class ComponentsActions$$Page extends React.Component {
                               </Col>
                             </Row>
                           }
+                          placement="bottomRight"
                           __component_name="Tooltip"
                         >
                           <AntdIconQuestionCircleOutlined
@@ -881,6 +883,7 @@ class ComponentsActions$$Page extends React.Component {
                 >
                   <Spin spinning={__$$eval(() => this.state.yamlLoading)} __component_name="Spin">
                     <Editor
+                      style={{}}
                       value={__$$eval(() => this.state.valuesYaml)}
                       height="300px"
                       onLoad={function () {
@@ -897,6 +900,7 @@ class ComponentsActions$$Page extends React.Component {
                       }.bind(this)}
                       placeholder=""
                       defaultValue={__$$eval(() => this.state.valuesYaml)}
+                      styleVersion="kubebb"
                       __component_name="Editor"
                     />
                   </Spin>

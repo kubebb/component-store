@@ -393,10 +393,16 @@ class ComponentsManagementPublish$$Page extends React.Component {
                       __component_name="Space"
                     >
                       <Typography.Text
-                        style={{ fontSize: '' }}
+                        style={{ maxWidth: '400px' }}
                         strong={false}
                         disabled={false}
-                        ellipsis={true}
+                        ellipsis={{
+                          rows: 1,
+                          tooltip: {
+                            title: __$$eval(() => this.state?.record?.name || '-'),
+                            _unsafe_MixedSetter_title_select: 'VariableSetter',
+                          },
+                        }}
                         __component_name="Typography.Text"
                       >
                         {__$$eval(() => this.state?.record?.name || '-')}
@@ -824,7 +830,7 @@ class ComponentsManagementPublish$$Page extends React.Component {
                 </Col>
                 <Col span={24} __component_name="Col">
                   <Table
-                    size="default"
+                    size="middle"
                     rowKey="name"
                     scroll={{ scrollToFirstRowOnChange: true }}
                     columns={[

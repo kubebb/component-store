@@ -421,7 +421,7 @@ class ComponentsMarket$$Page extends React.Component {
                 <Col span={24} __component_name="Col">
                   <List
                     ref={this._refsManager.linkRef('list-09418a79')}
-                    grid={{ lg: 4, md: 4, sm: 4, xl: 4, xs: 4, xxl: 4, column: 4, gutter: 20 }}
+                    grid={{ lg: 3, md: 3, sm: 3, xl: 4, xs: 3, xxl: 4, column: 3, gutter: 20 }}
                     size="small"
                     split={false}
                     rowKey="id"
@@ -436,6 +436,7 @@ class ComponentsMarket$$Page extends React.Component {
                     dataSource={__$$eval(
                       () => this.props.useGetComponents?.data?.components?.nodes || []
                     )}
+                    gridEnable={true}
                     itemLayout="horizontal"
                     pagination={{
                       size: 'default',
@@ -695,7 +696,7 @@ class ComponentsMarket$$Page extends React.Component {
                                           label: this.i18n('i18n-yw1xiu88') /* 关键词 */,
                                           children: (
                                             <Typography.Text
-                                              style={{ fontSize: '', maxWidth: '150px' }}
+                                              style={{ maxWidth: 'calc(100% - 10px)' }}
                                               strong={false}
                                               disabled={false}
                                               ellipsis={{
@@ -712,12 +713,22 @@ class ComponentsMarket$$Page extends React.Component {
                                           ),
                                         },
                                       ]}
-                                      style={{}}
+                                      style={{ display: 'flex' }}
                                       title=""
                                       column={1}
                                       layout="horizontal"
                                       bordered={false}
-                                      labelStyle={{ width: 90 }}
+                                      labelStyle={{
+                                        width: '60px !important',
+                                        paddingLeft: '0',
+                                        paddingRight: '0',
+                                      }}
+                                      contentStyle={{
+                                        flex: '1',
+                                        display: 'grid',
+                                        paddingLeft: '0',
+                                        paddingRight: '0',
+                                      }}
                                       borderedBottom={true}
                                       __component_name="Descriptions"
                                       borderedBottomDashed={false}
@@ -763,7 +774,7 @@ class ComponentsMarket$$Page extends React.Component {
                                       >
                                         {
                                           <Typography.Text
-                                            style={{ fontSize: '', maxWidth: '150px' }}
+                                            style={{ fontSize: '', maxWidth: 'calc(100% - 10px)' }}
                                             strong={false}
                                             disabled={false}
                                             ellipsis={{

@@ -600,6 +600,7 @@ class ComponentsDetail$$Page extends React.Component {
                 type="primary"
                 title={this.i18n('i18n-00cyzhs8') /* 组件详情 */}
                 __component_name="Button.Back"
+                name={this.i18n('i18n-86so9ago') /* 返回 */}
               />
             </Space>
             <Tag
@@ -758,6 +759,7 @@ class ComponentsDetail$$Page extends React.Component {
                                 trigger={['hover']}
                                 disabled={false}
                                 placement="bottomLeft"
+                                overlayStyle={{ 'max-height': '250px', 'overflow-y': 'auto' }}
                                 __component_name="Dropdown"
                                 destroyPopupOnHide={true}
                               >
@@ -960,18 +962,11 @@ class ComponentsDetail$$Page extends React.Component {
                           trigger={['hover']}
                           disabled={false}
                           placement="bottomRight"
+                          overlayStyle={{ width: '90px' }}
                           __component_name="Dropdown.Button"
                           destroyPopupOnHide={true}
                         >
-                          <Typography.Text
-                            style={{ fontSize: '' }}
-                            strong={false}
-                            disabled={false}
-                            ellipsis={true}
-                            __component_name="Typography.Text"
-                          >
-                            {this.i18n('i18n-s827y1s8') /* 安装 */}
-                          </Typography.Text>
+                          {this.i18n('i18n-s827y1s8') /* 安装 */}
                         </Dropdown.Button>
                       )}
                     </Col>
@@ -996,7 +991,7 @@ class ComponentsDetail$$Page extends React.Component {
               __component_name="Card"
             >
               <Tabs
-                size="large"
+                size="default"
                 type="line"
                 items={[
                   {
@@ -1545,7 +1540,7 @@ class ComponentsDetail$$Page extends React.Component {
                                 label: this.i18n('i18n-gipku83c') /* 组件评测报告 */,
                                 children: (
                                   <Table
-                                    size="default"
+                                    size="middle"
                                     rowKey="id"
                                     scroll={{ scrollToFirstRowOnChange: true }}
                                     columns={[
@@ -1669,7 +1664,7 @@ class ComponentsDetail$$Page extends React.Component {
                             >
                               {
                                 <Table
-                                  size="default"
+                                  size="middle"
                                   style={{ width: '1000px' }}
                                   rowKey="id"
                                   scroll={{ scrollToFirstRowOnChange: true }}

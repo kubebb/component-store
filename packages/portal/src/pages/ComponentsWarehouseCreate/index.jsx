@@ -404,6 +404,7 @@ class ComponentsWarehouseCreate$$Page extends React.Component {
           <Col span={24} __component_name="Col">
             <Space align="center" direction="horizontal" __component_name="Space">
               <Button.Back
+                name={this.i18n('i18n-86so9ago') /* 返回 */}
                 type="primary"
                 title={this.i18n('i18n-qwjrzcj4') /* 新建组件仓库 */}
                 __component_name="Button.Back"
@@ -1021,9 +1022,8 @@ class ComponentsWarehouseCreate$$Page extends React.Component {
                               'x-validator': [],
                               _unsafe_MixedSetter_title_select: 'SlotSetter',
                             }}
-                            componentProps={{ 'x-component-props': {} }}
+                            decoratorProps={{ 'x-decorator-props': { labelEllipsis: true } }}
                             __component_name="FormilyFormItem"
-                            decoratorProps={{ 'x-decorator-props': { labelEllipsis: false } }}
                           >
                             <Space
                               size={40}
@@ -1178,9 +1178,7 @@ class ComponentsWarehouseCreate$$Page extends React.Component {
                               _unsafe_MixedSetter_title_select: 'SlotSetter',
                             }}
                             componentProps={{ 'x-component-props': {} }}
-                            decoratorProps={{
-                              'x-decorator-props': { wrapperWidth: '850px', labelEllipsis: false },
-                            }}
+                            decoratorProps={{ 'x-decorator-props': { wrapperWidth: '850px' } }}
                             __component_name="FormilyFormItem"
                           >
                             <FormilyArrayTable
@@ -1411,8 +1409,13 @@ class ComponentsWarehouseCreate$$Page extends React.Component {
                               'x-component': 'FormilyFormItem',
                               'x-validator': [],
                             }}
-                            componentProps={{ 'x-component-props': {} }}
-                            decoratorProps={{ 'x-decorator-props': { wrapperWidth: '850px' } }}
+                            decoratorProps={{
+                              'x-decorator-props': {
+                                style: { marginTop: '10px' },
+                                wrapperWidth: '850px',
+                                labelEllipsis: true,
+                              },
+                            }}
                             __component_name="FormilyFormItem"
                           >
                             <FormilyArrayCards
@@ -1443,8 +1446,13 @@ class ComponentsWarehouseCreate$$Page extends React.Component {
                                 },
                                 'x-validator': [],
                               }}
-                              componentProps={{ 'x-component-props': {} }}
-                              decoratorProps={{ 'x-decorator-props': { wrapperWidth: '' } }}
+                              decoratorProps={{
+                                'x-decorator-props': {
+                                  style: {},
+                                  wrapperWidth: '',
+                                  labelEllipsis: true,
+                                },
+                              }}
                               __component_name="FormilyArrayCards"
                             >
                               <Space
@@ -1608,12 +1616,22 @@ class ComponentsWarehouseCreate$$Page extends React.Component {
                       </Row>,
                     ],
                   ]}
+                  children=""
                   defaultOpen={__$$eval(() => this.props.appHelper?.match?.params?.id !== 'create')}
                   orientation="left"
                   __component_name="Divider"
                   orientationMargin={0}
                 >
-                  高级配置
+                  <Typography.Text
+                    type="colorPrimary"
+                    style={{ top: '2px', fontSize: '', position: 'relative' }}
+                    strong={false}
+                    disabled={false}
+                    ellipsis={true}
+                    __component_name="Typography.Text"
+                  >
+                    {this.i18n('i18n-4wrnn3o8') /* 高级配置 */}
+                  </Typography.Text>
                 </Divider>
                 <Divider
                   mode="line"
