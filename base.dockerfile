@@ -14,6 +14,7 @@ COPY package.json /usr/src/app/
 COPY pnpm-lock.yaml /usr/src/app/
 COPY pnpm-workspace.yaml /usr/src/app/
 COPY .npmrc /usr/src/app/
+ADD packages/shared-components /usr/src/app/packages/shared-components
 COPY packages/bff-server/package.json /usr/src/app/packages/bff-server
 COPY packages/portal/package.json /usr/src/app/packages/portal
 
