@@ -41,6 +41,8 @@ export type Component = {
   deprecated?: Maybe<Scalars['Boolean']['output']>;
   /** 描述 */
   description?: Maybe<Scalars['String']['output']>;
+  /** 展示名 */
+  displayName?: Maybe<Scalars['String']['output']>;
   /** 组件官网 */
   home?: Maybe<Scalars['String']['output']>;
   /** icon */
@@ -121,6 +123,8 @@ export type ComponentVersion = {
   digest?: Maybe<Scalars['String']['output']>;
   /** 更新时间 */
   updatedAt?: Maybe<Scalars['String']['output']>;
+  /** urls */
+  urls?: Maybe<Array<Scalars['String']['output']>>;
   /** Chart版本 */
   version?: Maybe<Scalars['String']['output']>;
 };
@@ -492,6 +496,8 @@ export type QueryRepositoriesArgs = {
   page?: InputMaybe<Scalars['Float']['input']>;
   pageSize?: InputMaybe<Scalars['Float']['input']>;
   repositoryTypes?: InputMaybe<Array<Scalars['String']['input']>>;
+  sortDirection?: InputMaybe<SortDirection>;
+  sortField?: InputMaybe<Scalars['String']['input']>;
   source?: InputMaybe<Scalars['String']['input']>;
   statuses?: InputMaybe<Array<Scalars['String']['input']>>;
 };
@@ -535,6 +541,8 @@ export type Repository = {
   password?: Maybe<Scalars['String']['output']>;
   /** 组件更新 */
   pullStategy?: Maybe<RepositoryPullStategy>;
+  /** 状态为失败的原因 */
+  reason?: Maybe<Scalars['String']['output']>;
   /** 类型 */
   repositoryType?: Maybe<Scalars['String']['output']>;
   /** 当前状态 */
@@ -642,6 +650,10 @@ export type RepositoryPullStategyInput = {
 
 /** 组件仓库状态 */
 export enum RepositoryStatus {
+  /** 异常 */
+  Failed = 'failed',
+  /** 健康 */
+  Health = 'health',
   /** 获取Chart包异常 */
   ReadyFalse = 'ready_false',
   /** 创建中 */
@@ -650,6 +662,8 @@ export enum RepositoryStatus {
   SyncedFalse = 'synced_false',
   /** 同步成功 */
   SyncedTrue = 'synced_true',
+  /** 同步中 */
+  Syncing = 'syncing',
   /** 未知 */
   Unknown = 'unknown',
 }
@@ -910,6 +924,7 @@ export type GetComponentsQuery = {
       __typename?: 'Component';
       name: string;
       chartName: string;
+      displayName?: string | null;
       description?: string | null;
       repository: string;
       creationTimestamp?: string | null;
@@ -941,6 +956,7 @@ export type GetComponentsAllQuery = {
     __typename?: 'Component';
     name: string;
     chartName: string;
+    displayName?: string | null;
     description?: string | null;
     repository: string;
     creationTimestamp?: string | null;
@@ -974,6 +990,7 @@ export type GetComponentQuery = {
     __typename?: 'Component';
     name: string;
     chartName: string;
+    displayName?: string | null;
     description?: string | null;
     repository: string;
     creationTimestamp?: string | null;
@@ -993,6 +1010,7 @@ export type GetComponentQuery = {
       version?: string | null;
       deprecated?: boolean | null;
       digest?: string | null;
+      urls?: Array<string> | null;
     }> | null;
     maintainers?: Array<{
       __typename?: 'ComponentMaintainer';
@@ -1049,6 +1067,8 @@ export type GetRepositoriesQueryVariables = Exact<{
   name?: InputMaybe<Scalars['String']['input']>;
   repositoryTypes?: InputMaybe<Array<Scalars['String']['input']> | Scalars['String']['input']>;
   statuses?: InputMaybe<Array<Scalars['String']['input']> | Scalars['String']['input']>;
+  sortDirection?: InputMaybe<SortDirection>;
+  sortField?: InputMaybe<Scalars['String']['input']>;
   cluster?: InputMaybe<Scalars['String']['input']>;
 }>;
 
@@ -1063,6 +1083,7 @@ export type GetRepositoriesQuery = {
       name: string;
       repositoryType?: string | null;
       status: RepositoryStatus;
+      reason?: string | null;
       url: string;
       creationTimestamp: string;
       lastSuccessfulTime?: string | null;
@@ -1097,6 +1118,7 @@ export type GetRepositoryQuery = {
     name: string;
     repositoryType?: string | null;
     status: RepositoryStatus;
+    reason?: string | null;
     url: string;
     creationTimestamp: string;
     lastSuccessfulTime?: string | null;
@@ -1458,6 +1480,7 @@ export const GetComponentsDocument = gql`
       nodes {
         name
         chartName
+        displayName
         description
         repository
         creationTimestamp
@@ -1487,6 +1510,7 @@ export const GetComponentsAllDocument = gql`
     componentsAll {
       name
       chartName
+      displayName
       description
       repository
       creationTimestamp
@@ -1513,6 +1537,7 @@ export const GetComponentDocument = gql`
     component(name: $name, cluster: $cluster) {
       name
       chartName
+      displayName
       description
       repository
       creationTimestamp
@@ -1531,6 +1556,7 @@ export const GetComponentDocument = gql`
         version
         deprecated
         digest
+        urls
       }
       maintainers {
         email
@@ -1573,6 +1599,8 @@ export const GetRepositoriesDocument = gql`
     $name: String
     $repositoryTypes: [String!]
     $statuses: [String!]
+    $sortDirection: SortDirection
+    $sortField: String
     $cluster: String
   ) {
     repositories(
@@ -1581,12 +1609,15 @@ export const GetRepositoriesDocument = gql`
       name: $name
       repositoryTypes: $repositoryTypes
       statuses: $statuses
+      sortDirection: $sortDirection
+      sortField: $sortField
       cluster: $cluster
     ) {
       nodes {
         name
         repositoryType
         status
+        reason
         url
         creationTimestamp
         lastSuccessfulTime
@@ -1614,6 +1645,7 @@ export const GetRepositoryDocument = gql`
       name
       repositoryType
       status
+      reason
       url
       creationTimestamp
       lastSuccessfulTime
