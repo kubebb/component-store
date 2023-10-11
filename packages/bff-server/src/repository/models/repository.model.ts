@@ -21,6 +21,9 @@ export class Repository {
   /** 当前状态 */
   status: RepositoryStatus;
 
+  /** 状态为失败的原因 */
+  reason?: string;
+
   /** 更新时间 */
   creationTimestamp: string;
 

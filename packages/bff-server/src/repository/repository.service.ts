@@ -1,3 +1,4 @@
+import { SortDirection } from '@/common/models/sort-direction.enum';
 import { convertFileToText, encodeBase64, genNanoid } from '@/common/utils';
 import serverConfig from '@/config/server.config';
 import { KubernetesService } from '@/kubernetes/kubernetes.service';
@@ -28,17 +29,20 @@ export class RepositoryService {
     const lastSuccessfulTime = conditions.find(
       c => c.lastSuccessfulTime && c.status === 'True' && c.type === 'Synced'
     )?.lastSuccessfulTime;
+    let reason: string;
     let status = RepositoryStatus.unknown;
     if (conditions.find(c => c.type === 'Synced' && c.status === 'True')) {
       status = RepositoryStatus.synced_true;
     } else if (conditions.find(c => c.type === 'Synced' && c.status === 'False')) {
       status = RepositoryStatus.synced_false;
+      reason = conditions.find(c => c.type === 'Synced' && c.status === 'False')?.reason;
     } else if (
       conditions.find(c => c.type === 'Ready' && c.status === 'True' && c.reason === 'Creating')
     ) {
       status = RepositoryStatus.ready_true;
     } else if (conditions.find(c => c.type === 'Ready' && c.status === 'False')) {
       status = RepositoryStatus.ready_false;
+      reason = conditions.find(c => c.type === 'Ready' && c.status === 'False')?.reason;
     }
     const filter = repository.spec?.filter?.map(f => {
       let op: string;
@@ -76,6 +80,7 @@ export class RepositoryService {
       lastSuccessfulTime: lastSuccessfulTime ? new Date(lastSuccessfulTime).toISOString() : null,
       intervalSeconds: repository.spec?.pullStategy?.intervalSeconds,
       status,
+      reason,
       pullStategy: repository.spec?.pullStategy,
       filter,
       imageOverride,
@@ -86,13 +91,40 @@ export class RepositoryService {
   }
 
   async getRepositoriesPaged(auth: JwtAuth, args: RepostoryArgs): Promise<PaginatedRepository> {
-    const { page = 1, pageSize = 20, name, statuses, repositoryTypes, cluster } = args;
+    const {
+      page = 1,
+      pageSize = 20,
+      name,
+      statuses,
+      repositoryTypes,
+      cluster,
+      sortDirection,
+      sortField,
+    } = args;
     const res = await this.getRepositories(auth, { name }, cluster);
     const filteredRes = res?.filter(
       r =>
         (!statuses || statuses?.includes(r.status)) &&
         (!repositoryTypes || repositoryTypes?.includes(r.repositoryType))
     );
+    if (sortField && sortDirection) {
+      filteredRes?.sort((a, b) => {
+        if (sortField === 'creationTimestamp') {
+          const [aT, bT] = [
+            new Date(a.creationTimestamp).valueOf(),
+            new Date(b.creationTimestamp).valueOf(),
+          ];
+          return sortDirection === SortDirection.ascend ? aT - bT : bT - aT;
+        }
+        if (sortField === 'lastSuccessfulTime') {
+          const [aT, bT] = [
+            new Date(a.lastSuccessfulTime).valueOf(),
+            new Date(b.lastSuccessfulTime).valueOf(),
+          ];
+          return sortDirection === SortDirection.ascend ? aT - bT : bT - aT;
+        }
+      });
+    }
     const totalCount = filteredRes?.length;
     return {
       totalCount,
@@ -119,7 +151,11 @@ export class RepositoryService {
       fieldSelector,
       labelSelector,
     });
-    return body.items?.map(item => this.formatRepository(item, cluster));
+    return body.items
+      ?.map(item => this.formatRepository(item, cluster))
+      ?.sort(
+        (a, b) => new Date(b.creationTimestamp).valueOf() - new Date(a.creationTimestamp).valueOf()
+      );
   }
 
   async getRepository(auth: JwtAuth, name: string, cluster?: string): Promise<Repository> {
