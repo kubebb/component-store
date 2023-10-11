@@ -32,16 +32,16 @@ export class RepositoryService {
     let reason: string;
     let status = RepositoryStatus.unknown;
     if (conditions.find(c => c.type === 'Synced' && c.status === 'True')) {
-      status = RepositoryStatus.synced_true;
+      status = RepositoryStatus.health;
     } else if (conditions.find(c => c.type === 'Synced' && c.status === 'False')) {
-      status = RepositoryStatus.synced_false;
+      status = RepositoryStatus.failed;
       reason = conditions.find(c => c.type === 'Synced' && c.status === 'False')?.reason;
     } else if (
       conditions.find(c => c.type === 'Ready' && c.status === 'True' && c.reason === 'Creating')
     ) {
-      status = RepositoryStatus.ready_true;
+      status = RepositoryStatus.syncing;
     } else if (conditions.find(c => c.type === 'Ready' && c.status === 'False')) {
-      status = RepositoryStatus.ready_false;
+      status = RepositoryStatus.failed;
       reason = conditions.find(c => c.type === 'Ready' && c.status === 'False')?.reason;
     }
     const filter = repository.spec?.filter?.map(f => {
@@ -101,11 +101,12 @@ export class RepositoryService {
       sortDirection,
       sortField,
     } = args;
-    const res = await this.getRepositories(auth, { name }, cluster);
+    const res = await this.getRepositories(auth, null, cluster);
     const filteredRes = res?.filter(
       r =>
         (!statuses || statuses?.includes(r.status)) &&
-        (!repositoryTypes || repositoryTypes?.includes(r.repositoryType))
+        (!repositoryTypes || repositoryTypes?.includes(r.repositoryType)) &&
+        (!name || r.name?.includes(name))
     );
     if (sortField && sortDirection) {
       filteredRes?.sort((a, b) => {
