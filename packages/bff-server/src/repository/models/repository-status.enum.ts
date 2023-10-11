@@ -6,6 +6,9 @@ export enum RepositoryStatus {
   ready_true = 'ready_true',
   ready_false = 'ready_false',
   unknown = 'unknown',
+  health = 'health',
+  syncing = 'syncing',
+  failed = 'failed',
 }
 
 registerEnumType(RepositoryStatus, {
@@ -26,6 +29,15 @@ registerEnumType(RepositoryStatus, {
     },
     unknown: {
       description: '未知',
+    },
+    health: {
+      description: '健康',
+    },
+    syncing: {
+      description: '同步中',
+    },
+    failed: {
+      description: '异常',
     },
   },
 });

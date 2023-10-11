@@ -781,6 +781,12 @@ input RepositoryPullStategyInput {
 
 """组件仓库状态"""
 enum RepositoryStatus {
+  """异常"""
+  failed
+
+  """健康"""
+  health
+
   """获取Chart包异常"""
   ready_false
 
@@ -792,6 +798,9 @@ enum RepositoryStatus {
 
   """同步成功"""
   synced_true
+
+  """同步中"""
+  syncing
 
   """未知"""
   unknown
