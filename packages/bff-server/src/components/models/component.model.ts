@@ -22,6 +22,9 @@ class ComponentVersion {
 
   /** Chart版本 */
   version?: string;
+
+  /** urls */
+  urls?: string[];
 }
 
 @ObjectType({ description: '组件维护者' })
@@ -49,6 +52,9 @@ export class Component {
 
   /** Chart 名称 */
   chartName: string;
+
+  /** 展示名 */
+  displayName?: string;
 
   /** 所属仓库 */
   repository: string;

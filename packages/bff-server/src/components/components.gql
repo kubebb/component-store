@@ -4,6 +4,7 @@ query getComponents($page: Float = 1, $pageSize: Float = 20, $name: String, $cha
     nodes {
       name
       chartName
+      displayName
       description
       repository
       creationTimestamp
@@ -33,6 +34,7 @@ query getComponentsAll {
   componentsAll {
     name
       chartName
+      displayName
       description
       repository
       creationTimestamp
@@ -59,6 +61,7 @@ query getComponent($name: String!, $cluster: String){
   component(name: $name, cluster: $cluster) {
     name
     chartName
+    displayName
     description
     repository
     creationTimestamp
@@ -77,6 +80,7 @@ query getComponent($name: String!, $cluster: String){
       version
       deprecated
       digest
+      urls
     }
     maintainers {
       email

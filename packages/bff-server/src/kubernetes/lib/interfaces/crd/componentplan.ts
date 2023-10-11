@@ -37,7 +37,7 @@ export interface ComponentPlan {
      */
     atomic?: boolean;
     /**
-     * CleanupOnFail is pass to helm upgrade --cleanup-on-fail allow deletion of new resources created in this upgrade when upgrade fails
+     * CleanupOnFail is pass to helm upgrade/rollback --cleanup-on-fail allow deletion of new resources created in this upgrade when upgrade fails
      */
     cleanupOnFail?: boolean;
     /**
@@ -87,7 +87,7 @@ export interface ComponentPlan {
      */
     description?: string;
     /**
-     * DisableHooks is pass to helm install/upgrade --no-hooks if set, prevent hooks from running during install and disable pre/post upgrade hooks
+     * DisableHooks is pass to helm install/upgrade/rollback --no-hooks if set, prevent hooks from running during install and disable pre/post upgrade hooks
      */
     disableHooks?: boolean;
     /**
@@ -99,7 +99,7 @@ export interface ComponentPlan {
      */
     enableDNS?: boolean;
     /**
-     * Force is passed to helm upgrade --force force resource updates through a replacement strategy
+     * Force is passed to helm upgrade/rollback --force in upgrade, force resource updates through a replacement strategy in rollback, force resource update through delete/recreate if needed
      */
     force?: boolean;
     /**
@@ -107,7 +107,7 @@ export interface ComponentPlan {
      */
     historyMax?: number;
     /**
-     * KeepHistory is paas to helm uninstall --keep-history remove all associated resources and mark the release as deleted, but retain the release history.
+     * KeepHistory is paas to helm uninstall/rollback --keep-history remove all associated resources and mark the release as deleted, but retain the release history.
      */
     keepHistory?: boolean;
     /**
@@ -183,11 +183,15 @@ export interface ComponentPlan {
       [k: string]: any;
     };
     /**
+     * RecreatePods is pass to helm rollback --recreate-pods performs pods restart for the resource if applicable. default is false
+     */
+    recreatePods?: boolean;
+    /**
      * SkipCRDs is pass to helm install/upgrade --skip-crds if set, no CRDs will be installed. By default, CRDs are installed if not already present
      */
     skipCRDs?: boolean;
     /**
-     * TimeoutSeconds is pass to helm install/upgrade --timeout, default is 300s time to wait for any individual Kubernetes operation (like Jobs for hooks)
+     * TimeoutSeconds is pass to helm install/upgrade/rollback --timeout, default is 300s time to wait for any individual Kubernetes operation (like Jobs for hooks)
      */
     timeoutSeconds?: number;
     /**
@@ -195,11 +199,11 @@ export interface ComponentPlan {
      */
     version: string;
     /**
-     * Wait is pass to helm install/upgrade --wait if set, will wait until all Pods, PVCs, Services, and minimum number of Pods of a Deployment, StatefulSet, or ReplicaSet are in a ready state before marking the release as successful. It will wait for as long as --timeout
+     * Wait is pass to helm install/upgrade/rollback --wait if set, will wait until all Pods, PVCs, Services, and minimum number of Pods of a Deployment, StatefulSet, or ReplicaSet are in a ready state before marking the release as successful. It will wait for as long as --timeout
      */
     wait?: boolean;
     /**
-     * WaitForJobs is pass to helm install/upgrade --wait-for-jobs if set and --wait enabled, will wait until all Jobs have been completed before marking the release as successful. It will wait for as long as --timeout
+     * WaitForJobs is pass to helm install/upgrade/rollback --wait-for-jobs if set and --wait enabled, will wait until all Jobs have been completed before marking the release as successful. It will wait for as long as --timeout
      */
     waitForJobs?: boolean;
     [k: string]: any;

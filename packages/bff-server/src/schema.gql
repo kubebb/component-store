@@ -20,6 +20,9 @@ type Component {
   """描述"""
   description: String
 
+  """展示名"""
+  displayName: String
+
   """组件官网"""
   home: String
 
@@ -107,6 +110,9 @@ type ComponentVersion {
 
   """更新时间"""
   updatedAt: String
+
+  """urls"""
+  urls: [String!]
 
   """Chart版本"""
   version: String
