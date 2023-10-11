@@ -7,6 +7,7 @@ import {
   Button,
   Card,
   Col,
+  Container,
   FormilyForm,
   FormilySelect,
   FormilyUpload,
@@ -454,10 +455,11 @@ class ComponentsManagementPublish$$Page extends React.Component {
         >
           <FormilyForm
             ref={this._refsManager.linkRef('formily_create')}
+            formHelper={{ autoFocus: true }}
             componentProps={{
               colon: false,
               layout: 'horizontal',
-              labelCol: 5,
+              labelCol: 8,
               labelAlign: 'left',
               wrapperCol: 20,
             }}
@@ -492,10 +494,12 @@ class ComponentsManagementPublish$$Page extends React.Component {
                       }
                       __component_name="Tooltip"
                     >
-                      <AntdIconQuestionCircleOutlined
-                        style={{ color: '#737373' }}
-                        __component_name="AntdIconQuestionCircleOutlined"
-                      />
+                      <Container __component_name="Container" color="colorTextDescription">
+                        <AntdIconQuestionCircleOutlined
+                          style={{ color: '' }}
+                          __component_name="AntdIconQuestionCircleOutlined"
+                        />
+                      </Container>
                     </Tooltip>
                   </Space>
                 ),
@@ -513,7 +517,7 @@ class ComponentsManagementPublish$$Page extends React.Component {
                   _sdkSwrGetFunc: {},
                 },
               }}
-              decoratorProps={{ 'x-decorator-props': { tooltip: '' } }}
+              decoratorProps={{ 'x-decorator-props': { tooltip: '', labelEllipsis: false } }}
               __component_name="FormilySelect"
             />
             <FormilyUpload
@@ -561,7 +565,7 @@ class ComponentsManagementPublish$$Page extends React.Component {
                 <Row
                   wrap={true}
                   style={{
-                    width: '374px',
+                    width: '315px',
                     border: '1px dashed rgba(217, 217, 217)',
                     cursor: 'pointer',
                     height: '180px',

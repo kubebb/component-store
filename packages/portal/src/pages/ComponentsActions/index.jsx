@@ -6,6 +6,7 @@ import {
   Button,
   Card,
   Col,
+  Container,
   Divider,
   FormilyArrayCards,
   FormilyForm,
@@ -405,6 +406,7 @@ class ComponentsActions$$Page extends React.Component {
           <Col span={24} __component_name="Col">
             <Space align="center" direction="horizontal" __component_name="Space">
               <Button.Back
+                name={this.i18n('i18n-86so9ago') /* 返回 */}
                 type="primary"
                 title={__$$eval(() =>
                   this.props.appHelper?.match?.params?.action === this.i18n('i18n-eo4gqliw')
@@ -412,7 +414,6 @@ class ComponentsActions$$Page extends React.Component {
                     : this.i18n('i18n-2ugh3v5e')
                 )}
                 __component_name="Button.Back"
-                name={this.i18n('i18n-86so9ago') /* 返回 */}
               />
             </Space>
             {!!__$$eval(() => this.props.appHelper?.match?.params?.action === 'install') && (
@@ -433,8 +434,13 @@ class ComponentsActions$$Page extends React.Component {
             )}
             {!!__$$eval(() => this.props.appHelper?.match?.params?.action === 'install') && (
               <Tag
-                color="default"
-                style={{ position: 'relative', marginTop: '-5px', borderRadius: '0' }}
+                color="#ffffff"
+                style={{
+                  color: 'rgba(0,0,0,0.8)',
+                  position: 'relative',
+                  marginTop: '-5px',
+                  borderRadius: '0',
+                }}
                 closable={false}
                 __component_name="Tag"
               >
@@ -528,6 +534,7 @@ class ComponentsActions$$Page extends React.Component {
                       placeholder: this.i18n('i18n-ppoohtxl') /* 请输入组件名称 */,
                     },
                   }}
+                  decoratorProps={{ 'x-decorator-props': { labelEllipsis: true } }}
                   __component_name="FormilyInput"
                 />
                 <FormilyInput
@@ -667,13 +674,19 @@ class ComponentsActions$$Page extends React.Component {
                               </Col>
                             </Row>
                           }
-                          placement="bottomRight"
+                          placement="right"
                           __component_name="Tooltip"
                         >
-                          <AntdIconQuestionCircleOutlined
-                            style={{ color: 'rgba(0,0,0,0.45)' }}
-                            __component_name="AntdIconQuestionCircleOutlined"
-                          />
+                          <Container
+                            color="colorTextSecondary"
+                            style={{ margin: '1px 0 0 2px' }}
+                            __component_name="Container"
+                          >
+                            <AntdIconQuestionCircleOutlined
+                              style={{ color: '' }}
+                              __component_name="AntdIconQuestionCircleOutlined"
+                            />
+                          </Container>
                         </Tooltip>
                       </Space>
                     ),
@@ -864,6 +877,7 @@ class ComponentsActions$$Page extends React.Component {
                       _sdkSwrGetFunc: {},
                     },
                   }}
+                  decoratorProps={{ 'x-decorator-props': { labelEllipsis: true } }}
                   __component_name="FormilySelect"
                 />
                 <FormilyFormItem
@@ -878,7 +892,9 @@ class ComponentsActions$$Page extends React.Component {
                     'x-validator': [],
                     _unsafe_MixedSetter_title_select: 'SlotSetter',
                   }}
-                  componentProps={{ 'x-component-props': {} }}
+                  decoratorProps={{
+                    'x-decorator-props': { style: { marginBottom: '20px' }, labelEllipsis: true },
+                  }}
                   __component_name="FormilyFormItem"
                 >
                   <Spin spinning={__$$eval(() => this.state.yamlLoading)} __component_name="Spin">

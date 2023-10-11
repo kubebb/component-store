@@ -75,7 +75,7 @@ const i18nConfig = {
     'i18n-8cxh8m92': 'Please select a profile',
     'i18n-8hbax8oq': 'Please enter the password',
     'i18n-8hmhhcp4': 'S',
-    'i18n-8ign6rmf': 'update',
+    'i18n-8ign6rmf': 'Update',
     'i18n-8im5lu89': 'Please enter the original repositorygroup, * for all',
     'i18n-8ss1wlic':
       'The current version of the component has not been reviewed, so please start the evaluation',
@@ -113,7 +113,7 @@ const i18nConfig = {
     'i18n-daozlce9':
       'Please select a time (daily) to update as soon as a new version is released if it is not set',
     'i18n-dggp27hd': 'I subscribed',
-    'i18n-dj53cnrp': 'unload',
+    'i18n-dj53cnrp': 'Uninstall',
     'i18n-dofmyljq': '“.”  and "-" cannot be used together',
     'i18n-drs45rlh': 'Is it certified',
     'i18n-dv03soje': 'Please select an image first',
@@ -271,7 +271,7 @@ const i18nConfig = {
     'i18n-vmqus8ai': 'Please upload the certificate',
     'i18n-vpbgp1lj': 'Latest version',
     'i18n-vrfy9kmq': 'The subscription was successful',
-    'i18n-vvx8a1xh': 'Cancel your subscription',
+    'i18n-vvx8a1xh': 'UnSubscription',
     'i18n-w8dmnzsr': 'Uninstallation failed',
     'i18n-wajqflwo': 'Total',
     'i18n-wfe2nzks': 'succeed',

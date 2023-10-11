@@ -7,6 +7,7 @@ import {
   Button,
   Card,
   Col,
+  Container,
   Descriptions,
   Divider,
   Dropdown,
@@ -597,10 +598,10 @@ class ComponentsDetail$$Page extends React.Component {
           <Col span={24} __component_name="Col">
             <Space align="center" direction="horizontal">
               <Button.Back
+                name={this.i18n('i18n-86so9ago') /* 返回 */}
                 type="primary"
                 title={this.i18n('i18n-00cyzhs8') /* 组件详情 */}
                 __component_name="Button.Back"
-                name={this.i18n('i18n-86so9ago') /* 返回 */}
               />
             </Space>
             <Tag
@@ -620,8 +621,9 @@ class ComponentsDetail$$Page extends React.Component {
               {this.i18n('i18n-yfkq2xqq') /* 集群 */}
             </Tag>
             <Tag
-              color="default"
+              color="#ffffff"
               style={{
+                color: 'rgba(0,0,0,0.85)',
                 position: 'relative',
                 marginTop: '-5px',
                 background: 'white',
@@ -733,11 +735,17 @@ class ComponentsDetail$$Page extends React.Component {
                               title={this.i18n('i18n-7e7t3bw9') /* 版本 */}
                               __component_name="Tooltip"
                             >
-                              <TenxIconKubebbVersion
-                                color="#000000a614"
-                                style={{ top: '1px', color: '#000000a6', position: 'relative' }}
-                                __component_name="TenxIconKubebbVersion"
-                              />
+                              <Container
+                                color="colorTextDescription"
+                                style={{ display: 'inline' }}
+                                __component_name="Container"
+                              >
+                                <TenxIconKubebbVersion
+                                  color=""
+                                  style={{ top: '1px', position: 'relative' }}
+                                  __component_name="TenxIconKubebbVersion"
+                                />
+                              </Container>
                               <Dropdown
                                 menu={{
                                   items: __$$eval(
@@ -831,10 +839,12 @@ class ComponentsDetail$$Page extends React.Component {
                               title={this.i18n('i18n-1po87kgw') /* 组件仓库 */}
                               __component_name="Tooltip"
                             >
-                              <AntdIconHomeOutlined
-                                style={{ top: '3px', color: '#000000a6', position: 'relative' }}
-                                __component_name="AntdIconHomeOutlined"
-                              />
+                              <Container color="colorTextDescription" __component_name="Container">
+                                <AntdIconHomeOutlined
+                                  style={{ top: '3px', color: '', position: 'relative' }}
+                                  __component_name="AntdIconHomeOutlined"
+                                />
+                              </Container>
                             </Tooltip>
                             <Typography.Text
                               style={{ fontSize: '' }}
@@ -858,12 +868,14 @@ class ComponentsDetail$$Page extends React.Component {
                               title={this.i18n('i18n-02hvitqg') /* 关键字 */}
                               __component_name="Tooltip"
                             >
-                              <TenxIconKubebbKeywords
-                                size={14}
-                                color="#000000a6"
-                                style={{ top: '4px', color: '#000000a6', position: 'relative' }}
-                                __component_name="TenxIconKubebbKeywords"
-                              />
+                              <Container color="colorTextDescription" __component_name="Container">
+                                <TenxIconKubebbKeywords
+                                  size={14}
+                                  color=""
+                                  style={{ top: '4px', position: 'relative' }}
+                                  __component_name="TenxIconKubebbKeywords"
+                                />
+                              </Container>
                             </Tooltip>
                             <Typography.Text
                               style={{ fontSize: '' }}
@@ -884,7 +896,13 @@ class ComponentsDetail$$Page extends React.Component {
                       </Row>
                     </Col>
                     <Col
-                      flex="102px"
+                      flex={__$$eval(() =>
+                        this.props.appHelper?.match?.pathname?.startsWith(
+                          '/components/management/publish'
+                        )
+                          ? '160px'
+                          : '102px'
+                      )}
                       style={{ display: 'flex', alignItems: 'center' }}
                       __component_name="Col"
                     >

@@ -516,7 +516,7 @@ class ComponentsManagementSubscription$$Page extends React.Component {
                       },
                       {
                         title: this.i18n('i18n-ioy0ge9h') /* 操作 */,
-                        width: 120,
+                        width: 150,
                         render: (text, record, index) =>
                           (__$$context => (
                             <Space size={12} align="center" direction="horizontal">
