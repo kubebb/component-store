@@ -567,6 +567,12 @@ type Query {
     """类型"""
     repositoryTypes: [String!]
 
+    """排序方向"""
+    sortDirection: SortDirection
+
+    """排序字段"""
+    sortField: String
+
     """来源（官方）"""
     source: String
 
@@ -643,6 +649,9 @@ type Repository {
 
   """组件更新"""
   pullStategy: RepositoryPullStategy
+
+  """状态为失败的原因"""
+  reason: String
 
   """类型"""
   repositoryType: String
