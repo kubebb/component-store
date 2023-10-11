@@ -4,6 +4,7 @@ LABEL maintainer="zhangpc<zhang.pengcheng3@neolink.com>"
 ENV NODE_ENV production
 
 ADD packages/bff-server /usr/src/app/packages/bff-server
+ADD packages/shared-components /usr/src/app/packages/shared-components
 ADD packages/portal /usr/src/app/packages/portal
 
 WORKDIR /usr/src/app
