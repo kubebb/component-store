@@ -28,6 +28,7 @@ export interface Component {
    * ComponentSpec defines the desired state of Component
    */
   spec?: {
+    creator?: string;
     [k: string]: any;
   };
   /**
@@ -42,6 +43,10 @@ export interface Component {
      * FIXME: some fields(like description) may change when version update, how to deal with it? A one-sentence description of the chart
      */
     description?: string;
+    /**
+     * DisplayName of the component that comes from the helm chart's latest annotation
+     */
+    displayName?: string;
     /**
      * The URL to a relevant project page, git repo, or contact person
      */
@@ -118,11 +123,15 @@ export interface Component {
      * versions contains all version of one component.
      */
     versions: {
+      annotations?: {
+        [k: string]: string;
+      };
       appVersion: string;
       createdAt: string;
       deprecated: boolean;
       digest: string;
       updatedAt: string;
+      urls?: string[];
       version: string;
       [k: string]: any;
     }[];

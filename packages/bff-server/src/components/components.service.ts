@@ -38,6 +38,7 @@ export class ComponentsService {
       name: c.metadata?.name,
       namespace: c.metadata?.namespace,
       namespacedName: `${c.metadata?.name}_${c.metadata.namespace}_${cluster || ''}`,
+      displayName: c.status?.displayName,
       chartName: c.status?.name,
       repository: c.status?.repository?.name,
       description: c.status?.description,
@@ -83,7 +84,7 @@ export class ComponentsService {
     const filteredRes = res?.filter(
       t =>
         (!name || t.name?.includes(name)) &&
-        (!chartName || t.chartName?.includes(chartName)) &&
+        (!chartName || t.chartName?.includes(chartName) || t.displayName?.includes(chartName)) &&
         (!keyword || t.keywords?.includes(keyword)) &&
         (!source || reposName.includes(t.repository))
     );
