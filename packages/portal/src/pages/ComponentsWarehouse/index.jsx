@@ -7,6 +7,7 @@ import {
   Button,
   Card,
   Col,
+  Container,
   Input,
   Modal,
   Page,
@@ -16,10 +17,15 @@ import {
   Space,
   Status,
   Table,
+  Tooltip,
   Typography,
 } from '@tenx-ui/materials';
 
-import { AntdIconPlusOutlined, AntdIconReloadOutlined } from '@tenx-ui/icon-materials';
+import {
+  AntdIconExclamationCircleOutlined,
+  AntdIconPlusOutlined,
+  AntdIconReloadOutlined,
+} from '@tenx-ui/icon-materials';
 
 import { getUnifiedHistory } from '@tenx-ui/utils/es/UnifiedLink/index.prod';
 import { matchPath, useLocation } from '@umijs/max';
@@ -150,6 +156,10 @@ class ComponentsWarehouse$$Page extends React.Component {
       name: this.state?.searchValue,
       cluster: this.getCluster(),
     };
+    if (this.state.sorter?.order) {
+      params.sortField = this.state.sorter?.field;
+      params.sortDirection = this.state.sorter?.order;
+    }
     if (repositoryType?.length > 0) {
       params.repositoryTypes = repositoryType;
     }
@@ -428,13 +438,36 @@ class ComponentsWarehouse$$Page extends React.Component {
                         title: this.i18n('i18n-o48ciymn') /* 当前状态 */,
                         render: (text, record, index) =>
                           (__$$context => (
-                            <Status
-                              id={__$$eval(() => record?.status)}
-                              types={__$$eval(() =>
-                                __$$context.utils.getComponentWarehouseStatus(__$$context, true)
-                              )}
-                              __component_name="Status"
-                            />
+                            <Space
+                              size="small"
+                              align="center"
+                              direction="horizontal"
+                              __component_name="Space"
+                            >
+                              <Status
+                                id={__$$eval(() => record?.status)}
+                                types={__$$eval(() =>
+                                  __$$context.utils.getComponentWarehouseStatus(__$$context, true)
+                                )}
+                                __component_name="Status"
+                              />
+                              <Tooltip
+                                title={__$$eval(() => record?.reason || '-')}
+                                __component_name="Tooltip"
+                              >
+                                <Container
+                                  color="colorTextDescription"
+                                  __component_name="Container"
+                                >
+                                  {!!__$$eval(() => record?.status?.includes('false')) && (
+                                    <AntdIconExclamationCircleOutlined
+                                      style={{ color: '' }}
+                                      __component_name="AntdIconExclamationCircleOutlined"
+                                    />
+                                  )}
+                                </Container>
+                              </Tooltip>
+                            </Space>
                           ))(__$$createChildContext(__$$context, { text, record, index })),
                         filters: __$$eval(() => this.utils.getComponentWarehouseStatus(this)),
                         dataIndex: 'status',
@@ -451,6 +484,7 @@ class ComponentsWarehouse$$Page extends React.Component {
                               __component_name="Typography.Time"
                             />
                           ))(__$$createChildContext(__$$context, { text, record, index })),
+                        sorter: true,
                         dataIndex: 'lastSuccessfulTime',
                       },
                       {
@@ -465,7 +499,7 @@ class ComponentsWarehouse$$Page extends React.Component {
                               __component_name="Typography.Time"
                             />
                           ))(__$$createChildContext(__$$context, { text, record, index })),
-                        sorter: false,
+                        sorter: true,
                         dataIndex: 'creationTimestamp',
                       },
                       {

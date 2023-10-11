@@ -6,6 +6,7 @@ import {
   Button,
   Card,
   Col,
+  Container,
   Divider,
   FormilyArrayCards,
   FormilyArrayTable,
@@ -427,11 +428,11 @@ class ComponentsWarehouseCreate$$Page extends React.Component {
               {this.i18n('i18n-yfkq2xqq') /* 集群 */}
             </Tag>
             <Tag
-              color="default"
+              color="#ffffff"
               style={{
+                color: 'rgba(0,0,0,0.85)',
                 position: 'relative',
                 marginTop: '-5px',
-                background: 'white',
                 borderRadius: '0',
                 borderTopRightRadius: '2px',
                 borderBottomRightRadius: '2px',
@@ -1006,14 +1007,15 @@ class ComponentsWarehouseCreate$$Page extends React.Component {
                                     }
                                     __component_name="Tooltip"
                                   >
-                                    <AntdIconQuestionCircleOutlined
-                                      style={{
-                                        top: '2px',
-                                        color: 'rgba(0,0,0,0.45000000000000005)',
-                                        position: 'relative',
-                                      }}
-                                      __component_name="AntdIconQuestionCircleOutlined"
-                                    />
+                                    <Container
+                                      color="colorTextDescription"
+                                      __component_name="Container"
+                                    >
+                                      <AntdIconQuestionCircleOutlined
+                                        style={{ top: '2px', color: '', position: 'relative' }}
+                                        __component_name="AntdIconQuestionCircleOutlined"
+                                      />
+                                    </Container>
                                   </Tooltip>
                                 </Space>
                               ),
@@ -1022,7 +1024,7 @@ class ComponentsWarehouseCreate$$Page extends React.Component {
                               'x-validator': [],
                               _unsafe_MixedSetter_title_select: 'SlotSetter',
                             }}
-                            decoratorProps={{ 'x-decorator-props': { labelEllipsis: true } }}
+                            decoratorProps={{ 'x-decorator-props': { labelEllipsis: false } }}
                             __component_name="FormilyFormItem"
                           >
                             <Space
@@ -1107,6 +1109,7 @@ class ComponentsWarehouseCreate$$Page extends React.Component {
                                 componentProps={{
                                   'x-component-props': {
                                     min: 1,
+                                    precision: 0,
                                     addonBefore: this.i18n('i18n-6p75zmij') /* 重试次数 */,
                                     placeholder: this.i18n('i18n-n9a8du2a') /* 请输入 */,
                                   },
@@ -1126,6 +1129,7 @@ class ComponentsWarehouseCreate$$Page extends React.Component {
                                     ),
                                     addonBefore: '',
                                     wrapperWidth: '',
+                                    labelEllipsis: true,
                                     _unsafe_MixedSetter_addonAfter_select: 'SlotSetter',
                                     _unsafe_MixedSetter_addonBefore_select: 'SlotSetter',
                                   },
@@ -1162,14 +1166,15 @@ class ComponentsWarehouseCreate$$Page extends React.Component {
                                     }
                                     __component_name="Tooltip"
                                   >
-                                    <AntdIconQuestionCircleOutlined
-                                      style={{
-                                        top: '2px',
-                                        color: 'rgba(0,0,0,0.45000000000000005)',
-                                        position: 'relative',
-                                      }}
-                                      __component_name="AntdIconQuestionCircleOutlined"
-                                    />
+                                    <Container
+                                      color="colorTextDescription"
+                                      __component_name="Container"
+                                    >
+                                      <AntdIconQuestionCircleOutlined
+                                        style={{ top: '2px', color: '', position: 'relative' }}
+                                        __component_name="AntdIconQuestionCircleOutlined"
+                                      />
+                                    </Container>
                                   </Tooltip>
                                 </Space>
                               ),
@@ -1177,8 +1182,9 @@ class ComponentsWarehouseCreate$$Page extends React.Component {
                               'x-validator': [],
                               _unsafe_MixedSetter_title_select: 'SlotSetter',
                             }}
-                            componentProps={{ 'x-component-props': {} }}
-                            decoratorProps={{ 'x-decorator-props': { wrapperWidth: '850px' } }}
+                            decoratorProps={{
+                              'x-decorator-props': { wrapperWidth: '850px', labelEllipsis: false },
+                            }}
                             __component_name="FormilyFormItem"
                           >
                             <FormilyArrayTable

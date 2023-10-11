@@ -6,6 +6,7 @@ import {
   Button,
   Card,
   Col,
+  Container,
   Descriptions,
   Divider,
   Image,
@@ -261,14 +262,12 @@ class ComponentsMarket$$Page extends React.Component {
                       }
                       __component_name="Tooltip"
                     >
-                      <AntdIconQuestionCircleOutlined
-                        style={{
-                          color: 'rgba(0,0,0,0.65)',
-                          position: 'relative',
-                          marginLeft: '3px',
-                        }}
-                        __component_name="AntdIconQuestionCircleOutlined"
-                      />
+                      <Container __component_name="Container" color="colorTextDescription">
+                        <AntdIconQuestionCircleOutlined
+                          style={{ color: '', position: 'relative', marginLeft: '3px' }}
+                          __component_name="AntdIconQuestionCircleOutlined"
+                        />
+                      </Container>
                     </Tooltip>
                   </Col>
                   <Col __component_name="Col">
@@ -473,7 +472,6 @@ class ComponentsMarket$$Page extends React.Component {
                             style={{
                               cursor: 'pointer',
                               overflow: 'hidden',
-                              background: '#FAFAFA',
                               paddingTop: '8px',
                               paddingBottom: '4px',
                             }}
@@ -491,6 +489,7 @@ class ComponentsMarket$$Page extends React.Component {
                             }.bind(__$$context)}
                             bordered={false}
                             hoverable={true}
+                            backgroundToken="colorFillAlter"
                           >
                             {!!__$$eval(
                               () =>
@@ -696,7 +695,10 @@ class ComponentsMarket$$Page extends React.Component {
                                           label: this.i18n('i18n-yw1xiu88') /* 关键词 */,
                                           children: (
                                             <Typography.Text
-                                              style={{ maxWidth: 'calc(100% - 10px)' }}
+                                              style={{
+                                                fontSize: '',
+                                                maxWidth: 'calc(100% - 10px)',
+                                              }}
                                               strong={false}
                                               disabled={false}
                                               ellipsis={{
@@ -720,15 +722,9 @@ class ComponentsMarket$$Page extends React.Component {
                                       bordered={false}
                                       labelStyle={{
                                         width: '60px !important',
-                                        paddingLeft: '0',
-                                        paddingRight: '0',
+                                        padding: '8px 0 0 0',
                                       }}
-                                      contentStyle={{
-                                        flex: '1',
-                                        display: 'grid',
-                                        paddingLeft: '0',
-                                        paddingRight: '0',
-                                      }}
+                                      contentStyle={{ flex: '1', display: 'grid', padding: '0' }}
                                       borderedBottom={true}
                                       __component_name="Descriptions"
                                       borderedBottomDashed={false}
