@@ -36,6 +36,21 @@ chmod +x ./build.sh ./update_base_image.sh
 ./build.sh
 ```
 
+#### 菜单修改
+
+```bash
+nr build:menu
+
+# 进入目录 ./dist/component-store-public，执行以下命令
+chmod +x ./menu-generator
+
+./menu-generator --from=./menu.json > ./menu-cr.yaml
+
+# 登录 k8s 集群机器，执行以下命令
+kubectl apply -f ./menu-cr.yaml
+
+```
+
 **PS：推荐使用我们的[流水线](https://tce.dev.21vianet.com/devops/pipelines)进行镜像构建，支持 CI/CD 等功能，创建流水线时可参考 [流水线 umi-demo-portal](https://tce.dev.21vianet.com/devops/pipelines/PLID-HJca-j9F3/definition)。**
 
 ### 代码风格检查
