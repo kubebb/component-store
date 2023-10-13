@@ -81,12 +81,12 @@ class ComponentsDetail$$Page extends React.Component {
     __$$i18n._inject2(this);
 
     this.state = {
-      cluster: undefined,
-      tenants: [],
-      version: undefined,
-      modalType: 'delete',
       isOpenModal: false,
+      modalType: 'delete',
+      version: undefined,
+      cluster: undefined,
       modalLoading: false,
+      tenants: [],
     };
   }
 
@@ -98,8 +98,12 @@ class ComponentsDetail$$Page extends React.Component {
     return this._refsManager.getAll(refName);
   };
 
-  form(name) {
-    return this.$(name || 'formily_subscription')?.formRef?.current?.form;
+  getName(item) {
+    item = item || {};
+    if (item.displayName) {
+      return `${item.displayName}(${item.chartName || '-'})`;
+    }
+    return item.chartName || '-';
   }
 
   closeModal() {
@@ -108,9 +112,24 @@ class ComponentsDetail$$Page extends React.Component {
     });
   }
 
-  getCluster() {
-    const cluster = this.appHelper?.history?.query?.cluster;
-    return cluster;
+  openDeleteModal() {
+    this.setState({
+      isOpenModal: true,
+    });
+  }
+
+  handleVersionMenuClick(e) {
+    this.setState({
+      version: e.key,
+    });
+  }
+
+  getVersionInfo() {
+    return (
+      this.props.useGetComponent?.data?.component?.versions.find(item => {
+        return item.version === this.state.version;
+      }) || this.props.useGetComponent?.data?.component?.versions?.[0]
+    );
   }
 
   async loadCluster() {
@@ -123,89 +142,57 @@ class ComponentsDetail$$Page extends React.Component {
     });
   }
 
-  async loadTenants() {
-    const res = await this.props.appHelper?.utils?.bffSdk?.getCurrentUserTenants();
-    const tenants =
-      res?.userCurrent?.tenants?.map(item => {
-        item.projects =
-          item.projects
-            ?.filter(item => {
-              return item.clusters?.some(cluster => cluster.name === this.getCluster());
-            })
-            ?.map(item => ({
-              label: item.fullName,
-              value: item.name,
-            })) || [];
-        return {
-          label: item.fullName,
-          value: JSON.stringify(item),
-        };
-      }) || [];
-    this.setState({
-      tenants,
-    });
-  }
-
-  getContainer() {
-    return window;
-  }
-
-  handleRefresh() {
-    this.props.useGetComponent.mutate();
-  }
-
-  setFormValues(values, name) {
-    if (!this.form(name)) {
-      if (this.state.timer) {
-        clearTimeout(this.state.timer);
-      }
-      this.setState({
-        timer: setTimeout(() => this.setFormValues(values, name), 200),
-      });
-      return;
-    }
-    this.form(name).setValues(values);
+  getCluster() {
+    const cluster = this.appHelper?.history?.query?.cluster;
+    return cluster;
   }
 
   getClusterInfo() {
     return this.state.cluster;
   }
 
-  getVersionInfo() {
-    return (
-      this.props.useGetComponent?.data?.component?.versions.find(item => {
-        return item.version === this.state.version;
-      }) || this.props.useGetComponent?.data?.component?.versions?.[0]
+  handleOprationBtnClick(e) {
+    const pre = this.appHelper?.location?.pathname?.split('/')?.slice(0, 4)?.join('/');
+    this.history.push(
+      `${pre}/management-action/install/${
+        this.props.useGetComponent?.data?.component?.name
+      }?cluster=${this.getCluster()}`
     );
   }
 
-  openDeleteModal() {
-    this.setState({
-      isOpenModal: true,
-    });
-  }
-
-  getCurrentAnchor(activeLink) {
-    return activeLink || '#description';
-  }
-
-  async validatorInstall(value) {
-    try {
-      if (value) {
-        const res = await this.props?.appHelper?.utils?.bff?.getSubscriptions({
-          namespace: value,
-          cluster: this.getCluster(),
-        });
-        const name = this.props.useGetComponent?.data?.component?.name;
-        if (
-          res?.subscriptions?.some(
-            item => item.component?.name === name && item?.releaseName === name
-          )
-        ) {
-          return this.i18n('i18n-k6pq1phn');
+  async handleOprationMenuClick(e) {
+    if (e?.key === 'subscription') {
+      this.setState(
+        {
+          isOpenModal: true,
+          modalType: 'subscription',
+        },
+        () => {
+          const { chartName } = this.props.useGetComponent?.data?.component || {};
+          this.setFormValues({
+            chartName,
+            version: this.getVersionInfo()?.version,
+          });
         }
-      }
-    } catch (e) {}
+      );
+    }
+    if (e?.key === 'download') {
+      const { chartName, repository } = this.props.useGetComponent?.data?.component || {};
+      const res = await this.utils.bff.downloadComponent({
+        cluster: this.getCluster(),
+        chart: {
+          chartName,
+          repository,
+          version: this.getVersionInfo()?.version,
+        },
+      });
+      const url = res?.componentDownload;
+      window.open(url);
+    }
+  }
+
+  handleRefresh() {
+    this.props.useGetComponent.mutate();
   }
 
   async confirmDeleteModal(e, payload) {
@@ -245,50 +232,27 @@ class ComponentsDetail$$Page extends React.Component {
     }
   }
 
-  handleOprationBtnClick(e) {
-    const pre = this.appHelper?.location?.pathname?.split('/')?.slice(0, 4)?.join('/');
-    this.history.push(
-      `${pre}/management-action/install/${
-        this.props.useGetComponent?.data?.component?.name
-      }?cluster=${this.getCluster()}`
-    );
-  }
-
-  handleVersionMenuClick(e) {
+  async loadTenants() {
+    const res = await this.props.appHelper?.utils?.bffSdk?.getCurrentUserTenants();
+    const tenants =
+      res?.userCurrent?.tenants?.map(item => {
+        item.projects =
+          item.projects
+            ?.filter(item => {
+              return item.clusters?.some(cluster => cluster.name === this.getCluster());
+            })
+            ?.map(item => ({
+              label: item.fullName,
+              value: item.name,
+            })) || [];
+        return {
+          label: item.fullName,
+          value: JSON.stringify(item),
+        };
+      }) || [];
     this.setState({
-      version: e.key,
+      tenants,
     });
-  }
-
-  async handleOprationMenuClick(e) {
-    if (e?.key === 'subscription') {
-      this.setState(
-        {
-          isOpenModal: true,
-          modalType: 'subscription',
-        },
-        () => {
-          const { chartName } = this.props.useGetComponent?.data?.component || {};
-          this.setFormValues({
-            chartName,
-            version: this.getVersionInfo()?.version,
-          });
-        }
-      );
-    }
-    if (e?.key === 'download') {
-      const { chartName, repository } = this.props.useGetComponent?.data?.component || {};
-      const res = await this.utils.bff.downloadComponent({
-        cluster: this.getCluster(),
-        chart: {
-          chartName,
-          repository,
-          version: this.getVersionInfo()?.version,
-        },
-      });
-      const url = res?.componentDownload;
-      window.open(url);
-    }
   }
 
   async confirmSubscriptionModal(e, payload) {
@@ -324,6 +288,50 @@ class ComponentsDetail$$Page extends React.Component {
         });
       }
     });
+  }
+
+  getCurrentAnchor(activeLink) {
+    return activeLink || '#description';
+  }
+
+  getContainer() {
+    return window;
+  }
+
+  setFormValues(values, name) {
+    if (!this.form(name)) {
+      if (this.state.timer) {
+        clearTimeout(this.state.timer);
+      }
+      this.setState({
+        timer: setTimeout(() => this.setFormValues(values, name), 200),
+      });
+      return;
+    }
+    this.form(name).setValues(values);
+  }
+
+  form(name) {
+    return this.$(name || 'formily_subscription')?.formRef?.current?.form;
+  }
+
+  async validatorInstall(value) {
+    try {
+      if (value) {
+        const res = await this.props?.appHelper?.utils?.bff?.getSubscriptions({
+          namespace: value,
+          cluster: this.getCluster(),
+        });
+        const name = this.props.useGetComponent?.data?.component?.name;
+        if (
+          res?.subscriptions?.some(
+            item => item.component?.name === name && item?.releaseName === name
+          )
+        ) {
+          return this.i18n('i18n-k6pq1phn');
+        }
+      }
+    } catch (e) {}
   }
 
   componentDidMount() {
@@ -684,9 +692,8 @@ class ComponentsDetail$$Page extends React.Component {
                                 ellipsis={true}
                                 __component_name="Typography.Text"
                               >
-                                {__$$eval(
-                                  () =>
-                                    this.props.useGetComponent?.data?.component?.chartName || '-'
+                                {__$$eval(() =>
+                                  this.getName(this.props.useGetComponent?.data?.component)
                                 )}
                               </Typography.Text>
                             </Col>

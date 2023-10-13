@@ -104,6 +104,14 @@ class ComponentsManagementPublish$$Page extends React.Component {
     return this.$(name || 'formily_create')?.formRef?.current?.form;
   }
 
+  getName(item) {
+    item = item || {};
+    if (item.displayName) {
+      return `${item.displayName}(${item.chartName || '-'})`;
+    }
+    return item.chartName || '-';
+  }
+
   openModal(e, { record, type = 'delete' }) {
     this.setState(
       {
@@ -394,19 +402,19 @@ class ComponentsManagementPublish$$Page extends React.Component {
                       __component_name="Space"
                     >
                       <Typography.Text
-                        style={{ maxWidth: '400px' }}
+                        style={{ fontSize: '', maxWidth: '400px' }}
                         strong={false}
                         disabled={false}
                         ellipsis={{
                           rows: 1,
                           tooltip: {
-                            title: __$$eval(() => this.state?.record?.name || '-'),
+                            title: __$$eval(() => this.getName(this.state?.record)),
                             _unsafe_MixedSetter_title_select: 'VariableSetter',
                           },
                         }}
                         __component_name="Typography.Text"
                       >
-                        {__$$eval(() => this.state?.record?.name || '-')}
+                        {__$$eval(() => this.getName(this.state?.record))}
                       </Typography.Text>
                       <Typography.Text
                         style={{ fontSize: '' }}
@@ -494,7 +502,7 @@ class ComponentsManagementPublish$$Page extends React.Component {
                       }
                       __component_name="Tooltip"
                     >
-                      <Container __component_name="Container" color="colorTextDescription">
+                      <Container color="colorTextDescription" __component_name="Container">
                         <AntdIconQuestionCircleOutlined
                           style={{ color: '' }}
                           __component_name="AntdIconQuestionCircleOutlined"
@@ -853,7 +861,7 @@ class ComponentsManagementPublish$$Page extends React.Component {
                               target="_self"
                               __component_name="UnifiedLink"
                             >
-                              {__$$eval(() => record?.chartName || '-')}
+                              {__$$eval(() => __$$context.getName(record))}
                             </UnifiedLink>
                           ))(__$$createChildContext(__$$context, { text, record, index })),
                         ellipsis: { showTitle: true },

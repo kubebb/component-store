@@ -65,13 +65,13 @@ class ComponentsManagementInstallDetail$$Page extends React.Component {
     __$$i18n._inject2(this);
 
     this.state = {
-      record: undefined,
-      cluster: undefined,
-      modalType: 'rollback',
-      valuesYaml: '',
       isOpenModal: false,
+      modalType: 'rollback',
+      cluster: undefined,
       modalLoading: false,
+      record: undefined,
       historyPagination: undefined,
+      valuesYaml: '',
       historyValuesYaml: '',
     };
   }
@@ -80,15 +80,45 @@ class ComponentsManagementInstallDetail$$Page extends React.Component {
 
   $$ = () => [];
 
+  getName(item) {
+    item = item || {};
+    if (item.displayName) {
+      return `${item.displayName}(${item.chartName || '-'})`;
+    }
+    return item.chartName || '-';
+  }
+
+  handleHistoryTableChange(pagination, filters, sorter, extra) {
+    this.setState({
+      historyPagination: {
+        pagination,
+        filters,
+        sorter,
+      },
+    });
+  }
+
   closeModal() {
     this.setState({
       isOpenModal: false,
     });
   }
 
-  getCluster() {
-    const cluster = this.utils.getAuthData()?.cluster;
-    return cluster;
+  openRollBackModal(e, { record }) {
+    this.setState({
+      record,
+      isOpenModal: true,
+      modalType: 'rollback',
+    });
+  }
+
+  openDetailModal(e, { record }) {
+    this.setState({
+      record,
+      isOpenModal: true,
+      modalType: 'detail',
+    });
+    this.loadDetail(record);
   }
 
   async loadDetail(record) {
@@ -113,25 +143,13 @@ class ComponentsManagementInstallDetail$$Page extends React.Component {
     });
   }
 
+  getCluster() {
+    const cluster = this.utils.getAuthData()?.cluster;
+    return cluster;
+  }
+
   getClusterInfo() {
     return this.state.cluster;
-  }
-
-  openDetailModal(e, { record }) {
-    this.setState({
-      record,
-      isOpenModal: true,
-      modalType: 'detail',
-    });
-    this.loadDetail(record);
-  }
-
-  openRollBackModal(e, { record }) {
-    this.setState({
-      record,
-      isOpenModal: true,
-      modalType: 'rollback',
-    });
   }
 
   async confirmRollBackModal(e, payload) {
@@ -163,16 +181,6 @@ class ComponentsManagementInstallDetail$$Page extends React.Component {
         errors: error?.response?.errors,
       });
     }
-  }
-
-  handleHistoryTableChange(pagination, filters, sorter, extra) {
-    this.setState({
-      historyPagination: {
-        pagination,
-        filters,
-        sorter,
-      },
-    });
   }
 
   componentDidMount() {
@@ -322,7 +330,7 @@ class ComponentsManagementInstallDetail$$Page extends React.Component {
                       ellipsis={true}
                       __component_name="Typography.Text"
                     >
-                      {__$$eval(() => this.state?.componentplan?.component?.chartName || '-')}
+                      {__$$eval(() => this.getName(this.state?.componentplan?.component))}
                     </Typography.Text>
                   }
                 </Descriptions.Item>
@@ -758,7 +766,7 @@ class ComponentsManagementInstallDetail$$Page extends React.Component {
                             ?.chartName || '-'
                       ) && (
                         <Typography.Text
-                          style={{ maxWidth: '70px' }}
+                          style={{ maxWidth: '70px', fontSize: '' }}
                           strong={false}
                           disabled={false}
                           ellipsis={{
@@ -774,10 +782,10 @@ class ComponentsManagementInstallDetail$$Page extends React.Component {
                           }}
                           __component_name="Typography.Text"
                         >
-                          {__$$eval(
-                            () =>
+                          {__$$eval(() =>
+                            this.getName(
                               this.props.useGetComponentplanHistory?.data?.componentplan?.component
-                                ?.chartName || '-'
+                            )
                           )}
                         </Typography.Text>
                       )}
@@ -857,10 +865,10 @@ class ComponentsManagementInstallDetail$$Page extends React.Component {
           <Col span={24} __component_name="Col">
             <Space align="center" direction="horizontal">
               <Button.Back
+                name={this.i18n('i18n-86so9ago') /* 返回 */}
                 type="primary"
                 title={this.i18n('i18n-ye37je6n') /* 组件安装详情 */}
                 __component_name="Button.Back"
-                name={this.i18n('i18n-86so9ago') /* 返回 */}
               />
             </Space>
             {!!false && (
@@ -1183,10 +1191,10 @@ class ComponentsManagementInstallDetail$$Page extends React.Component {
                               ellipsis={true}
                               __component_name="Typography.Text"
                             >
-                              {__$$eval(
-                                () =>
+                              {__$$eval(() =>
+                                this.getName(
                                   this.props.useGetComponentplan?.data?.componentplan?.component
-                                    ?.chartName || '-'
+                                )
                               )}
                             </Typography.Text>
                           }
