@@ -12,6 +12,7 @@
   "scripts": {
     "build": "pnpm build:server && pnpm build:portal",
     "build:client": "pnpm --filter '*-client' build",
+    "build:menu": "pnpm --filter '*-portal' build:menu",
     "build:portal": "pnpm --filter '*-portal' build",
     "build:server": "pnpm --filter '*-server' build",
     "dev:portal": "pnpm --filter '*-portal' dev",
