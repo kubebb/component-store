@@ -64,16 +64,16 @@ class ComponentsManagementInstall$$Page extends React.Component {
     __$$i18n._inject2(this);
 
     this.state = {
-      size: 10,
-      record: {},
-      sorter: undefined,
-      current: 1,
-      filters: undefined,
-      modalType: 'delete',
-      searchKey: 'chartName',
-      pagination: undefined,
       isOpenModal: false,
+      modalType: 'delete',
       searchValue: undefined,
+      searchKey: 'chartName',
+      size: 10,
+      current: 1,
+      record: {},
+      pagination: undefined,
+      filters: undefined,
+      sorter: undefined,
       deleteLoading: false,
     };
   }
@@ -82,31 +82,12 @@ class ComponentsManagementInstall$$Page extends React.Component {
 
   $$ = () => [];
 
-  closeModal() {
-    this.setState({
-      isOpenModal: false,
-    });
-  }
-
-  handleSearch(v) {
-    this.setState(
-      {
-        current: 1,
-      },
-      this.handleQueryChange
-    );
-  }
-
-  handleRefresh(event) {
-    this.props.useGetComponentplansPaged?.mutate();
-  }
-
-  openDeleteModal(e, { record, type = 'delete' }) {
-    this.setState({
-      isOpenModal: true,
-      modalType: 'delete',
-      record,
-    });
+  getName(item) {
+    item = item || {};
+    if (item.displayName) {
+      return `${item.displayName}(${item.chartName || '-'})`;
+    }
+    return item.chartName || '-';
   }
 
   handleQueryChange() {
@@ -130,15 +111,33 @@ class ComponentsManagementInstall$$Page extends React.Component {
     this.utils?.changeLocationQuery(this, 'useGetComponentplansPaged', params);
   }
 
-  handleTableChange(pagination, filters, sorter, extra) {
+  handleRefresh(event) {
+    this.props.useGetComponentplansPaged?.mutate();
+  }
+
+  handleSearchKeyChange(v) {
     this.setState(
       {
-        pagination,
-        filters,
-        sorter,
+        searchValue: undefined,
+        current: 1,
+        searchKey: v,
       },
       this.handleQueryChange
     );
+  }
+
+  openDeleteModal(e, { record, type = 'delete' }) {
+    this.setState({
+      isOpenModal: true,
+      modalType: 'delete',
+      record,
+    });
+  }
+
+  closeModal() {
+    this.setState({
+      isOpenModal: false,
+    });
   }
 
   async confirmDeleteModal(e, payload) {
@@ -172,16 +171,16 @@ class ComponentsManagementInstall$$Page extends React.Component {
     }
   }
 
-  paginationShowTotal(total, range) {
-    return `${this.i18n('i18n-wajqflwo')} ${total} ${this.i18n('i18n-7vre8aeh')}`;
+  handleSearchValueChange(e) {
+    this.setState({
+      searchValue: e.target.value,
+    });
   }
 
-  handleSearchKeyChange(v) {
+  handleSearch(v) {
     this.setState(
       {
-        searchValue: undefined,
         current: 1,
-        searchKey: v,
       },
       this.handleQueryChange
     );
@@ -197,10 +196,19 @@ class ComponentsManagementInstall$$Page extends React.Component {
     );
   }
 
-  handleSearchValueChange(e) {
-    this.setState({
-      searchValue: e.target.value,
-    });
+  handleTableChange(pagination, filters, sorter, extra) {
+    this.setState(
+      {
+        pagination,
+        filters,
+        sorter,
+      },
+      this.handleQueryChange
+    );
+  }
+
+  paginationShowTotal(total, range) {
+    return `${this.i18n('i18n-wajqflwo')} ${total} ${this.i18n('i18n-7vre8aeh')}`;
   }
 
   componentDidMount() {}
@@ -258,7 +266,7 @@ class ComponentsManagementInstall$$Page extends React.Component {
                       {this.i18n('i18n-z9a1zfy4') /* 确定卸载 */}
                     </Typography.Text>
                     <Typography.Text
-                      style={{ maxWidth: '350px' }}
+                      style={{ maxWidth: '350px', fontSize: '' }}
                       strong={true}
                       disabled={false}
                       ellipsis={{
@@ -468,7 +476,7 @@ class ComponentsManagementInstall$$Page extends React.Component {
                               ellipsis={true}
                               __component_name="Typography.Text"
                             >
-                              {__$$eval(() => __$$context?.record?.component?.chartName || '-')}
+                              {__$$eval(() => __$$context.getName(__$$context?.record?.component))}
                             </Typography.Text>
                           ))(__$$createChildContext(__$$context, { text, record, index })),
                         dataIndex: 'name',

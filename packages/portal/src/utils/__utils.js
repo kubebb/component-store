@@ -61,33 +61,21 @@ utils.getComponentWarehouseStatus = function __getComponentWarehouseStatus() {
     return [
       // 健康
       {
-        [isStatus ? 'id' : 'value']: 'synced_true',
+        [isStatus ? 'id' : 'value']: 'health',
         type: 'success',
         [isStatus ? 'children' : 'text']: pageThis.i18n('i18n-ald3kpof'),
       },
-      // 未知
-      {
-        [isStatus ? 'id' : 'value']: 'unknown',
-        type: 'disabled',
-        [isStatus ? 'children' : 'text']: pageThis.i18n('i18n-tc7m2mdu'),
-      },
       // 同步中
       {
-        [isStatus ? 'id' : 'value']: 'ready_true',
+        [isStatus ? 'id' : 'value']: 'syncing',
         type: 'primary',
         [isStatus ? 'children' : 'text']: pageThis.i18n('i18n-cfk35lik'),
       },
-      // 异常-同步异常
+      // 异常
       {
-        [isStatus ? 'id' : 'value']: 'synced_false',
+        [isStatus ? 'id' : 'value']: 'failed',
         type: 'error',
-        [isStatus ? 'children' : 'text']: pageThis.i18n('i18n-0durb4cn'),
-      },
-      // 异常-chart包获取异常
-      {
-        [isStatus ? 'id' : 'value']: 'ready_false',
-        type: 'error',
-        [isStatus ? 'children' : 'text']: pageThis.i18n('i18n-licl8v3n'),
+        [isStatus ? 'children' : 'text']: pageThis.i18n('i18n-2uobywml'),
       },
     ];
   };
