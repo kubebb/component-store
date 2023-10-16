@@ -30,9 +30,6 @@ export class SubscriptionService {
       namespace: sub.metadata?.namespace,
       namespacedName: `${sub.metadata?.name}_${sub.metadata.namespace}_${cluster || ''}`,
       creationTimestamp: new Date(sub.metadata?.creationTimestamp).toISOString(),
-      chartName: component?.chartName,
-      latestVersion: component?.latestVersion,
-      updatedAt: component?.updatedAt,
       component: component,
       repository: sub.spec?.repository?.name,
       componentPlanInstallMethod: sub.spec?.componentPlanInstallMethod,
@@ -84,12 +81,14 @@ export class SubscriptionService {
       namespace,
       chartName,
       repository,
+      isNewer,
     } = args;
     const res = await this.getSubscriptions(auth, namespace, cluster);
     const filteredRes = res?.filter(
       t =>
         (!chartName || t.chartName?.includes(chartName)) &&
-        (!repository || t.repository?.includes(repository))
+        (!repository || t.repository?.includes(repository)) &&
+        (isNewer === undefined || t.component?.isNewer === isNewer)
     );
     if (sortField && sortDirection) {
       filteredRes?.sort((a, b) => {

@@ -100,6 +100,9 @@ export class Component {
   /** 最新版本 */
   latestVersion?: string;
 
+  /** 是否显示新版本 */
+  isNewer?: boolean;
+
   chart?: ComponentChart;
 }
 

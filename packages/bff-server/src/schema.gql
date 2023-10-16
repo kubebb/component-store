@@ -29,6 +29,9 @@ type Component {
   """icon"""
   icon: String
 
+  """是否显示新版本"""
+  isNewer: Boolean
+
   """关键词"""
   keywords: [String!]
 
@@ -492,6 +495,9 @@ type Query {
     """集群（不传则为默认集群）"""
     cluster: String
 
+    """存在新版本"""
+    isNewer: Boolean
+
     """项目"""
     namespace: String!
 
@@ -524,6 +530,9 @@ type Query {
 
     """集群（不传则为默认集群）"""
     cluster: String
+
+    """存在新版本"""
+    isNewer: Boolean
 
     """关键词"""
     keyword: String
@@ -604,6 +613,9 @@ type Query {
 
     """集群（不传则为默认集群）"""
     cluster: String
+
+    """有新版本的组件"""
+    isNewer: Boolean
 
     """项目"""
     namespace: String!

@@ -117,6 +117,7 @@ export class ComponentplanService {
       chartName,
       repository,
       status,
+      isNewer,
     } = args;
     const res = await this.list(auth, namespace, {}, cluster);
     // 过滤出 以releaseName为唯一ID，选择cpl status.latest == true（其中sub创建的cpl（status.latest == null），通过「组件市场」安装入口安装）
@@ -140,7 +141,8 @@ export class ComponentplanService {
         (!releaseName || t.releaseName?.includes(releaseName)) &&
         (!chartName || t.component?.chartName?.includes(chartName)) &&
         (!repository || t.component?.repository?.includes(repository)) &&
-        (!status || status?.includes(t.status))
+        (!status || status?.includes(t.status)) &&
+        (isNewer === undefined || t.component?.isNewer === isNewer)
     );
     if (sortField && sortDirection) {
       filteredRes?.sort((a, b) => {
