@@ -29,4 +29,7 @@ export class ComponentplanArgs extends PaginationArgs {
 
   /** 集群（不传则为默认集群） */
   cluster?: string;
+
+  /** 存在新版本 */
+  isNewer?: boolean;
 }

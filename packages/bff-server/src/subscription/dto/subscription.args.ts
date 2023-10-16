@@ -13,6 +13,9 @@ export class SubscriptionArgs extends PaginationArgs {
   /** 项目 */
   namespace: string;
 
+  /** 有新版本的组件 */
+  isNewer?: boolean;
+
   /** 排序方向 */
   @Field(() => SortDirection, { description: '排序方向' })
   sortDirection?: SortDirection;

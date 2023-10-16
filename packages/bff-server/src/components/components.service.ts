@@ -34,6 +34,9 @@ export class ComponentsService {
 
   formatComponent(c: CRD.Component, cluster?: string): Component {
     const latestVersion = c.status?.versions?.[0];
+    const isNewer = latestVersion?.createdAt
+      ? Date.now() - 7 * 24 * 60 * 60 * 1000 < new Date(latestVersion.createdAt).valueOf()
+      : false;
     return {
       name: c.metadata?.name,
       namespace: c.metadata?.namespace,
@@ -52,6 +55,7 @@ export class ComponentsService {
       creationTimestamp: new Date(c.metadata?.creationTimestamp).toISOString(),
       updatedAt: latestVersion?.updatedAt ? new Date(latestVersion?.updatedAt).toISOString() : null,
       latestVersion: latestVersion?.version,
+      isNewer,
     };
   }
 
@@ -73,8 +77,18 @@ export class ComponentsService {
   }
 
   async getComponentsPaged(auth: JwtAuth, args: ComponentArgs): Promise<PaginatedComponent> {
-    const { page, pageSize, name, chartName, keyword, sortDirection, sortField, cluster, source } =
-      args;
+    const {
+      page,
+      pageSize,
+      name,
+      chartName,
+      keyword,
+      sortDirection,
+      sortField,
+      cluster,
+      source,
+      isNewer,
+    } = args;
     let reposName: string[] = [];
     if (source) {
       const repos = await this.repositoryService.getRepositories(auth, { source }, cluster);
@@ -86,7 +100,8 @@ export class ComponentsService {
         (!name || t.name?.includes(name)) &&
         (!chartName || t.chartName?.includes(chartName) || t.displayName?.includes(chartName)) &&
         (!keyword || t.keywords?.includes(keyword)) &&
-        (!source || reposName.includes(t.repository))
+        (!source || reposName.includes(t.repository)) &&
+        (isNewer === undefined || t.isNewer === isNewer)
     );
     if (sortField && sortDirection) {
       filteredRes?.sort((a, b) => {
