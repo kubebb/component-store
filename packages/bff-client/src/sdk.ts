@@ -47,6 +47,8 @@ export type Component = {
   home?: Maybe<Scalars['String']['output']>;
   /** icon */
   icon?: Maybe<Scalars['String']['output']>;
+  /** 是否显示新版本 */
+  isNewer?: Maybe<Scalars['Boolean']['output']>;
   /** 关键词 */
   keywords?: Maybe<Array<Scalars['String']['output']>>;
   /** 最新版本 */
@@ -468,6 +470,7 @@ export type QueryComponentplanArgs = {
 export type QueryComponentplansPagedArgs = {
   chartName?: InputMaybe<Scalars['String']['input']>;
   cluster?: InputMaybe<Scalars['String']['input']>;
+  isNewer?: InputMaybe<Scalars['Boolean']['input']>;
   namespace: Scalars['String']['input'];
   page?: InputMaybe<Scalars['Float']['input']>;
   pageSize?: InputMaybe<Scalars['Float']['input']>;
@@ -481,6 +484,7 @@ export type QueryComponentplansPagedArgs = {
 export type QueryComponentsArgs = {
   chartName?: InputMaybe<Scalars['String']['input']>;
   cluster?: InputMaybe<Scalars['String']['input']>;
+  isNewer?: InputMaybe<Scalars['Boolean']['input']>;
   keyword?: InputMaybe<Scalars['String']['input']>;
   name?: InputMaybe<Scalars['String']['input']>;
   page?: InputMaybe<Scalars['Float']['input']>;
@@ -515,6 +519,7 @@ export type QuerySubscriptionsArgs = {
 export type QuerySubscriptionsPagedArgs = {
   chartName?: InputMaybe<Scalars['String']['input']>;
   cluster?: InputMaybe<Scalars['String']['input']>;
+  isNewer?: InputMaybe<Scalars['Boolean']['input']>;
   namespace: Scalars['String']['input'];
   page?: InputMaybe<Scalars['Float']['input']>;
   pageSize?: InputMaybe<Scalars['Float']['input']>;
@@ -756,6 +761,7 @@ export type GetComponentplansPagedQueryVariables = Exact<{
   chartName?: InputMaybe<Scalars['String']['input']>;
   repository?: InputMaybe<Scalars['String']['input']>;
   status?: InputMaybe<Array<Scalars['String']['input']> | Scalars['String']['input']>;
+  isNewer?: InputMaybe<Scalars['Boolean']['input']>;
 }>;
 
 export type GetComponentplansPagedQuery = {
@@ -778,6 +784,7 @@ export type GetComponentplansPagedQuery = {
         chartName: string;
         latestVersion?: string | null;
         repository: string;
+        isNewer?: boolean | null;
       } | null;
       subscription?: {
         __typename?: 'Subscription';
@@ -912,6 +919,7 @@ export type GetComponentsQueryVariables = Exact<{
   sortField?: InputMaybe<Scalars['String']['input']>;
   cluster?: InputMaybe<Scalars['String']['input']>;
   source?: InputMaybe<Scalars['String']['input']>;
+  isNewer?: InputMaybe<Scalars['Boolean']['input']>;
 }>;
 
 export type GetComponentsQuery = {
@@ -937,6 +945,7 @@ export type GetComponentsQuery = {
       status?: ComponentStatus | null;
       source?: ComponentSource | null;
       latestVersion?: string | null;
+      isNewer?: boolean | null;
       versions?: Array<{
         __typename?: 'ComponentVersion';
         createdAt?: string | null;
@@ -1253,6 +1262,7 @@ export type GetSubscriptionsPagedQueryVariables = Exact<{
   sortDirection?: InputMaybe<SortDirection>;
   sortField?: InputMaybe<Scalars['String']['input']>;
   cluster?: InputMaybe<Scalars['String']['input']>;
+  isNewer?: InputMaybe<Scalars['Boolean']['input']>;
 }>;
 
 export type GetSubscriptionsPagedQuery = {
@@ -1267,9 +1277,6 @@ export type GetSubscriptionsPagedQuery = {
       namespace: string;
       creationTimestamp: string;
       releaseName?: string | null;
-      chartName?: string | null;
-      latestVersion?: string | null;
-      updatedAt?: string | null;
       repository: string;
       component?: {
         __typename?: 'Component';
@@ -1278,6 +1285,7 @@ export type GetSubscriptionsPagedQuery = {
         latestVersion?: string | null;
         updatedAt?: string | null;
         repository: string;
+        isNewer?: boolean | null;
       } | null;
     }> | null;
   };
@@ -1326,6 +1334,7 @@ export const GetComponentplansPagedDocument = gql`
     $chartName: String
     $repository: String
     $status: [String!]
+    $isNewer: Boolean
   ) {
     componentplansPaged(
       namespace: $namespace
@@ -1338,6 +1347,7 @@ export const GetComponentplansPagedDocument = gql`
       chartName: $chartName
       repository: $repository
       status: $status
+      isNewer: $isNewer
     ) {
       nodes {
         name
@@ -1351,6 +1361,7 @@ export const GetComponentplansPagedDocument = gql`
           chartName
           latestVersion
           repository
+          isNewer
         }
         subscription {
           componentPlanInstallMethod
@@ -1465,6 +1476,7 @@ export const GetComponentsDocument = gql`
     $sortField: String
     $cluster: String
     $source: String
+    $isNewer: Boolean
   ) {
     components(
       page: $page
@@ -1476,6 +1488,7 @@ export const GetComponentsDocument = gql`
       sortField: $sortField
       cluster: $cluster
       source: $source
+      isNewer: $isNewer
     ) {
       nodes {
         name
@@ -1493,6 +1506,7 @@ export const GetComponentsDocument = gql`
         status
         source
         latestVersion
+        isNewer
         versions {
           createdAt
           updatedAt
@@ -1757,6 +1771,7 @@ export const GetSubscriptionsPagedDocument = gql`
     $sortDirection: SortDirection
     $sortField: String
     $cluster: String
+    $isNewer: Boolean
   ) {
     subscriptionsPaged(
       namespace: $namespace
@@ -1767,6 +1782,7 @@ export const GetSubscriptionsPagedDocument = gql`
       sortDirection: $sortDirection
       sortField: $sortField
       cluster: $cluster
+      isNewer: $isNewer
     ) {
       nodes {
         name
@@ -1779,10 +1795,8 @@ export const GetSubscriptionsPagedDocument = gql`
           latestVersion
           updatedAt
           repository
+          isNewer
         }
-        chartName
-        latestVersion
-        updatedAt
         repository
       }
       hasNextPage
