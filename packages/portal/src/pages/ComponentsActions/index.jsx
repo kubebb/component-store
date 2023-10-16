@@ -108,7 +108,7 @@ class ComponentsActions$$Page extends React.Component {
     this.state.editor.setValue(res?.component?.chart?.valuesYaml || '');
     this.setState({
       yamlLoading: false,
-      valuesYaml: res?.component?.chart?.valuesYaml || '',
+      valuesYaml: res?.component?.chart?.valuesYaml || this.state.data?.valuesYaml || '',
     });
     this.form()?.setValues({
       // iamges: {
@@ -215,7 +215,14 @@ class ComponentsActions$$Page extends React.Component {
     });
   }
 
-  initEditor(v) {
+  async initEditor(v) {
+    if (!v.valuesYaml && v) {
+      const res = await this.utils.bff.getComponentChart({
+        name: this.props.appHelper?.match?.params?.id,
+        version: v.version,
+      });
+      v.valuesYaml = res?.component?.chart?.valuesYaml || '';
+    }
     if (this.state.editor && !this.state.isCreate) {
       this.setState({
         valuesYaml: v.valuesYaml || '',
@@ -587,6 +594,7 @@ class ComponentsActions$$Page extends React.Component {
                     },
                   }}
                   __component_name="FormilySelect"
+                  decoratorProps={{ 'x-decorator-props': { labelEllipsis: true } }}
                 />
                 <FormilyFormItem
                   fieldProps={{
