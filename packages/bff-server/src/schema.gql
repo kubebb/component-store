@@ -48,6 +48,9 @@ type Component {
   """所属仓库"""
   repository: String!
 
+  """所属仓库"""
+  repositoryCR: Repository
+
   """代码来源"""
   source: ComponentSource
 

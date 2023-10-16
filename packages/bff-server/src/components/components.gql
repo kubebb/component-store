@@ -88,6 +88,14 @@ query getComponent($name: String!, $cluster: String){
       name
       url
     }
+    repositoryCR {
+      imageOverride {
+        registry
+        newRegistry
+        path
+        newPath
+      }
+    }
   }
 }
 

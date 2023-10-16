@@ -2,6 +2,7 @@ import { Loader } from '@/common/dataloader';
 import { Auth } from '@/common/decorators/auth.decorator';
 import { Repository } from '@/repository/models/repository.model';
 import { RepositoryLoader } from '@/repository/repository.loader';
+import { RepositoryService } from '@/repository/repository.service';
 import { AnyObj, JwtAuth } from '@/types';
 import { Args, Info, Mutation, Parent, Query, ResolveField, Resolver } from '@nestjs/graphql';
 import DataLoader from 'dataloader';
@@ -16,7 +17,10 @@ import { Component, ComponentChart, PaginatedComponent } from './models/componen
 
 @Resolver(() => Component)
 export class ComponentsResolver {
-  constructor(private readonly componentsService: ComponentsService) {}
+  constructor(
+    private readonly componentsService: ComponentsService,
+    private readonly repositoryService: RepositoryService
+  ) {}
 
   @Query(() => PaginatedComponent, { description: '组件列表（分页）' })
   async components(
@@ -139,5 +143,19 @@ export class ComponentsResolver {
     } = info;
     const { name, namespace } = component;
     return this.componentsService.getChartValues(auth, name, namespace, version, cluster);
+  }
+
+  @ResolveField(() => Repository, { nullable: true, description: '所属仓库' })
+  async repositoryCR(
+    @Info() info: AnyObj,
+    @Parent() component: Component,
+    @Loader(RepositoryLoader) repositoryLoader: DataLoader<Repository['namespacedName'], Repository>
+  ): Promise<Repository> {
+    const {
+      variableValues: { cluster },
+    } = info;
+    const { repository, namespace } = component;
+    if (!repository || !namespace) return null;
+    return repositoryLoader.load(`${repository}_${namespace}_${cluster || ''}`);
   }
 }

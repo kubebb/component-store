@@ -60,6 +60,8 @@ export type Component = {
   namespace: Scalars['String']['output'];
   /** 所属仓库 */
   repository: Scalars['String']['output'];
+  /** 所属仓库 */
+  repositoryCR?: Maybe<Repository>;
   /** 代码来源 */
   source?: Maybe<ComponentSource>;
   /** 源代码地址 */
@@ -1027,6 +1029,16 @@ export type GetComponentQuery = {
       name?: string | null;
       url?: string | null;
     }> | null;
+    repositoryCR?: {
+      __typename?: 'Repository';
+      imageOverride?: Array<{
+        __typename?: 'RepositoryImageOverride';
+        registry?: string | null;
+        newRegistry?: string | null;
+        path?: string | null;
+        newPath?: string | null;
+      }> | null;
+    } | null;
   };
 };
 
@@ -1576,6 +1588,14 @@ export const GetComponentDocument = gql`
         email
         name
         url
+      }
+      repositoryCR {
+        imageOverride {
+          registry
+          newRegistry
+          path
+          newPath
+        }
       }
     }
   }
