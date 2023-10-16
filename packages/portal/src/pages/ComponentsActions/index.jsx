@@ -71,15 +71,15 @@ class ComponentsActions$$Page extends React.Component {
     __$$i18n._inject2(this);
 
     this.state = {
-      data: undefined,
+      isCreate: true,
+      creating: false,
       name: undefined,
       cluster: undefined,
       tenants: [],
-      creating: false,
-      isCreate: true,
       component: undefined,
       valuesYaml: '',
       yamlLoading: false,
+      data: undefined,
     };
   }
 
@@ -91,8 +91,176 @@ class ComponentsActions$$Page extends React.Component {
     return this._refsManager.getAll(refName);
   };
 
-  form(name) {
-    return this.$(name || 'formily_create')?.formRef?.current?.form;
+  onEditorLoad(editor) {
+    this.setState({
+      editor,
+    });
+  }
+
+  async handleVersionChange(v) {
+    this.setState({
+      yamlLoading: true,
+    });
+    const res = await this.utils.bff.getComponentChart({
+      name: this.props.appHelper?.match?.params?.id,
+      version: v,
+    });
+    this.state.editor.setValue(res?.component?.chart?.valuesYaml || '');
+    this.setState({
+      yamlLoading: false,
+      valuesYaml: res?.component?.chart?.valuesYaml || '',
+    });
+    this.form()?.setValues({
+      // iamges: {
+      //   name: []
+      // },
+      imagesNames: res?.component?.chart?.images?.map(item => ({
+        label: item,
+        value: item,
+      })),
+      imagesNamesRead: res?.component?.chart?.images?.map(item => {
+        const arr = item?.split('/');
+        return {
+          label: arr?.slice(0, arr?.length - 1) + '/',
+          value: item,
+        };
+      }),
+    });
+  }
+
+  async validatorImagesName(value, ...payload) {
+    const curIndex = payload?.[1]?.field?.index;
+    const arr = value?.split('/');
+    const v = arr?.slice(0, arr?.length - 1)?.join('/') + '/';
+    const override = this.state.component?.repositoryCR?.imageOverride?.find(item => {
+      return v === `${item.registry}/${item.path}/`;
+    });
+    this.form().setValuesIn(
+      `images.name.${curIndex}.nameReady`,
+      `${override.newRegistry}/${override.newPath}`
+    );
+  }
+
+  setFormValues(values) {
+    if (!this.form()) {
+      setTimeout(() => {
+        this.setFormValues(values);
+      }, 200);
+      return;
+    }
+    this.form().setValues(values);
+  }
+
+  async loadComponent() {
+    const res = await this.props.appHelper?.utils?.bff?.getComponent({
+      name: this.props.appHelper?.match?.params?.id,
+      cluster: this.getCluster(),
+    });
+    this.form()?.setFieldState('version', {
+      dataSource:
+        res?.component?.versions?.map(item => ({
+          value: item.version,
+          label: item.version,
+        })) || [],
+    });
+    this.setFormValues({
+      chartName: res?.component?.chartName,
+      repository: res?.component?.repository,
+      file: 'value.yaml',
+    });
+  }
+
+  async loadCluster() {
+    const res = await this.props.appHelper?.utils?.bffSdk?.getCluster({
+      name: this.getCluster(),
+    });
+    const cluster = res?.cluster;
+    this.setState({
+      cluster,
+    });
+  }
+
+  getCluster() {
+    const cluster = this.appHelper?.history?.query?.cluster;
+    return cluster;
+  }
+
+  getClusterInfo() {
+    return this.state.cluster;
+  }
+
+  async loadTenants() {
+    const res = await this.props.appHelper?.utils?.bffSdk?.getCurrentUserTenants();
+    const tenants =
+      res?.userCurrent?.tenants?.map(item => {
+        item.projects =
+          item.projects
+            ?.filter(item => {
+              return item.clusters?.some(cluster => cluster.name === this.getCluster());
+            })
+            ?.map(item => ({
+              label: item.fullName,
+              value: item.name,
+            })) || [];
+        return {
+          label: item.fullName,
+          value: JSON.stringify(item),
+        };
+      }) || [];
+    this.form()?.setFieldState('position.tenant', {
+      dataSource: tenants || [],
+    });
+    this.setState({
+      tenants,
+    });
+  }
+
+  initEditor(v) {
+    if (this.state.editor && !this.state.isCreate) {
+      this.setState({
+        valuesYaml: v.valuesYaml || '',
+      });
+      this.state.editor.setValue(v.valuesYaml || '');
+      return;
+    }
+    setTimeout(() => {
+      this.initEditor(v);
+    }, 200);
+  }
+
+  initForms(v) {
+    if (this.form() && !this.state.isCreate && this.state.component) {
+      this.form().setValues({
+        // repository: v.component?.repository,
+        // chartName: v.component?.chartName,
+        releaseName: v.releaseName,
+        version: v.version,
+        method: {
+          componentPlanInstallMethod: v?.subscription?.componentPlanInstallMethod || 'manual',
+          schedule:
+            v?.subscription?.schedule && this.utils.cronChangeToDate(v?.subscription?.schedule),
+        },
+        images: {
+          name: v.images?.map(item => {
+            const arr = item?.name?.split('/');
+            const nameReady = arr?.slice(0, arr?.length - 1)?.join('/') + '/';
+            const override = this.state.component?.repositoryCR?.imageOverride?.find(item => {
+              return nameReady === `${item.registry}/${item.path}/`;
+            });
+            return {
+              nameReady: `${override.newRegistry}/${override.newPath}`,
+              name: item.name,
+              newName: item.newName?.split(nameReady)?.[1],
+              newTag: item.newTag,
+            };
+          }),
+        },
+      });
+      return;
+    }
+    setTimeout(() => {
+      this.initForms(v);
+    }, 200);
   }
 
   async initEdit() {
@@ -111,8 +279,33 @@ class ComponentsActions$$Page extends React.Component {
     } catch (e) {}
   }
 
+  async validatorName(value) {
+    try {
+      if (value && this.state.isCreate) {
+        const res = await this.props?.appHelper?.utils?.bff?.getComponentplan({
+          name: this.form?.values?.position?.releaseName,
+          cluster: this.getCluster(),
+          namespace: this.form?.values?.position?.namespace,
+        });
+        if (res?.repository?.name) {
+          return this.i18n('i18n-1y09ypgx');
+        }
+      }
+    } catch (e) {}
+  }
+
   onCancel(event) {
     this.history.go(-1);
+  }
+
+  form(name) {
+    return this.$(name || 'formily_create')?.formRef?.current?.form;
+  }
+
+  handleYamlChange(v) {
+    this.setState({
+      valuesYaml: v || '',
+    });
   }
 
   onSubmit(event) {
@@ -136,7 +329,7 @@ class ComponentsActions$$Page extends React.Component {
         valuesYaml: this.state.valuesYaml,
         images: v.images?.name?.map(item => ({
           name: item.name,
-          newName: item.newName,
+          newName: item.nameReady + item.newName,
           newTag: item.newTag,
         })),
       };
@@ -193,190 +386,6 @@ class ComponentsActions$$Page extends React.Component {
         });
       }
     });
-  }
-
-  initForms(v) {
-    if (this.form() && !this.state.isCreate) {
-      this.form().setValues({
-        // repository: v.component?.repository,
-        // chartName: v.component?.chartName,
-        releaseName: v.releaseName,
-        version: v.version,
-        method: {
-          componentPlanInstallMethod: v?.subscription?.componentPlanInstallMethod || 'manual',
-          schedule:
-            v?.subscription?.schedule && this.utils.cronChangeToDate(v?.subscription?.schedule),
-        },
-        images: {
-          name: v.images?.map(item => {
-            const arr = item?.name?.split('/');
-            const nameReady = arr?.slice(0, arr?.length - 1)?.join('/') + '/';
-            return {
-              nameReady,
-              name: item.name,
-              newName: item.newName,
-              newTag: item.newTag,
-            };
-          }),
-        },
-      });
-      return;
-    }
-    setTimeout(() => {
-      this.initForms(v);
-    }, 200);
-  }
-
-  getCluster() {
-    const cluster = this.appHelper?.history?.query?.cluster;
-    return cluster;
-  }
-
-  initEditor(v) {
-    if (this.state.editor && !this.state.isCreate) {
-      this.setState({
-        valuesYaml: v.valuesYaml || '',
-      });
-      this.state.editor.setValue(v.valuesYaml || '');
-      return;
-    }
-    setTimeout(() => {
-      this.initEditor(v);
-    }, 200);
-  }
-
-  async loadCluster() {
-    const res = await this.props.appHelper?.utils?.bffSdk?.getCluster({
-      name: this.getCluster(),
-    });
-    const cluster = res?.cluster;
-    this.setState({
-      cluster,
-    });
-  }
-
-  async loadTenants() {
-    const res = await this.props.appHelper?.utils?.bffSdk?.getCurrentUserTenants();
-    const tenants =
-      res?.userCurrent?.tenants?.map(item => {
-        item.projects =
-          item.projects
-            ?.filter(item => {
-              return item.clusters?.some(cluster => cluster.name === this.getCluster());
-            })
-            ?.map(item => ({
-              label: item.fullName,
-              value: item.name,
-            })) || [];
-        return {
-          label: item.fullName,
-          value: JSON.stringify(item),
-        };
-      }) || [];
-    this.form()?.setFieldState('position.tenant', {
-      dataSource: tenants || [],
-    });
-    this.setState({
-      tenants,
-    });
-  }
-
-  onEditorLoad(editor) {
-    this.setState({
-      editor,
-    });
-  }
-
-  async loadComponent() {
-    const res = await this.props.appHelper?.utils?.bff?.getComponent({
-      name: this.props.appHelper?.match?.params?.id,
-      cluster: this.getCluster(),
-    });
-    this.form()?.setFieldState('version', {
-      dataSource:
-        res?.component?.versions?.map(item => ({
-          value: item.version,
-          label: item.version,
-        })) || [],
-    });
-    this.setFormValues({
-      chartName: res?.component?.chartName,
-      repository: res?.component?.repository,
-      file: 'value.yaml',
-    });
-  }
-
-  setFormValues(values) {
-    if (!this.form()) {
-      setTimeout(() => {
-        this.setFormValues(values);
-      }, 200);
-      return;
-    }
-    this.form().setValues(values);
-  }
-
-  async validatorName(value) {
-    try {
-      if (value && this.state.isCreate) {
-        const res = await this.props?.appHelper?.utils?.bff?.getComponentplan({
-          name: this.form?.values?.position?.releaseName,
-          cluster: this.getCluster(),
-          namespace: this.form?.values?.position?.namespace,
-        });
-        if (res?.repository?.name) {
-          return this.i18n('i18n-1y09ypgx');
-        }
-      }
-    } catch (e) {}
-  }
-
-  getClusterInfo() {
-    return this.state.cluster;
-  }
-
-  handleYamlChange(v) {
-    this.setState({
-      valuesYaml: v || '',
-    });
-  }
-
-  async handleVersionChange(v) {
-    this.setState({
-      yamlLoading: true,
-    });
-    const res = await this.utils.bff.getComponentChart({
-      name: this.props.appHelper?.match?.params?.id,
-      version: v,
-    });
-    this.state.editor.setValue(res?.component?.chart?.valuesYaml || '');
-    this.setState({
-      yamlLoading: false,
-      valuesYaml: res?.component?.chart?.valuesYaml || '',
-    });
-    this.form()?.setValues({
-      // iamges: {
-      //   name: []
-      // },
-      imagesNames: res?.component?.chart?.images?.map(item => ({
-        label: item,
-        value: item,
-      })),
-      imagesNamesRead: res?.component?.chart?.images?.map(item => {
-        const arr = item?.split('/');
-        return {
-          label: arr?.slice(0, arr?.length - 1) + '/',
-          value: item,
-        };
-      }),
-    });
-  }
-
-  async validatorImagesName(value, ...payload) {
-    const curIndex = payload?.[1]?.field?.index;
-    const arr = value?.split('/');
-    const v = arr?.slice(0, arr?.length - 1)?.join('/') + '/';
-    this.form().setValuesIn(`images.name.${curIndex}.nameReady`, v);
   }
 
   componentDidMount() {
@@ -1035,6 +1044,7 @@ class ComponentsActions$$Page extends React.Component {
                               placeholder: this.i18n('i18n-dv03soje') /* 请先选择镜像 */,
                             },
                           }}
+                          decoratorProps={{ 'x-decorator-props': { labelEllipsis: true } }}
                           __component_name="FormilyInput"
                         />
                         <FormilyInput
@@ -1045,6 +1055,7 @@ class ComponentsActions$$Page extends React.Component {
                               placeholder: this.i18n('i18n-1gb2xaxt') /* 新镜像名称(非必填) */,
                             },
                           }}
+                          decoratorProps={{ 'x-decorator-props': { labelEllipsis: true } }}
                           __component_name="FormilyInput"
                         />
                         <Typography.Text
@@ -1064,6 +1075,7 @@ class ComponentsActions$$Page extends React.Component {
                               placeholder: this.i18n('i18n-9u5a4f3f') /* 新tag/新digest(非必填) */,
                             },
                           }}
+                          decoratorProps={{ 'x-decorator-props': { labelEllipsis: true } }}
                           __component_name="FormilyInput"
                         />
                       </Space>
