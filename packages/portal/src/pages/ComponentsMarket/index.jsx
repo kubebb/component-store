@@ -68,16 +68,16 @@ class ComponentsMarket$$Page extends React.Component {
     __$$i18n._inject2(this);
 
     this.state = {
-      searchValue: undefined,
-      searchKey: 'chartName',
       size: 12,
-      current: 1,
-      record: {},
-      pagination: undefined,
-      filters: undefined,
-      sorter: undefined,
-      clusters: undefined,
       type: undefined,
+      record: {},
+      sorter: undefined,
+      current: 1,
+      filters: undefined,
+      clusters: undefined,
+      searchKey: 'chartName',
+      pagination: undefined,
+      searchValue: undefined,
       clusterLoading: true,
     };
   }
@@ -101,10 +101,23 @@ class ComponentsMarket$$Page extends React.Component {
     return this.state.type || 'ALL';
   }
 
-  handleTypeChange(e) {
+  goDetail(e, { record }) {
+    this.history.push(
+      `/components/market/subPage/management-detail/detail/${record?.name}?cluster=${this.state.cluster}`
+    );
+  }
+
+  goInstall(e, { record }) {
+    e.stopPropagation();
+    this.history.push(
+      `/components/market/subPage/management-action/install/${record.name}?cluster=${this.state.cluster}`
+    );
+  }
+
+  handleSearch(v) {
     this.setState(
       {
-        type: e?.target?.value,
+        current: 1,
       },
       this.handleQueryChange
     );
@@ -132,26 +145,26 @@ class ComponentsMarket$$Page extends React.Component {
     );
   }
 
-  goDetail(e, { record }) {
-    this.history.push(
-      `/components/market/subPage/management-detail/detail/${record?.name}?cluster=${this.state.cluster}`
+  handleRefresh(event) {
+    this.props.useGetComponents?.mutate();
+  }
+
+  handleSortChange(v) {
+    this.setState(
+      {
+        sorter: v,
+      },
+      this.handleQueryChange
     );
   }
 
-  goInstall(e, { record }) {
-    e.stopPropagation();
-    this.history.push(
-      `/components/market/subPage/management-action/install/${record.name}?cluster=${this.state.cluster}`
+  handleTypeChange(e) {
+    this.setState(
+      {
+        type: e?.target?.value,
+      },
+      this.handleQueryChange
     );
-  }
-
-  getSearchPlaceholder() {
-    const i18nKey = {
-      name: 'i18n-83r28a2h',
-      chartName: 'i18n-q3xp5myo',
-      keyword: 'i18n-zvc4wtgs',
-    }[this.state.searchKey];
-    return i18nKey ? this.i18n(i18nKey) : '';
   }
 
   handleQueryChange() {
@@ -172,17 +185,28 @@ class ComponentsMarket$$Page extends React.Component {
     this.utils?.changeLocationQuery(this, 'useGetComponents', params);
   }
 
-  handleSortChange(v) {
+  handleTableChange(pagination, filters, sorter, extra) {
     this.setState(
       {
-        sorter: v,
+        pagination,
+        filters,
+        sorter,
       },
       this.handleQueryChange
     );
   }
 
-  handleRefresh(event) {
-    this.props.useGetComponents?.mutate();
+  paginationShowTotal(total, range) {
+    return `${this.i18n('i18n-wajqflwo')} ${total} ${this.i18n('i18n-7vre8aeh')}`;
+  }
+
+  getSearchPlaceholder() {
+    const i18nKey = {
+      name: 'i18n-83r28a2h',
+      chartName: 'i18n-q3xp5myo',
+      keyword: 'i18n-zvc4wtgs',
+    }[this.state.searchKey];
+    return i18nKey ? this.i18n(i18nKey) : '';
   }
 
   handleSearchKeyChange(v) {
@@ -191,22 +215,6 @@ class ComponentsMarket$$Page extends React.Component {
         searchValue: undefined,
         current: 1,
         searchKey: v,
-      },
-      this.handleQueryChange
-    );
-  }
-
-  handleSearchValueChange(e) {
-    this.setState({
-      searchValue: e.target.value,
-      // current: 1,
-    });
-  }
-
-  handleSearch(v) {
-    this.setState(
-      {
-        current: 1,
       },
       this.handleQueryChange
     );
@@ -222,19 +230,11 @@ class ComponentsMarket$$Page extends React.Component {
     );
   }
 
-  handleTableChange(pagination, filters, sorter, extra) {
-    this.setState(
-      {
-        pagination,
-        filters,
-        sorter,
-      },
-      this.handleQueryChange
-    );
-  }
-
-  paginationShowTotal(total, range) {
-    return `${this.i18n('i18n-wajqflwo')} ${total} ${this.i18n('i18n-7vre8aeh')}`;
+  handleSearchValueChange(e) {
+    this.setState({
+      searchValue: e.target.value,
+      // current: 1,
+    });
   }
 
   componentDidMount() {
@@ -498,15 +498,7 @@ class ComponentsMarket$$Page extends React.Component {
                             hoverable={true}
                             backgroundToken="colorFillAlter"
                           >
-                            {!!__$$eval(
-                              () =>
-                                (new Date().getTime() - new Date(record?.updatedAt).getTime()) /
-                                  1000 /
-                                  60 /
-                                  60 /
-                                  24 <
-                                7
-                            ) && (
+                            {!!__$$eval(() => record?.isNewer) && (
                               <Tag
                                 color="#5BC427"
                                 style={{
