@@ -1,4 +1,5 @@
 import { Paginated } from '@/common/models/paginated.function';
+import { Repository } from '@/repository/models/repository.model';
 import { Field, HideField, ID, ObjectType } from '@nestjs/graphql';
 import { ComponentSource } from './component-source.enum';
 import { ComponentStatus } from './component-status.enum';
@@ -104,6 +105,9 @@ export class Component {
   isNewer?: boolean;
 
   chart?: ComponentChart;
+
+  /** 所属仓库 */
+  repositoryCR?: Repository;
 }
 
 @ObjectType({ description: '分页' })

@@ -1,6 +1,6 @@
 {
   "name": "@tenx-ui/component-store-bff-client",
-  "version": "0.0.25",
+  "version": "0.0.26",
   "description": "client for component-store-bff-server api",
   "keywords": [],
   "main": "dist/cjs/index.js",
