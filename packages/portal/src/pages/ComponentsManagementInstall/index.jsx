@@ -75,6 +75,7 @@ class ComponentsManagementInstall$$Page extends React.Component {
       filters: undefined,
       sorter: undefined,
       deleteLoading: false,
+      isNewer: undefined,
     };
   }
 
@@ -82,8 +83,20 @@ class ComponentsManagementInstall$$Page extends React.Component {
 
   $$ = () => [];
 
+  filterNew() {
+    this.setState(
+      {
+        isNewer: !this.state.isNewer,
+      },
+      this.handleQueryChange
+    );
+  }
+
   getName(item) {
-    item = item || {};
+    item = {
+      ...(item || {}),
+      ...(item?.component || {}),
+    };
     if (item.displayName) {
       return `${item.displayName}(${item.chartName || '-'})`;
     }
@@ -102,6 +115,9 @@ class ComponentsManagementInstall$$Page extends React.Component {
     if (this.state.sorter?.order) {
       params.sortField = this.state.sorter?.field;
       params.sortDirection = this.state.sorter?.order;
+    }
+    if (this.state.isNewer) {
+      params.isNewer = !!this.state.isNewer;
     }
     if (status?.length > 0) {
       params.status = status;
@@ -266,7 +282,7 @@ class ComponentsManagementInstall$$Page extends React.Component {
                       {this.i18n('i18n-z9a1zfy4') /* 确定卸载 */}
                     </Typography.Text>
                     <Typography.Text
-                      style={{ maxWidth: '350px', fontSize: '' }}
+                      style={{ fontSize: '', maxWidth: '350px' }}
                       strong={true}
                       disabled={false}
                       ellipsis={{
@@ -483,7 +499,6 @@ class ComponentsManagementInstall$$Page extends React.Component {
                       },
                       {
                         key: 'version',
-                        title: this.i18n('i18n-7e7t3bw9') /* 版本 */,
                         render: (text, record, index) =>
                           (__$$context => (
                             <Space align="center" direction="horizontal" __component_name="Space">
@@ -496,9 +511,7 @@ class ComponentsManagementInstall$$Page extends React.Component {
                               >
                                 {__$$eval(() => record.version || '-')}
                               </Typography.Text>
-                              {!!__$$eval(
-                                () => record?.version !== record?.component?.latestVersion
-                              ) && (
+                              {!!__$$eval(() => record?.component?.isNewer) && (
                                 <Tag color="success" closable={false} __component_name="Tag">
                                   New
                                 </Tag>
@@ -506,6 +519,40 @@ class ComponentsManagementInstall$$Page extends React.Component {
                             </Space>
                           ))(__$$createChildContext(__$$context, { text, record, index })),
                         dataIndex: 'version',
+                        _unsafe_MixedSetter_title_select: 'SlotSetter',
+                        title: options =>
+                          (__$$context => (
+                            <Space
+                              __component_name="Space"
+                              direction="horizontal"
+                              align="center"
+                              size="small"
+                            >
+                              <Typography.Title
+                                __component_name="Typography.Title"
+                                level={2}
+                                ellipsis={true}
+                                bordered={false}
+                                bold={true}
+                              >
+                                {this.i18n('i18n-7e7t3bw9') /* 版本 */}
+                              </Typography.Title>
+                              <Tag
+                                __component_name="Tag"
+                                color="success"
+                                closable={false}
+                                onClick={function () {
+                                  return this.filterNew.apply(
+                                    this,
+                                    Array.prototype.slice.call(arguments).concat([])
+                                  );
+                                }.bind(__$$context)}
+                                style={{ cursor: 'pointer' }}
+                              >
+                                NEW
+                              </Tag>
+                            </Space>
+                          ))(__$$createChildContext(__$$context, { options })),
                       },
                       {
                         key: 'status',
