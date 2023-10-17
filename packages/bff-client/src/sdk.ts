@@ -321,7 +321,7 @@ export type Mutation = {
   subscriptionCreate: Scalars['Boolean']['output'];
   /** 取消订阅 */
   subscriptionDelete: Scalars['Boolean']['output'];
-  /** 取消订阅（同component） */
+  /** 取消订阅（相同component.name的订阅都取消） */
   subscriptionRemove: Scalars['Boolean']['output'];
 };
 
@@ -499,6 +499,7 @@ export type QueryComponentsArgs = {
   name?: InputMaybe<Scalars['String']['input']>;
   page?: InputMaybe<Scalars['Float']['input']>;
   pageSize?: InputMaybe<Scalars['Float']['input']>;
+  repository?: InputMaybe<Scalars['String']['input']>;
   sortDirection?: InputMaybe<SortDirection>;
   sortField?: InputMaybe<Scalars['String']['input']>;
   source?: InputMaybe<Scalars['String']['input']>;
@@ -930,6 +931,7 @@ export type GetComponentsQueryVariables = Exact<{
   cluster?: InputMaybe<Scalars['String']['input']>;
   source?: InputMaybe<Scalars['String']['input']>;
   isNewer?: InputMaybe<Scalars['Boolean']['input']>;
+  repository?: InputMaybe<Scalars['String']['input']>;
 }>;
 
 export type GetComponentsQuery = {
@@ -1505,6 +1507,7 @@ export const GetComponentsDocument = gql`
     $cluster: String
     $source: String
     $isNewer: Boolean
+    $repository: String
   ) {
     components(
       page: $page
@@ -1517,6 +1520,7 @@ export const GetComponentsDocument = gql`
       cluster: $cluster
       source: $source
       isNewer: $isNewer
+      repository: $repository
     ) {
       nodes {
         name

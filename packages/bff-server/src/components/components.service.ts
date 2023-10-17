@@ -88,6 +88,7 @@ export class ComponentsService {
       cluster,
       source,
       isNewer,
+      repository,
     } = args;
     let reposName: string[] = [];
     if (source) {
@@ -101,6 +102,7 @@ export class ComponentsService {
         (!chartName || t.chartName?.includes(chartName) || t.displayName?.includes(chartName)) &&
         (!keyword || t.keywords?.includes(keyword)) &&
         (!source || reposName.includes(t.repository)) &&
+        (!repository || t.repository?.includes(repository)) &&
         (isNewer === undefined || t.isNewer === isNewer)
     );
     if (sortField && sortDirection) {

@@ -32,4 +32,7 @@ export class ComponentArgs extends PaginationArgs {
 
   /** 存在新版本 */
   isNewer?: boolean;
+
+  /** 组件仓库 */
+  repository?: string;
 }
