@@ -40,5 +40,10 @@ mutation createSubscription($subscription: CreateSubscriptionInput!, $cluster: S
 
 # 取消订阅
 mutation deleteSubscription($name: String!, $namespace: String!, $cluster: String){
-  subscriptionRemove(name: $name, namespace: $namespace, cluster: $cluster)
+  subscriptionDelete(name: $name, namespace: $namespace, cluster: $cluster)
+}
+
+# 取消订阅（相同component.name的订阅都取消）
+mutation removeSubscription($component: String!, $namespace: String!, $cluster: String){
+  subscriptionRemove(component: $component, namespace: $namespace, cluster: $cluster)
 }

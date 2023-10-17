@@ -8,7 +8,7 @@ import { KubernetesService } from '@/kubernetes/kubernetes.service';
 import { InstallMethod } from '@/subscription/models/installmethod.enum';
 import { SubscriptionService } from '@/subscription/subscription.service';
 import { CRD, JwtAuth, ListOptions } from '@/types';
-import { Inject, Injectable } from '@nestjs/common';
+import { Inject, Injectable, Logger } from '@nestjs/common';
 import { ConfigType } from '@nestjs/config';
 import { ComponentplanArgs } from './dto/componentplan.args';
 import { CreateComponentplanInput } from './dto/create-componentplan.input';
@@ -28,6 +28,7 @@ export class ComponentplanService {
     private config: ConfigType<typeof serverConfig>
   ) {}
 
+  private logger = new Logger('ComponentplanService');
   private kubebbNS = this.config.kubebb.namespace;
 
   format(cp: CRD.ComponentPlan, component?: Component): Componentplan {
@@ -39,6 +40,8 @@ export class ComponentplanService {
       if (succeeded?.status === 'False') {
         if (actioned.reason === ComponentplanStatus.UninstallFailed) {
           status = ExportComponentplanStatus.UninstallFailed;
+        } else if (actioned.reason === ComponentplanStatus.Uninstalling) {
+          status = ExportComponentplanStatus.Uninstalling;
         } else {
           status = ExportComponentplanStatus.InstallFailed;
         }
@@ -100,7 +103,9 @@ export class ComponentplanService {
     const { body } = await k8s.componentplan.read(name, namespace);
     let cm: Component;
     if (body?.spec?.component?.name) {
-      cm = await this.componentsService.getComponent(auth, body.spec.component.name, cluster);
+      try {
+        cm = await this.componentsService.getComponent(auth, body.spec.component.name, cluster);
+      } catch (err) {}
     }
     return this.format(body, cm);
   }
@@ -370,7 +375,11 @@ export class ComponentplanService {
     );
     await Promise.all((cpls || []).map(cpl => k8s.componentplan.delete(cpl.name, namespace)));
     if (configmap) {
-      await this.configmapService.deleteConfigmap(auth, configmap, namespace, cluster);
+      try {
+        await this.configmapService.deleteConfigmap(auth, configmap, namespace, cluster);
+      } catch (err) {
+        this.logger.warn('deleteConfigmap', `${err.statusCode}: ${err.body?.message}`);
+      }
     }
     // 如果有sub，修改sub的自动更新为手动
     const subsName = (cpls || []).map(cpl => cpl.subscriptionName).filter(subN => !!subN);
