@@ -320,6 +320,8 @@ export type Mutation = {
   /** 订阅 */
   subscriptionCreate: Scalars['Boolean']['output'];
   /** 取消订阅 */
+  subscriptionDelete: Scalars['Boolean']['output'];
+  /** 取消订阅（同component） */
   subscriptionRemove: Scalars['Boolean']['output'];
 };
 
@@ -384,9 +386,15 @@ export type MutationSubscriptionCreateArgs = {
   subscription: CreateSubscriptionInput;
 };
 
-export type MutationSubscriptionRemoveArgs = {
+export type MutationSubscriptionDeleteArgs = {
   cluster?: InputMaybe<Scalars['String']['input']>;
   name: Scalars['String']['input'];
+  namespace: Scalars['String']['input'];
+};
+
+export type MutationSubscriptionRemoveArgs = {
+  cluster?: InputMaybe<Scalars['String']['input']>;
+  component: Scalars['String']['input'];
   namespace: Scalars['String']['input'];
 };
 
@@ -1332,7 +1340,15 @@ export type DeleteSubscriptionMutationVariables = Exact<{
   cluster?: InputMaybe<Scalars['String']['input']>;
 }>;
 
-export type DeleteSubscriptionMutation = { __typename?: 'Mutation'; subscriptionRemove: boolean };
+export type DeleteSubscriptionMutation = { __typename?: 'Mutation'; subscriptionDelete: boolean };
+
+export type RemoveSubscriptionMutationVariables = Exact<{
+  component: Scalars['String']['input'];
+  namespace: Scalars['String']['input'];
+  cluster?: InputMaybe<Scalars['String']['input']>;
+}>;
+
+export type RemoveSubscriptionMutation = { __typename?: 'Mutation'; subscriptionRemove: boolean };
 
 export const GetComponentplansPagedDocument = gql`
   query getComponentplansPaged(
@@ -1843,7 +1859,12 @@ export const CreateSubscriptionDocument = gql`
 `;
 export const DeleteSubscriptionDocument = gql`
   mutation deleteSubscription($name: String!, $namespace: String!, $cluster: String) {
-    subscriptionRemove(name: $name, namespace: $namespace, cluster: $cluster)
+    subscriptionDelete(name: $name, namespace: $namespace, cluster: $cluster)
+  }
+`;
+export const RemoveSubscriptionDocument = gql`
+  mutation removeSubscription($component: String!, $namespace: String!, $cluster: String) {
+    subscriptionRemove(component: $component, namespace: $namespace, cluster: $cluster)
   }
 `;
 
@@ -2190,6 +2211,20 @@ export function getSdk(client: GraphQLClient, withWrapper: SdkFunctionWrapper = 
             ...wrappedRequestHeaders,
           }),
         'deleteSubscription',
+        'mutation'
+      );
+    },
+    removeSubscription(
+      variables: RemoveSubscriptionMutationVariables,
+      requestHeaders?: GraphQLClientRequestHeaders
+    ): Promise<RemoveSubscriptionMutation> {
+      return withWrapper(
+        wrappedRequestHeaders =>
+          client.request<RemoveSubscriptionMutation>(RemoveSubscriptionDocument, variables, {
+            ...requestHeaders,
+            ...wrappedRequestHeaders,
+          }),
+        'removeSubscription',
         'mutation'
       );
     },

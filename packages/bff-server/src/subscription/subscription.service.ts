@@ -84,12 +84,21 @@ export class SubscriptionService {
       isNewer,
     } = args;
     const res = await this.getSubscriptions(auth, namespace, cluster);
-    const filteredRes = res?.filter(
-      t =>
-        (!chartName || t.chartName?.includes(chartName)) &&
-        (!repository || t.repository?.includes(repository)) &&
-        (isNewer === undefined || t.component?.isNewer === isNewer)
-    );
+    const componentNameMap = new Map();
+    const filteredRes = res
+      ?.filter(t => {
+        if (t.component?.name && !componentNameMap.has(t.component.name)) {
+          componentNameMap.set(t.component.name, true);
+          return true;
+        }
+        return false;
+      })
+      ?.filter(
+        t =>
+          (!chartName || t.chartName?.includes(chartName)) &&
+          (!repository || t.repository?.includes(repository)) &&
+          (isNewer === undefined || t.component?.isNewer === isNewer)
+      );
     if (sortField && sortDirection) {
       filteredRes?.sort((a, b) => {
         if (sortField === 'creationTimestamp') {
@@ -117,6 +126,23 @@ export class SubscriptionService {
   ): Promise<boolean> {
     const k8s = await this.k8sService.getClient(auth, { cluster });
     await k8s.subscription.delete(name, namespace);
+    return true;
+  }
+
+  async batchRemove(
+    auth: JwtAuth,
+    componentName: string,
+    namespace: string,
+    cluster?: string
+  ): Promise<boolean> {
+    const k8s = await this.k8sService.getClient(auth, { cluster });
+    const labelSelectors = [`core.kubebb.k8s.com.cn/component-name=${componentName}`];
+    const { body } = await k8s.subscription.list(namespace, {
+      labelSelector: labelSelectors.join(','),
+    });
+    await Promise.all(
+      (body.items || []).map(sub => k8s.subscription.delete(sub?.metadata?.name, namespace))
+    );
     return true;
   }
 

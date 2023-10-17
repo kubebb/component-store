@@ -45,7 +45,7 @@ export class SubscriptionResolver {
   }
 
   @Mutation(() => Boolean, { description: '取消订阅' })
-  async subscriptionRemove(
+  async subscriptionDelete(
     @Auth() auth: JwtAuth,
     @Args('name') name: string,
     @Args('namespace') namespace: string,
@@ -56,5 +56,19 @@ export class SubscriptionResolver {
     cluster: string
   ): Promise<boolean> {
     return this.subscriptionService.removeSubscription(auth, name, namespace, cluster);
+  }
+
+  @Mutation(() => Boolean, { description: '取消订阅（相同component.name的订阅都取消）' })
+  async subscriptionRemove(
+    @Auth() auth: JwtAuth,
+    @Args('component') component: string,
+    @Args('namespace') namespace: string,
+    @Args('cluster', {
+      nullable: true,
+      description: '集群下的资源，不传则为默认集群',
+    })
+    cluster: string
+  ): Promise<boolean> {
+    return this.subscriptionService.batchRemove(auth, component, namespace, cluster);
   }
 }
