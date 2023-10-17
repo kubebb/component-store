@@ -2,7 +2,6 @@ import { Loader } from '@/common/dataloader';
 import { Auth } from '@/common/decorators/auth.decorator';
 import { Repository } from '@/repository/models/repository.model';
 import { RepositoryLoader } from '@/repository/repository.loader';
-import { RepositoryService } from '@/repository/repository.service';
 import { AnyObj, JwtAuth } from '@/types';
 import { Args, Info, Mutation, Parent, Query, ResolveField, Resolver } from '@nestjs/graphql';
 import DataLoader from 'dataloader';
@@ -17,10 +16,7 @@ import { Component, ComponentChart, PaginatedComponent } from './models/componen
 
 @Resolver(() => Component)
 export class ComponentsResolver {
-  constructor(
-    private readonly componentsService: ComponentsService,
-    private readonly repositoryService: RepositoryService
-  ) {}
+  constructor(private readonly componentsService: ComponentsService) {}
 
   @Query(() => PaginatedComponent, { description: '组件列表（分页）' })
   async components(

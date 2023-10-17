@@ -557,6 +557,9 @@ type Query {
     """每页数量"""
     pageSize: Float = 20
 
+    """组件仓库"""
+    repository: String
+
     """排序方向"""
     sortDirection: SortDirection
 
