@@ -51,6 +51,12 @@ type Component {
   """所属仓库"""
   repositoryCR: Repository
 
+  """指定项目"""
+  restrictedNamespaces: [String!]
+
+  """指定租户"""
+  restrictedTenants: [String!]
+
   """代码来源"""
   source: ComponentSource
 

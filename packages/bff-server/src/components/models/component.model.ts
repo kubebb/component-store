@@ -101,6 +101,12 @@ export class Component {
   /** 最新版本 */
   latestVersion?: string;
 
+  /** 指定租户 */
+  restrictedTenants?: string[];
+
+  /** 指定项目 */
+  restrictedNamespaces?: string[];
+
   /** 是否显示新版本 */
   isNewer?: boolean;
 
