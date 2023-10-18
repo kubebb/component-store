@@ -24,7 +24,7 @@ export class Subscription {
   updatedAt?: string;
 
   /** 所属组件仓库 */
-  repository: string;
+  repository?: string;
 
   /** 项目 */
   namespace: string;
