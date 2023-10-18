@@ -152,8 +152,8 @@ class ComponentsManagementSubscription$$Page extends React.Component {
       deleteLoading: true,
     });
     try {
-      await this.props.appHelper.utils.bff.deleteSubscription({
-        name: this.state.record?.name,
+      await this.props.appHelper.utils.bff.removeSubscription({
+        component: this.state.record?.component?.name,
         cluster: this.utils.getAuthData()?.cluster,
         namespace: this.utils.getAuthData()?.project,
       });
@@ -484,6 +484,39 @@ class ComponentsManagementSubscription$$Page extends React.Component {
                       },
                       {
                         key: 'latestVersion',
+                        title: options =>
+                          (__$$context => (
+                            <Space
+                              size="small"
+                              align="center"
+                              direction="horizontal"
+                              __component_name="Space"
+                            >
+                              <Typography.Title
+                                bold={true}
+                                level={2}
+                                bordered={false}
+                                ellipsis={true}
+                                __component_name="Typography.Title"
+                              >
+                                {this.i18n('i18n-7e7t3bw9') /* 版本 */}
+                              </Typography.Title>
+                              <Tag
+                                color="success"
+                                style={{ cursor: 'pointer' }}
+                                onClick={function () {
+                                  return this.filterNew.apply(
+                                    this,
+                                    Array.prototype.slice.call(arguments).concat([])
+                                  );
+                                }.bind(__$$context)}
+                                closable={false}
+                                __component_name="Tag"
+                              >
+                                NEW
+                              </Tag>
+                            </Space>
+                          ))(__$$createChildContext(__$$context, { options })),
                         render: (text, record, index) =>
                           (__$$context => (
                             <Space align="center" direction="horizontal" __component_name="Space">
@@ -505,39 +538,6 @@ class ComponentsManagementSubscription$$Page extends React.Component {
                           ))(__$$createChildContext(__$$context, { text, record, index })),
                         dataIndex: 'latestVersion',
                         _unsafe_MixedSetter_title_select: 'SlotSetter',
-                        title: options =>
-                          (__$$context => (
-                            <Space
-                              __component_name="Space"
-                              direction="horizontal"
-                              align="center"
-                              size="small"
-                            >
-                              <Typography.Title
-                                __component_name="Typography.Title"
-                                level={2}
-                                ellipsis={true}
-                                bordered={false}
-                                bold={true}
-                              >
-                                {this.i18n('i18n-7e7t3bw9') /* 版本 */}
-                              </Typography.Title>
-                              <Tag
-                                __component_name="Tag"
-                                color="success"
-                                closable={false}
-                                onClick={function () {
-                                  return this.filterNew.apply(
-                                    this,
-                                    Array.prototype.slice.call(arguments).concat([])
-                                  );
-                                }.bind(__$$context)}
-                                style={{ cursor: 'pointer' }}
-                              >
-                                NEW
-                              </Tag>
-                            </Space>
-                          ))(__$$createChildContext(__$$context, { options })),
                       },
                       {
                         key: 'repository',
