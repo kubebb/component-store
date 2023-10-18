@@ -126,3 +126,13 @@ query getComponentChart($name: String!, $version: String!){
     }
   }
 }
+
+# 获取组件的Chart相关信息README.md
+query getComponentChartReadme($name: String!, $version: String!){
+  component(name: $name) {
+    name
+    chart(version: $version) {
+      readme
+    }
+  }
+}

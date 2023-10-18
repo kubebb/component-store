@@ -39,6 +39,7 @@ class ComponentMaintainer {
 export class ComponentChart {
   valuesYaml?: string;
   images?: string[];
+  readme?: string;
 }
 
 @ObjectType({ description: '组件' })
