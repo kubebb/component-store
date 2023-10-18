@@ -868,7 +868,7 @@ type Subscription {
   releaseName: String
 
   """所属组件仓库"""
-  repository: String!
+  repository: String
 
   """更新时间"""
   schedule: String

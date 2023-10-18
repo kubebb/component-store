@@ -42,18 +42,17 @@ export class ComponentplanService {
           status = ExportComponentplanStatus.UninstallFailed;
         } else if (actioned.reason === ComponentplanStatus.Uninstalling) {
           status = ExportComponentplanStatus.Uninstalling;
+        } else if (
+          actioned.reason === ComponentplanStatus.Installing ||
+          actioned.reason === ComponentplanStatus.WaitDo
+        ) {
+          status = ExportComponentplanStatus.Installing;
         } else {
           status = ExportComponentplanStatus.InstallFailed;
         }
       }
       if (succeeded?.status === 'True') {
-        if (actioned.reason === ComponentplanStatus.Uninstalling) {
-          status = ExportComponentplanStatus.Uninstalling;
-        } else if (actioned.reason === ComponentplanStatus.Installing) {
-          status = ExportComponentplanStatus.Installing;
-        } else {
-          status = ExportComponentplanStatus.InstallSuccess;
-        }
+        status = ExportComponentplanStatus.InstallSuccess;
       }
     }
 

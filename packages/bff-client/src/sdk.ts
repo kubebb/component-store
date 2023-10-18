@@ -712,7 +712,7 @@ export type Subscription = {
   /** 部署名称 */
   releaseName?: Maybe<Scalars['String']['output']>;
   /** 所属组件仓库 */
-  repository: Scalars['String']['output'];
+  repository?: Maybe<Scalars['String']['output']>;
   /** 更新时间 */
   schedule?: Maybe<Scalars['String']['output']>;
   /** 组件最近更新时间 */
@@ -1299,7 +1299,7 @@ export type GetSubscriptionsPagedQuery = {
       namespace: string;
       creationTimestamp: string;
       releaseName?: string | null;
-      repository: string;
+      repository?: string | null;
       component?: {
         __typename?: 'Component';
         name: string;
