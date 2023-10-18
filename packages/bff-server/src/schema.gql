@@ -76,6 +76,7 @@ type Component {
 """Chart 信息"""
 type ComponentChart {
   images: [String!]
+  readme: String
   valuesYaml: String
 }
 

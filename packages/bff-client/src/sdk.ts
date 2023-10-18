@@ -62,6 +62,10 @@ export type Component = {
   repository: Scalars['String']['output'];
   /** 所属仓库 */
   repositoryCR?: Maybe<Repository>;
+  /** 指定项目 */
+  restrictedNamespaces?: Maybe<Array<Scalars['String']['output']>>;
+  /** 指定租户 */
+  restrictedTenants?: Maybe<Array<Scalars['String']['output']>>;
   /** 代码来源 */
   source?: Maybe<ComponentSource>;
   /** 源代码地址 */
@@ -83,6 +87,7 @@ export type ComponentChartArgs = {
 export type ComponentChart = {
   __typename?: 'ComponentChart';
   images?: Maybe<Array<Scalars['String']['output']>>;
+  readme?: Maybe<Scalars['String']['output']>;
   valuesYaml?: Maybe<Scalars['String']['output']>;
 };
 
@@ -1023,6 +1028,8 @@ export type GetComponentQuery = {
     updatedAt?: string | null;
     status?: ComponentStatus | null;
     source?: ComponentSource | null;
+    restrictedNamespaces?: Array<string> | null;
+    restrictedTenants?: Array<string> | null;
     versions?: Array<{
       __typename?: 'ComponentVersion';
       createdAt?: string | null;
@@ -1089,6 +1096,20 @@ export type GetComponentChartQuery = {
       images?: Array<string> | null;
       valuesYaml?: string | null;
     } | null;
+  };
+};
+
+export type GetComponentChartReadmeQueryVariables = Exact<{
+  name: Scalars['String']['input'];
+  version: Scalars['String']['input'];
+}>;
+
+export type GetComponentChartReadmeQuery = {
+  __typename?: 'Query';
+  component: {
+    __typename?: 'Component';
+    name: string;
+    chart?: { __typename?: 'ComponentChart'; readme?: string | null } | null;
   };
 };
 
@@ -1595,6 +1616,8 @@ export const GetComponentDocument = gql`
       updatedAt
       status
       source
+      restrictedNamespaces
+      restrictedTenants
       versions {
         createdAt
         updatedAt
@@ -1642,6 +1665,16 @@ export const GetComponentChartDocument = gql`
       chart(version: $version) {
         images
         valuesYaml
+      }
+    }
+  }
+`;
+export const GetComponentChartReadmeDocument = gql`
+  query getComponentChartReadme($name: String!, $version: String!) {
+    component(name: $name) {
+      name
+      chart(version: $version) {
+        readme
       }
     }
   }
@@ -2078,6 +2111,20 @@ export function getSdk(client: GraphQLClient, withWrapper: SdkFunctionWrapper = 
         'query'
       );
     },
+    getComponentChartReadme(
+      variables: GetComponentChartReadmeQueryVariables,
+      requestHeaders?: GraphQLClientRequestHeaders
+    ): Promise<GetComponentChartReadmeQuery> {
+      return withWrapper(
+        wrappedRequestHeaders =>
+          client.request<GetComponentChartReadmeQuery>(GetComponentChartReadmeDocument, variables, {
+            ...requestHeaders,
+            ...wrappedRequestHeaders,
+          }),
+        'getComponentChartReadme',
+        'query'
+      );
+    },
     getRepositories(
       variables?: GetRepositoriesQueryVariables,
       requestHeaders?: GraphQLClientRequestHeaders
@@ -2384,6 +2431,16 @@ export function getSdkWithHooks(
       return useSWR<GetComponentChartQuery, ClientError>(
         genKey<GetComponentChartQueryVariables>('GetComponentChart', variables),
         () => sdk.getComponentChart(variables),
+        config
+      );
+    },
+    useGetComponentChartReadme(
+      variables: GetComponentChartReadmeQueryVariables,
+      config?: SWRConfigInterface<GetComponentChartReadmeQuery, ClientError>
+    ) {
+      return useSWR<GetComponentChartReadmeQuery, ClientError>(
+        genKey<GetComponentChartReadmeQueryVariables>('GetComponentChartReadme', variables),
+        () => sdk.getComponentChartReadme(variables),
         config
       );
     },

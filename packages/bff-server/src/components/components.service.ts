@@ -274,6 +274,7 @@ export class ComponentsService {
     return {
       images: data?.images?.split(','),
       valuesYaml: data?.['values.yaml'],
+      readme: data?.readme,
     };
   }
 }
