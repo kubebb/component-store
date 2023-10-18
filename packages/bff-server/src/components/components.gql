@@ -74,6 +74,8 @@ query getComponent($name: String!, $cluster: String){
     updatedAt
     status
     source
+    restrictedNamespaces
+    restrictedTenants
     versions {
       createdAt
       updatedAt

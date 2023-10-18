@@ -34,6 +34,10 @@ export class ComponentsService {
 
   formatComponent(c: CRD.Component, cluster?: string): Component {
     const latestVersion = c.status?.versions?.[0];
+    const restrictedTenants =
+      latestVersion?.annotations?.['core.kubebb.k8s.com.cn/restricted-tenants'];
+    const restrictedNamespaces =
+      latestVersion?.annotations?.['core.kubebb.k8s.com.cn/restricted-namespaces'];
     const isNewer = latestVersion?.createdAt
       ? Date.now() - 7 * 24 * 60 * 60 * 1000 < new Date(latestVersion.createdAt).valueOf()
       : false;
@@ -55,6 +59,8 @@ export class ComponentsService {
       creationTimestamp: new Date(c.metadata?.creationTimestamp).toISOString(),
       updatedAt: latestVersion?.updatedAt ? new Date(latestVersion?.updatedAt).toISOString() : null,
       latestVersion: latestVersion?.version,
+      restrictedTenants: restrictedTenants ? restrictedTenants.split(',') : null,
+      restrictedNamespaces: restrictedNamespaces ? restrictedNamespaces.split(',') : null,
       isNewer,
     };
   }
