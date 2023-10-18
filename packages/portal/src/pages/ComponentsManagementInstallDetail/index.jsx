@@ -80,6 +80,28 @@ class ComponentsManagementInstallDetail$$Page extends React.Component {
 
   $$ = () => [];
 
+  getImage(item) {
+    item = item || {};
+    const arr = item?.name?.split('/');
+    const pre = arr?.slice(0, arr?.length - 1)?.join('/');
+    const nameReady = pre && pre + '/';
+    const override =
+      this.props.useGetComponentplan?.data?.componentplan?.component?.repositoryCR?.imageOverride?.find(
+        item => {
+          return nameReady === `${item.registry}/${item.path}/`;
+        }
+      );
+    const info = {
+      nameReady: override && `${override.newRegistry}/${override.newPath}/`,
+      name: item.name,
+      newName: item.newName?.split(nameReady)?.[1],
+      newTag: item.newTag,
+    };
+    return (
+      `${info.nameReady || nameReady || '-'}${info.newName || ''}:${info.newTag || '-'}` || '-'
+    );
+  }
+
   getName(item) {
     item = item || {};
     if (item.displayName) {
@@ -600,40 +622,7 @@ class ComponentsManagementInstallDetail$$Page extends React.Component {
                                   ellipsis={true}
                                   __component_name="Typography.Text"
                                 >
-                                  {__$$eval(() =>
-                                    (() => {
-                                      const arr = record?.name?.split('/');
-                                      const v = arr?.slice(0, arr?.length - 1)?.join('/') + '/';
-                                      return record?.name ? v : '-';
-                                    })()
-                                  )}
-                                </Typography.Text>
-                                <Typography.Text
-                                  style={{ fontSize: '' }}
-                                  strong={false}
-                                  disabled={false}
-                                  ellipsis={true}
-                                  __component_name="Typography.Text"
-                                >
-                                  {__$$eval(() => record?.newName || '-')}
-                                </Typography.Text>
-                                <Typography.Text
-                                  style={{ fontSize: '' }}
-                                  strong={false}
-                                  disabled={false}
-                                  ellipsis={true}
-                                  __component_name="Typography.Text"
-                                >
-                                  :
-                                </Typography.Text>
-                                <Typography.Text
-                                  style={{ fontSize: '' }}
-                                  strong={false}
-                                  disabled={false}
-                                  ellipsis={true}
-                                  __component_name="Typography.Text"
-                                >
-                                  {__$$eval(() => record?.newTag || '-')}
+                                  {__$$eval(() => __$$context.getImage(record))}
                                 </Typography.Text>
                               </Space>
                             </Col>
@@ -766,7 +755,7 @@ class ComponentsManagementInstallDetail$$Page extends React.Component {
                             ?.chartName || '-'
                       ) && (
                         <Typography.Text
-                          style={{ maxWidth: '70px', fontSize: '' }}
+                          style={{ fontSize: '', maxWidth: '70px' }}
                           strong={false}
                           disabled={false}
                           ellipsis={{
@@ -1322,8 +1311,8 @@ class ComponentsManagementInstallDetail$$Page extends React.Component {
                         items={[
                           {
                             key: 'euyrpz50dzt',
-                            span: 1,
                             label: this.i18n('i18n-t6iwy9l2') /* 配置文件 */,
+                            span: 1,
                             children: (
                               <Row wrap={true} style={{ width: '100%' }} __component_name="Row">
                                 <Col span={24} __component_name="Col">
@@ -1340,7 +1329,13 @@ class ComponentsManagementInstallDetail$$Page extends React.Component {
                                 <Col span={24} __component_name="Col">
                                   <Editor
                                     style={{ height: '200px' }}
+                                    value={__$$eval(
+                                      () =>
+                                        this.props.useGetComponentplan?.data?.componentplan
+                                          ?.valuesYaml || ''
+                                    )}
                                     readOnly={true}
+                                    styleVersion="kubebb"
                                     __component_name="Editor"
                                   />
                                 </Col>
@@ -1349,24 +1344,19 @@ class ComponentsManagementInstallDetail$$Page extends React.Component {
                           },
                           {
                             key: 'bg1244wxs0s',
-                            span: 1,
                             label: this.i18n('i18n-hnyjg86b') /* 镜像 */,
+                            span: 1,
                             children: (
-                              <Row wrap={true} __component_name="Row">
+                              <Row wrap={true} gutter={[0, 0]} __component_name="Row">
                                 {__$$evalArray(
                                   () =>
                                     this.props.useGetComponentplan?.data?.componentplan?.component
-                                      ?.images || [
-                                      {
-                                        name: '123',
-                                        newTag: 'tag',
-                                      },
-                                      {},
-                                    ]
+                                      ?.images || []
                                 ).map((record, index) =>
                                   (__$$context => (
                                     <Col span={24} __component_name="Col">
                                       <Space
+                                        size={0}
                                         align="center"
                                         direction="horizontal"
                                         __component_name="Space"
@@ -1378,7 +1368,7 @@ class ComponentsManagementInstallDetail$$Page extends React.Component {
                                           ellipsis={true}
                                           __component_name="Typography.Text"
                                         >
-                                          {__$$eval(() => record?.name || '-')}
+                                          {__$$eval(() => __$$context.getImage(record))}
                                         </Typography.Text>
                                         <Typography.Text
                                           style={{ fontSize: '' }}
@@ -1387,16 +1377,14 @@ class ComponentsManagementInstallDetail$$Page extends React.Component {
                                           ellipsis={true}
                                           __component_name="Typography.Text"
                                         >
-                                          /
-                                        </Typography.Text>
-                                        <Typography.Text
-                                          style={{ fontSize: '' }}
-                                          strong={false}
-                                          disabled={false}
-                                          ellipsis={true}
-                                          __component_name="Typography.Text"
-                                        >
-                                          /
+                                          {__$$eval(() =>
+                                            (() => {
+                                              const arr = record?.name?.split('/');
+                                              const v =
+                                                arr?.slice(0, arr?.length - 1)?.join('/') + '/';
+                                              return record?.name ? v : '-';
+                                            })()
+                                          )}
                                         </Typography.Text>
                                         <Typography.Text
                                           style={{ fontSize: '' }}
@@ -1406,6 +1394,15 @@ class ComponentsManagementInstallDetail$$Page extends React.Component {
                                           __component_name="Typography.Text"
                                         >
                                           {__$$eval(() => record?.newName || '-')}
+                                        </Typography.Text>
+                                        <Typography.Text
+                                          style={{ fontSize: '' }}
+                                          strong={false}
+                                          disabled={false}
+                                          ellipsis={true}
+                                          __component_name="Typography.Text"
+                                        >
+                                          :
                                         </Typography.Text>
                                         <Typography.Text
                                           style={{ fontSize: '' }}
@@ -1495,41 +1492,7 @@ class ComponentsManagementInstallDetail$$Page extends React.Component {
                                         ellipsis={true}
                                         __component_name="Typography.Text"
                                       >
-                                        {__$$eval(() =>
-                                          (() => {
-                                            const arr = record?.name?.split('/');
-                                            const v =
-                                              arr?.slice(0, arr?.length - 1)?.join('/') + '/';
-                                            return record?.name ? v : '-';
-                                          })()
-                                        )}
-                                      </Typography.Text>
-                                      <Typography.Text
-                                        style={{ fontSize: '' }}
-                                        strong={false}
-                                        disabled={false}
-                                        ellipsis={true}
-                                        __component_name="Typography.Text"
-                                      >
-                                        {__$$eval(() => record?.newName || '-')}
-                                      </Typography.Text>
-                                      <Typography.Text
-                                        style={{ fontSize: '' }}
-                                        strong={false}
-                                        disabled={false}
-                                        ellipsis={true}
-                                        __component_name="Typography.Text"
-                                      >
-                                        :
-                                      </Typography.Text>
-                                      <Typography.Text
-                                        style={{ fontSize: '' }}
-                                        strong={false}
-                                        disabled={false}
-                                        ellipsis={true}
-                                        __component_name="Typography.Text"
-                                      >
-                                        {__$$eval(() => record?.newTag || '-')}
+                                        {__$$eval(() => __$$context.getImage(record))}
                                       </Typography.Text>
                                     </Space>
                                   </Col>
