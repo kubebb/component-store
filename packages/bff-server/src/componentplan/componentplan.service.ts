@@ -33,6 +33,7 @@ export class ComponentplanService {
 
   format(cp: CRD.ComponentPlan, component?: Component): Componentplan {
     let status = ExportComponentplanStatus.Unknown;
+    let reason: string;
     const conditions = cp.status?.conditions;
     if (conditions) {
       const succeeded = conditions.find(c => c.type === 'Succeeded');
@@ -40,15 +41,22 @@ export class ComponentplanService {
       if (succeeded?.status === 'False') {
         if (actioned.reason === ComponentplanStatus.UninstallFailed) {
           status = ExportComponentplanStatus.UninstallFailed;
+          reason = actioned.message;
         } else if (actioned.reason === ComponentplanStatus.Uninstalling) {
           status = ExportComponentplanStatus.Uninstalling;
         } else if (
           actioned.reason === ComponentplanStatus.Installing ||
           actioned.reason === ComponentplanStatus.WaitDo
         ) {
-          status = ExportComponentplanStatus.Installing;
+          if (actioned.message) {
+            status = ExportComponentplanStatus.InstallFailed;
+            reason = actioned.message;
+          } else {
+            status = ExportComponentplanStatus.Installing;
+          }
         } else {
           status = ExportComponentplanStatus.InstallFailed;
+          reason = actioned.message;
         }
       }
       if (succeeded?.status === 'True') {
@@ -66,6 +74,7 @@ export class ComponentplanService {
       subscriptionName: cp.metadata?.labels?.['core.kubebb.k8s.com.cn/subscription-name'],
       approved: cp.spec?.approved,
       status,
+      reason,
       latest: cp.status?.latest,
       images: cp.spec?.override?.images,
       configmap: cp.spec?.override?.valuesFrom?.filter(v => v.kind === 'ConfigMap')?.[0]?.name,

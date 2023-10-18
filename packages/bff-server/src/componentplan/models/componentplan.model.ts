@@ -37,6 +37,9 @@ export class Componentplan {
   @Field(() => ExportComponentplanStatus, { nullable: true, description: '状态' })
   status?: string;
 
+  /** 状态为失败的原因 */
+  reason?: string;
+
   /** 当前安装 */
   latest?: boolean;
 

@@ -8,6 +8,7 @@ query getComponentplansPaged($namespace: String!, $page: Float = 1, $pageSize: F
       namespace
       version
       status
+      reason
       component {
         name
         chartName
