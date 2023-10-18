@@ -153,6 +153,9 @@ type Componentplan {
   """项目"""
   namespace: String!
 
+  """状态为失败的原因"""
+  reason: String
+
   """部署名称"""
   releaseName: String!
 

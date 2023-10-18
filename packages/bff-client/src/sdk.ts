@@ -154,6 +154,8 @@ export type Componentplan = {
   name: Scalars['ID']['output'];
   /** 项目 */
   namespace: Scalars['String']['output'];
+  /** 状态为失败的原因 */
+  reason?: Maybe<Scalars['String']['output']>;
   /** 部署名称 */
   releaseName: Scalars['String']['output'];
   /** 仓库 */
@@ -794,6 +796,7 @@ export type GetComponentplansPagedQuery = {
       namespace: string;
       version?: string | null;
       status?: ExportComponentplanStatus | null;
+      reason?: string | null;
       component?: {
         __typename?: 'Component';
         name: string;
@@ -1407,6 +1410,7 @@ export const GetComponentplansPagedDocument = gql`
         namespace
         version
         status
+        reason
         component {
           name
           chartName
