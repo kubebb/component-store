@@ -135,10 +135,11 @@ class ComponentsActions$$Page extends React.Component {
     const override = this.state.component?.repositoryCR?.imageOverride?.find(item => {
       return v === `${item.registry}/${item.path}/`;
     });
-    this.form().setValuesIn(
-      `images.name.${curIndex}.nameReady`,
-      `${override.newRegistry}/${override.newPath}`
-    );
+    override &&
+      this.form().setValuesIn(
+        `images.name.${curIndex}.nameReady`,
+        `${override.newRegistry}/${override.newPath}/`
+      );
   }
 
   setFormValues(values) {
@@ -155,6 +156,9 @@ class ComponentsActions$$Page extends React.Component {
     const res = await this.props.appHelper?.utils?.bff?.getComponent({
       name: this.props.appHelper?.match?.params?.id,
       cluster: this.getCluster(),
+    });
+    this.setState({
+      component: res?.component,
     });
     this.form()?.setFieldState('version', {
       dataSource:
@@ -255,7 +259,7 @@ class ComponentsActions$$Page extends React.Component {
               return nameReady === `${item.registry}/${item.path}/`;
             });
             return {
-              nameReady: `${override.newRegistry}/${override.newPath}`,
+              nameReady: override && `${override.newRegistry}/${override.newPath}/`,
               name: item.name,
               newName: item.newName?.split(nameReady)?.[1],
               newTag: item.newTag,
@@ -593,8 +597,8 @@ class ComponentsActions$$Page extends React.Component {
                       _sdkSwrGetFunc: {},
                     },
                   }}
-                  __component_name="FormilySelect"
                   decoratorProps={{ 'x-decorator-props': { labelEllipsis: true } }}
+                  __component_name="FormilySelect"
                 />
                 <FormilyFormItem
                   fieldProps={{
