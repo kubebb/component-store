@@ -174,6 +174,7 @@ export class SubscriptionService {
     auth: JwtAuth,
     namespace: string,
     componentplan: CreateComponentplanInput,
+    valuesFrom: any[],
     cluster?: string
   ): Promise<boolean> {
     const { releaseName, chartName, repository, componentPlanInstallMethod, images, schedule } =
@@ -194,6 +195,7 @@ export class SubscriptionService {
         schedule,
         override: {
           images,
+          valuesFrom,
         },
       },
     });
@@ -205,6 +207,7 @@ export class SubscriptionService {
     name: string,
     namespace: string,
     componentplan: UpdateSubscriptionInput,
+    valuesFrom: any[],
     cluster?: string
   ): Promise<boolean> {
     const { componentPlanInstallMethod, images, schedule } = componentplan;
@@ -215,6 +218,7 @@ export class SubscriptionService {
         schedule,
         override: {
           images,
+          valuesFrom,
         },
       },
     });
