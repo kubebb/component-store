@@ -35,6 +35,8 @@ export type Component = {
   chart?: Maybe<ComponentChart>;
   /** Chart 名称 */
   chartName: Scalars['String']['output'];
+  /** 组件类别 */
+  classification?: Maybe<Scalars['String']['output']>;
   /** 创建时间 */
   creationTimestamp?: Maybe<Scalars['String']['output']>;
   /** 已废弃 */
@@ -500,6 +502,7 @@ export type QueryComponentplansPagedArgs = {
 
 export type QueryComponentsArgs = {
   chartName?: InputMaybe<Scalars['String']['input']>;
+  classification?: InputMaybe<Scalars['String']['input']>;
   cluster?: InputMaybe<Scalars['String']['input']>;
   isNewer?: InputMaybe<Scalars['Boolean']['input']>;
   keyword?: InputMaybe<Scalars['String']['input']>;
@@ -940,6 +943,7 @@ export type GetComponentsQueryVariables = Exact<{
   source?: InputMaybe<Scalars['String']['input']>;
   isNewer?: InputMaybe<Scalars['Boolean']['input']>;
   repository?: InputMaybe<Scalars['String']['input']>;
+  classification?: InputMaybe<Scalars['String']['input']>;
 }>;
 
 export type GetComponentsQuery = {
@@ -966,6 +970,7 @@ export type GetComponentsQuery = {
       source?: ComponentSource | null;
       latestVersion?: string | null;
       isNewer?: boolean | null;
+      classification?: string | null;
       versions?: Array<{
         __typename?: 'ComponentVersion';
         createdAt?: string | null;
@@ -1033,6 +1038,7 @@ export type GetComponentQuery = {
     source?: ComponentSource | null;
     restrictedNamespaces?: Array<string> | null;
     restrictedTenants?: Array<string> | null;
+    classification?: string | null;
     versions?: Array<{
       __typename?: 'ComponentVersion';
       createdAt?: string | null;
@@ -1533,6 +1539,7 @@ export const GetComponentsDocument = gql`
     $source: String
     $isNewer: Boolean
     $repository: String
+    $classification: String
   ) {
     components(
       page: $page
@@ -1546,6 +1553,7 @@ export const GetComponentsDocument = gql`
       source: $source
       isNewer: $isNewer
       repository: $repository
+      classification: $classification
     ) {
       nodes {
         name
@@ -1564,6 +1572,7 @@ export const GetComponentsDocument = gql`
         source
         latestVersion
         isNewer
+        classification
         versions {
           createdAt
           updatedAt
@@ -1622,6 +1631,7 @@ export const GetComponentDocument = gql`
       source
       restrictedNamespaces
       restrictedTenants
+      classification
       versions {
         createdAt
         updatedAt
