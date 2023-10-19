@@ -133,7 +133,7 @@ export class ComponentplanService {
       isNewer,
     } = args;
     const res = await this.list(auth, namespace, {}, cluster);
-    // 过滤出 以releaseName为唯一ID，选择cpl status.latest == true（其中sub创建的cpl（status.latest == null），通过「组件市场」安装入口安装）
+    // 过滤出 以releaseName为唯一ID，选择cpl status.latest == true（其中sub创建的cpl（status.latest == null）手动，通过「组件市场」安装入口安装）
     const releasenameMap = new Map();
     res?.forEach(cpl => {
       if (cpl.releaseName) {
@@ -205,12 +205,12 @@ export class ComponentplanService {
   async create(
     auth: JwtAuth,
     namespace: string,
-    componentplan: CreateComponentplanInput,
+    componentplan: CreateComponentplanInput & { configmap?: string },
     cluster?: string
   ): Promise<boolean> {
     /**
      * 创建：
-     * 1. 自动：只创建sub（？如果已有sub呢？）
+     * 1. 自动：只创建sub
      * 2. 手动：创建cpl
      */
     const {
@@ -221,22 +221,14 @@ export class ComponentplanService {
       componentPlanInstallMethod,
       valuesYaml,
       images,
+      configmap,
     } = componentplan;
-    if (componentPlanInstallMethod === InstallMethod.auto) {
-      await this.subscriptionService.createSubscriptionByCpl(
-        auth,
-        namespace,
-        componentplan,
-        cluster
-      );
-      return true;
-    }
     let valuesFrom: any[];
     if (valuesYaml) {
       const cmName = await this.disposeValuesYaml(
         auth,
         namespace,
-        { repository, chartName, version, releaseName, valuesYaml },
+        { repository, chartName, version, releaseName, valuesYaml, configmap },
         cluster
       );
       if (cmName) {
@@ -247,6 +239,16 @@ export class ComponentplanService {
           },
         ];
       }
+    }
+    if (componentPlanInstallMethod === InstallMethod.auto) {
+      await this.subscriptionService.createSubscriptionByCpl(
+        auth,
+        namespace,
+        componentplan,
+        valuesFrom,
+        cluster
+      );
+      return true;
     }
     const k8s = await this.k8sService.getClient(auth, { cluster });
     await k8s.componentplan.create(namespace, {
@@ -293,41 +295,11 @@ export class ComponentplanService {
       releaseName,
       chartName: component?.chartName,
       repository: component?.repository,
+      configmap,
     };
     if (approved) {
       await this.create(auth, namespace, params, cluster);
     } else {
-      /**
-       * 编辑：
-       * 自动：有sub就修改，没有就创建；(自动更新时间？不是立刻的话怎么处理？)
-       * 手动：有sub就修改，没有就不处理；
-       * 最后修改cpl，同时approved：true;
-       */
-      if (componentPlanInstallMethod === InstallMethod.auto) {
-        if (subscriptionName) {
-          await this.subscriptionService.updateSubscription(
-            auth,
-            subscriptionName,
-            namespace,
-            params,
-            cluster
-          );
-        } else {
-          await this.create(auth, namespace, params, cluster);
-          return true;
-        }
-      }
-      if (componentPlanInstallMethod === InstallMethod.manual) {
-        if (subscriptionName) {
-          await this.subscriptionService.updateSubscription(
-            auth,
-            subscriptionName,
-            namespace,
-            params,
-            cluster
-          );
-        }
-      }
       let valuesFrom: any[];
       if (valuesYaml) {
         const cmName = await this.disposeValuesYaml(
@@ -352,6 +324,40 @@ export class ComponentplanService {
           ];
         }
       }
+      /**
+       * 编辑：
+       * 自动：有sub就修改，没有就创建；
+       * 手动：有sub就修改，没有就不处理；
+       * 最后修改cpl，同时approved：true？（修改sub，会自动修改cpl，后端支持后可去掉）
+       */
+      if (componentPlanInstallMethod === InstallMethod.auto) {
+        if (subscriptionName) {
+          await this.subscriptionService.updateSubscription(
+            auth,
+            subscriptionName,
+            namespace,
+            params,
+            valuesFrom,
+            cluster
+          );
+        } else {
+          await this.create(auth, namespace, params, cluster);
+          return true;
+        }
+      }
+      if (componentPlanInstallMethod === InstallMethod.manual) {
+        if (subscriptionName) {
+          await this.subscriptionService.updateSubscription(
+            auth,
+            subscriptionName,
+            namespace,
+            params,
+            valuesFrom,
+            cluster
+          );
+        }
+      }
+      // TODO：后端支持 修改sub，会自动修改cpl时，可删掉此步
       const k8s = await this.k8sService.getClient(auth, { cluster });
       await k8s.componentplan.patchMerge(name, namespace, {
         spec: {
@@ -396,6 +402,7 @@ export class ComponentplanService {
           {
             componentPlanInstallMethod: InstallMethod.manual,
           },
+          null,
           cluster
         )
       )
