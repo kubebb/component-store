@@ -308,4 +308,18 @@ export class RepositoryService {
     }
     return secretName;
   }
+
+  async syncRepository(auth: JwtAuth, name: string, cluster?: string): Promise<boolean> {
+    const k8s = await this.k8sService.getClient(auth, { cluster });
+    const { body } = await k8s.repository.read(name, this.kubebbNS);
+    const restart = body?.metadata?.labels?.['kubebb.repository.restart'] || 0;
+    await k8s.repository.patchMerge(name, this.kubebbNS, {
+      metadata: {
+        labels: {
+          'kubebb.repository.restart': isNaN(restart) ? '0' : `${Number(restart) + 1}`,
+        },
+      },
+    });
+    return true;
+  }
 }

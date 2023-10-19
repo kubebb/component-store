@@ -165,6 +165,7 @@ export class ComponentsService {
       },
       secret
     );
+    await this.repositoryService.syncRepository(auth, repository, cluster);
     return true;
   }
 
