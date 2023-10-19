@@ -11,6 +11,9 @@ type Component {
   """Chart 名称"""
   chartName: String!
 
+  """组件类别"""
+  classification: String
+
   """创建时间"""
   creationTimestamp: String
 
@@ -548,6 +551,9 @@ type Query {
   components(
     """Chart名称"""
     chartName: String
+
+    """组件类别"""
+    classification: String
 
     """集群（不传则为默认集群）"""
     cluster: String

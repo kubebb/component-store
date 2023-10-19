@@ -38,6 +38,7 @@ export class ComponentsService {
       latestVersion?.annotations?.['core.kubebb.k8s.com.cn/restricted-tenants'];
     const restrictedNamespaces =
       latestVersion?.annotations?.['core.kubebb.k8s.com.cn/restricted-namespaces'];
+    const classification = latestVersion?.annotations?.['core.kubebb.k8s.com.cn/classification'];
     const isNewer = latestVersion?.createdAt
       ? Date.now() - 7 * 24 * 60 * 60 * 1000 < new Date(latestVersion.createdAt).valueOf()
       : false;
@@ -61,6 +62,7 @@ export class ComponentsService {
       latestVersion: latestVersion?.version,
       restrictedTenants: restrictedTenants ? restrictedTenants.split(',') : null,
       restrictedNamespaces: restrictedNamespaces ? restrictedNamespaces.split(',') : null,
+      classification,
       isNewer,
     };
   }
@@ -95,6 +97,7 @@ export class ComponentsService {
       source,
       isNewer,
       repository,
+      classification,
     } = args;
     let reposName: string[] = [];
     if (source) {
@@ -109,7 +112,8 @@ export class ComponentsService {
         (!keyword || t.keywords?.includes(keyword)) &&
         (!source || reposName.includes(t.repository)) &&
         (!repository || t.repository?.includes(repository)) &&
-        (isNewer === undefined || t.isNewer === isNewer)
+        (isNewer === undefined || t.isNewer === isNewer) &&
+        (!classification || t.classification === classification)
     );
     if (sortField && sortDirection) {
       filteredRes?.sort((a, b) => {

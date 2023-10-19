@@ -108,6 +108,9 @@ export class Component {
   /** 指定项目 */
   restrictedNamespaces?: string[];
 
+  /** 组件类别 */
+  classification?: string;
+
   /** 是否显示新版本 */
   isNewer?: boolean;
 

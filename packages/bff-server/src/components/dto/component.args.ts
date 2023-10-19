@@ -35,4 +35,7 @@ export class ComponentArgs extends PaginationArgs {
 
   /** 组件仓库 */
   repository?: string;
+
+  /** 组件类别 */
+  classification?: string;
 }

@@ -143,10 +143,6 @@ export class ComponentplanService {
     });
     const fRes = res?.filter(
       t => t.latest === true || (releasenameMap.get(t.releaseName) === 1 && t.approved === true)
-      // !releasenameMap.has(t.releaseName)
-      // || releasenameMap.get(t.releaseName) <= 1
-      // || (releasenameMap.get(t.releaseName) > 1 && t.latest === true)
-      // && t.latest === true
     );
     // 根据搜索条件过滤
     const filteredRes = fRes?.filter(
