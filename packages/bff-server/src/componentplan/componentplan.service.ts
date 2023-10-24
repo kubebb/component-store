@@ -137,12 +137,19 @@ export class ComponentplanService {
     const releasenameMap = new Map();
     res?.forEach(cpl => {
       if (cpl.releaseName) {
-        const num = releasenameMap.get(cpl.releaseName) || 0;
-        releasenameMap.set(cpl.releaseName, num + 1);
+        const current = releasenameMap.get(cpl.releaseName);
+        if (
+          !current ||
+          new Date(current.created).valueOf() < new Date(cpl.creationTimestamp).valueOf()
+        ) {
+          releasenameMap.set(cpl.releaseName, { name: cpl.name, created: cpl.creationTimestamp });
+        }
       }
     });
     const fRes = res?.filter(
-      t => t.latest === true || (releasenameMap.get(t.releaseName) === 1 && t.approved === true)
+      t =>
+        t.latest === true ||
+        (releasenameMap.get(t.releaseName)?.name === t.name && t.approved === true)
     );
     // 根据搜索条件过滤
     const filteredRes = fRes?.filter(
