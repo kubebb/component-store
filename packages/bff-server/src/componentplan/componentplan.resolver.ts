@@ -156,9 +156,11 @@ export class ComponentplanResolver {
     const {
       variableValues: { cluster },
     } = info;
-    const { namespace, configmap } = componentplan;
-    if (!configmap) return '';
-    const cm = await this.configmapService.getConfigmap(auth, configmap, namespace, cluster);
+    const { namespace, configmap, component, version } = componentplan;
+    if (!configmap && !component) return '';
+    const cmName = configmap || `${component?.name}-${version}`;
+    const cmNs = configmap ? namespace : component?.namespace;
+    const cm = await this.configmapService.getConfigmap(auth, cmName, cmNs, cluster);
     return cm?.data?.['values.yaml'] || '';
   }
 }
