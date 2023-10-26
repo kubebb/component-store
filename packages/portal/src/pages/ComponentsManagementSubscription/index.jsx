@@ -112,9 +112,7 @@ class ComponentsManagementSubscription$$Page extends React.Component {
       params.sortField = this.state.sorter?.field;
       params.sortDirection = this.state.sorter?.order;
     }
-    if (this.state.isNewer) {
-      params.isNewer = !!this.state.isNewer;
-    }
+    params.isNewer = !!this.state.isNewer;
     this.utils?.changeLocationQuery(this, 'useGetSubscriptionsPaged', params);
   }
 
@@ -527,7 +525,7 @@ class ComponentsManagementSubscription$$Page extends React.Component {
                                 ellipsis={true}
                                 __component_name="Typography.Text"
                               >
-                                {__$$eval(() => record?.latestVersion || '-')}
+                                {__$$eval(() => record?.component?.latestVersion || '-')}
                               </Typography.Text>
                               {!!__$$eval(() => record?.component?.isNewer) && (
                                 <Tag color="success" closable={false} __component_name="Tag">
@@ -542,6 +540,18 @@ class ComponentsManagementSubscription$$Page extends React.Component {
                       {
                         key: 'repository',
                         title: this.i18n('i18n-7lw9akor') /* 所属组件仓库 */,
+                        render: (text, record, index) =>
+                          (__$$context => (
+                            <Typography.Text
+                              style={{ fontSize: '' }}
+                              strong={false}
+                              disabled={false}
+                              ellipsis={true}
+                              __component_name="Typography.Text"
+                            >
+                              {__$$eval(() => record?.component?.repository || '-')}
+                            </Typography.Text>
+                          ))(__$$createChildContext(__$$context, { text, record, index })),
                         dataIndex: 'repository',
                       },
                       {
@@ -604,7 +614,7 @@ class ComponentsManagementSubscription$$Page extends React.Component {
                     }.bind(this)}
                     dataSource={__$$eval(
                       () =>
-                        this.props.useGetSubscriptionsPaged?.data?.subscriptionsPaged?.nodes || 0
+                        this.props.useGetSubscriptionsPaged?.data?.subscriptionsPaged?.nodes || []
                     )}
                     pagination={false}
                     showHeader={true}
