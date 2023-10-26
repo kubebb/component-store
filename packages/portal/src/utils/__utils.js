@@ -104,10 +104,75 @@ utils.getComponentTypes = function __getComponentTypes() {
   return (pageThis, isStatus, isTag) => {
     return [
       // 官方
+      // {
+      //   'color': 'processing',
+      //   [isStatus ? "id" : 'value']: "official",
+      //   [(isStatus || isTag) ? "children" : 'text']: pageThis.i18n('i18n-uvq3yb8j'),
+      // } ,
       {
         color: 'processing',
-        [isStatus ? 'id' : 'value']: 'official',
-        [isStatus || isTag ? 'children' : 'text']: pageThis.i18n('i18n-uvq3yb8j'),
+        [isStatus ? 'id' : 'value']: '容器',
+        [isStatus || isTag ? 'children' : 'text']: pageThis.i18n('i18n-34srsccr'),
+      },
+      {
+        color: 'processing',
+        [isStatus ? 'id' : 'value']: '服务治理',
+        [isStatus || isTag ? 'children' : 'text']: pageThis.i18n('i18n-nt9zetc7'),
+      },
+      {
+        color: 'processing',
+        [isStatus ? 'id' : 'value']: '数据库',
+        [isStatus || isTag ? 'children' : 'text']: pageThis.i18n('i18n-o5a2dp6f'),
+      },
+      {
+        color: 'processing',
+        [isStatus ? 'id' : 'value']: '网络',
+        [isStatus || isTag ? 'children' : 'text']: pageThis.i18n('i18n-30jwwq0m'),
+      },
+      {
+        color: 'processing',
+        [isStatus ? 'id' : 'value']: '安全',
+        [isStatus || isTag ? 'children' : 'text']: pageThis.i18n('i18n-7ygc1qkc'),
+      },
+      {
+        color: 'processing',
+        [isStatus ? 'id' : 'value']: '存储',
+        [isStatus || isTag ? 'children' : 'text']: pageThis.i18n('i18n-jc2wsur8'),
+      },
+      {
+        color: 'processing',
+        [isStatus ? 'id' : 'value']: '消息队列',
+        [isStatus || isTag ? 'children' : 'text']: pageThis.i18n('i18n-pobldpmh'),
+      },
+      {
+        color: 'processing',
+        [isStatus ? 'id' : 'value']: '云原生可观测',
+        [isStatus || isTag ? 'children' : 'text']: pageThis.i18n('i18n-nr76g7pg'),
+      },
+      {
+        color: 'processing',
+        [isStatus ? 'id' : 'value']: '大数据计算',
+        [isStatus || isTag ? 'children' : 'text']: pageThis.i18n('i18n-swcbtp3a'),
+      },
+      {
+        color: 'processing',
+        [isStatus ? 'id' : 'value']: '人工智能与机器学习',
+        [isStatus || isTag ? 'children' : 'text']: pageThis.i18n('i18n-3xvwqdml'),
+      },
+      {
+        color: 'processing',
+        [isStatus ? 'id' : 'value']: '媒体服务',
+        [isStatus || isTag ? 'children' : 'text']: pageThis.i18n('i18n-2yejyh4y'),
+      },
+      {
+        color: 'processing',
+        [isStatus ? 'id' : 'value']: '开发工具',
+        [isStatus || isTag ? 'children' : 'text']: pageThis.i18n('i18n-1uchgz7g'),
+      },
+      {
+        color: 'processing',
+        [isStatus ? 'id' : 'value']: '其它',
+        [isStatus || isTag ? 'children' : 'text']: pageThis.i18n('i18n-mobzvrte'),
       },
     ];
   };

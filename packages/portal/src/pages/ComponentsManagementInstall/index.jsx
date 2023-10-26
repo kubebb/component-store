@@ -7,6 +7,7 @@ import {
   Button,
   Card,
   Col,
+  Container,
   Input,
   Modal,
   Page,
@@ -17,11 +18,16 @@ import {
   Status,
   Table,
   Tag,
+  Tooltip,
   Typography,
   UnifiedLink,
 } from '@tenx-ui/materials';
 
-import { AntdIconPlusOutlined, AntdIconReloadOutlined } from '@tenx-ui/icon-materials';
+import {
+  AntdIconExclamationCircleFilled,
+  AntdIconPlusOutlined,
+  AntdIconReloadOutlined,
+} from '@tenx-ui/icon-materials';
 
 import { getUnifiedHistory } from '@tenx-ui/utils/es/UnifiedLink/index.prod';
 import { matchPath, useLocation } from '@umijs/max';
@@ -116,9 +122,7 @@ class ComponentsManagementInstall$$Page extends React.Component {
       params.sortField = this.state.sorter?.field;
       params.sortDirection = this.state.sorter?.order;
     }
-    if (this.state.isNewer) {
-      params.isNewer = !!this.state.isNewer;
-    }
+    params.isNewer = !!this.state.isNewer;
     if (status?.length > 0) {
       params.status = status;
     } else {
@@ -499,6 +503,39 @@ class ComponentsManagementInstall$$Page extends React.Component {
                       },
                       {
                         key: 'version',
+                        title: options =>
+                          (__$$context => (
+                            <Space
+                              size="small"
+                              align="center"
+                              direction="horizontal"
+                              __component_name="Space"
+                            >
+                              <Typography.Title
+                                bold={true}
+                                level={2}
+                                bordered={false}
+                                ellipsis={true}
+                                __component_name="Typography.Title"
+                              >
+                                {this.i18n('i18n-7e7t3bw9') /* 版本 */}
+                              </Typography.Title>
+                              <Tag
+                                color="success"
+                                style={{ cursor: 'pointer' }}
+                                onClick={function () {
+                                  return this.filterNew.apply(
+                                    this,
+                                    Array.prototype.slice.call(arguments).concat([])
+                                  );
+                                }.bind(__$$context)}
+                                closable={false}
+                                __component_name="Tag"
+                              >
+                                NEW
+                              </Tag>
+                            </Space>
+                          ))(__$$createChildContext(__$$context, { options })),
                         render: (text, record, index) =>
                           (__$$context => (
                             <Space align="center" direction="horizontal" __component_name="Space">
@@ -520,52 +557,34 @@ class ComponentsManagementInstall$$Page extends React.Component {
                           ))(__$$createChildContext(__$$context, { text, record, index })),
                         dataIndex: 'version',
                         _unsafe_MixedSetter_title_select: 'SlotSetter',
-                        title: options =>
-                          (__$$context => (
-                            <Space
-                              __component_name="Space"
-                              direction="horizontal"
-                              align="center"
-                              size="small"
-                            >
-                              <Typography.Title
-                                __component_name="Typography.Title"
-                                level={2}
-                                ellipsis={true}
-                                bordered={false}
-                                bold={true}
-                              >
-                                {this.i18n('i18n-7e7t3bw9') /* 版本 */}
-                              </Typography.Title>
-                              <Tag
-                                __component_name="Tag"
-                                color="success"
-                                closable={false}
-                                onClick={function () {
-                                  return this.filterNew.apply(
-                                    this,
-                                    Array.prototype.slice.call(arguments).concat([])
-                                  );
-                                }.bind(__$$context)}
-                                style={{ cursor: 'pointer' }}
-                              >
-                                NEW
-                              </Tag>
-                            </Space>
-                          ))(__$$createChildContext(__$$context, { options })),
                       },
                       {
                         key: 'status',
                         title: this.i18n('i18n-kmaug6a7') /* 状态 */,
                         render: (text, record, index) =>
                           (__$$context => (
-                            <Status
-                              id={__$$eval(() => record.status)}
-                              types={__$$eval(() =>
-                                __$$context.utils.getComponentInstallStatus(__$$context, true)
+                            <Space align="center" direction="horizontal" __component_name="Space">
+                              <Status
+                                id={__$$eval(() => record.status)}
+                                types={__$$eval(() =>
+                                  __$$context.utils.getComponentInstallStatus(__$$context, true)
+                                )}
+                                __component_name="Status"
+                              />
+                              {!!__$$eval(() => record.status !== 'InstallSuccess') && (
+                                <Tooltip
+                                  title={__$$eval(() => record?.reason || '-')}
+                                  __component_name="Tooltip"
+                                >
+                                  <Container
+                                    color="colorTextDescription"
+                                    __component_name="Container"
+                                  >
+                                    <AntdIconExclamationCircleFilled __component_name="AntdIconExclamationCircleFilled" />
+                                  </Container>
+                                </Tooltip>
                               )}
-                              __component_name="Status"
-                            />
+                            </Space>
                           ))(__$$createChildContext(__$$context, { text, record, index })),
                         filters: __$$eval(() => this.utils.getComponentInstallStatus(this)),
                         dataIndex: 'status',
@@ -699,7 +718,7 @@ class ComponentsManagementInstall$$Page extends React.Component {
                     }.bind(this)}
                     dataSource={__$$eval(
                       () =>
-                        this.props.useGetComponentplansPaged?.data?.componentplansPaged?.nodes || 0
+                        this.props.useGetComponentplansPaged?.data?.componentplansPaged?.nodes || []
                     )}
                     pagination={false}
                     showHeader={true}

@@ -3,6 +3,7 @@
 import React from 'react';
 
 import {
+  Alert,
   Button,
   Card,
   Col,
@@ -22,9 +23,10 @@ import {
   Tag,
   Tooltip,
   Typography,
+  UnifiedLink,
 } from '@tenx-ui/materials';
 
-import { AntdIconQuestionCircleOutlined } from '@tenx-ui/icon-materials';
+import { AntdIconQuestionCircleOutlined, TenxIconTips } from '@tenx-ui/icon-materials';
 
 import { default as Editor } from '@tenx-ui/editor';
 
@@ -71,15 +73,15 @@ class ComponentsActions$$Page extends React.Component {
     __$$i18n._inject2(this);
 
     this.state = {
-      isCreate: true,
-      creating: false,
+      data: undefined,
       name: undefined,
       cluster: undefined,
       tenants: [],
+      creating: false,
+      isCreate: true,
       component: undefined,
       valuesYaml: '',
       yamlLoading: false,
-      data: undefined,
     };
   }
 
@@ -91,187 +93,8 @@ class ComponentsActions$$Page extends React.Component {
     return this._refsManager.getAll(refName);
   };
 
-  onEditorLoad(editor) {
-    this.setState({
-      editor,
-    });
-  }
-
-  async handleVersionChange(v) {
-    this.setState({
-      yamlLoading: true,
-    });
-    const res = await this.utils.bff.getComponentChart({
-      name: this.props.appHelper?.match?.params?.id,
-      version: v,
-    });
-    this.state.editor.setValue(res?.component?.chart?.valuesYaml || '');
-    this.setState({
-      yamlLoading: false,
-      valuesYaml: res?.component?.chart?.valuesYaml || this.state.data?.valuesYaml || '',
-    });
-    this.form()?.setValues({
-      // iamges: {
-      //   name: []
-      // },
-      imagesNames: res?.component?.chart?.images?.map(item => ({
-        label: item,
-        value: item,
-      })),
-      imagesNamesRead: res?.component?.chart?.images?.map(item => {
-        const arr = item?.split('/');
-        return {
-          label: arr?.slice(0, arr?.length - 1) + '/',
-          value: item,
-        };
-      }),
-    });
-  }
-
-  async validatorImagesName(value, ...payload) {
-    const curIndex = payload?.[1]?.field?.index;
-    const arr = value?.split('/');
-    const v = arr?.slice(0, arr?.length - 1)?.join('/') + '/';
-    const override = this.state.component?.repositoryCR?.imageOverride?.find(item => {
-      return v === `${item.registry}/${item.path}/`;
-    });
-    override &&
-      this.form().setValuesIn(
-        `images.name.${curIndex}.nameReady`,
-        `${override.newRegistry}/${override.newPath}/`
-      );
-  }
-
-  setFormValues(values) {
-    if (!this.form()) {
-      setTimeout(() => {
-        this.setFormValues(values);
-      }, 200);
-      return;
-    }
-    this.form().setValues(values);
-  }
-
-  async loadComponent() {
-    const res = await this.props.appHelper?.utils?.bff?.getComponent({
-      name: this.props.appHelper?.match?.params?.id,
-      cluster: this.getCluster(),
-    });
-    this.setState({
-      component: res?.component,
-    });
-    this.form()?.setFieldState('version', {
-      dataSource:
-        res?.component?.versions?.map(item => ({
-          value: item.version,
-          label: item.version,
-        })) || [],
-    });
-    this.setFormValues({
-      chartName: res?.component?.chartName,
-      repository: res?.component?.repository,
-      file: 'value.yaml',
-    });
-  }
-
-  async loadCluster() {
-    const res = await this.props.appHelper?.utils?.bffSdk?.getCluster({
-      name: this.getCluster(),
-    });
-    const cluster = res?.cluster;
-    this.setState({
-      cluster,
-    });
-  }
-
-  getCluster() {
-    const cluster = this.appHelper?.history?.query?.cluster;
-    return cluster;
-  }
-
-  getClusterInfo() {
-    return this.state.cluster;
-  }
-
-  async loadTenants() {
-    const res = await this.props.appHelper?.utils?.bffSdk?.getCurrentUserTenants();
-    const tenants =
-      res?.userCurrent?.tenants?.map(item => {
-        item.projects =
-          item.projects
-            ?.filter(item => {
-              return item.clusters?.some(cluster => cluster.name === this.getCluster());
-            })
-            ?.map(item => ({
-              label: item.fullName,
-              value: item.name,
-            })) || [];
-        return {
-          label: item.fullName,
-          value: JSON.stringify(item),
-        };
-      }) || [];
-    this.form()?.setFieldState('position.tenant', {
-      dataSource: tenants || [],
-    });
-    this.setState({
-      tenants,
-    });
-  }
-
-  async initEditor(v) {
-    if (!v.valuesYaml && v) {
-      const res = await this.utils.bff.getComponentChart({
-        name: this.props.appHelper?.match?.params?.id,
-        version: v.version,
-      });
-      v.valuesYaml = res?.component?.chart?.valuesYaml || '';
-    }
-    if (this.state.editor && !this.state.isCreate) {
-      this.setState({
-        valuesYaml: v.valuesYaml || '',
-      });
-      this.state.editor.setValue(v.valuesYaml || '');
-      return;
-    }
-    setTimeout(() => {
-      this.initEditor(v);
-    }, 200);
-  }
-
-  initForms(v) {
-    if (this.form() && !this.state.isCreate && this.state.component) {
-      this.form().setValues({
-        // repository: v.component?.repository,
-        // chartName: v.component?.chartName,
-        releaseName: v.releaseName,
-        version: v.version,
-        method: {
-          componentPlanInstallMethod: v?.subscription?.componentPlanInstallMethod || 'manual',
-          schedule:
-            v?.subscription?.schedule && this.utils.cronChangeToDate(v?.subscription?.schedule),
-        },
-        images: {
-          name: v.images?.map(item => {
-            const arr = item?.name?.split('/');
-            const nameReady = arr?.slice(0, arr?.length - 1)?.join('/') + '/';
-            const override = this.state.component?.repositoryCR?.imageOverride?.find(item => {
-              return nameReady === `${item.registry}/${item.path}/`;
-            });
-            return {
-              nameReady: override && `${override.newRegistry}/${override.newPath}/`,
-              name: item.name,
-              newName: item.newName?.split(nameReady)?.[1],
-              newTag: item.newTag,
-            };
-          }),
-        },
-      });
-      return;
-    }
-    setTimeout(() => {
-      this.initForms(v);
-    }, 200);
+  form(name) {
+    return this.$(name || 'formily_create')?.formRef?.current?.form;
   }
 
   async initEdit() {
@@ -290,33 +113,8 @@ class ComponentsActions$$Page extends React.Component {
     } catch (e) {}
   }
 
-  async validatorName(value) {
-    try {
-      if (value && this.state.isCreate) {
-        const res = await this.props?.appHelper?.utils?.bff?.getComponentplan({
-          name: this.form?.values?.position?.releaseName,
-          cluster: this.getCluster(),
-          namespace: this.form?.values?.position?.namespace,
-        });
-        if (res?.repository?.name) {
-          return this.i18n('i18n-1y09ypgx');
-        }
-      }
-    } catch (e) {}
-  }
-
   onCancel(event) {
     this.history.go(-1);
-  }
-
-  form(name) {
-    return this.$(name || 'formily_create')?.formRef?.current?.form;
-  }
-
-  handleYamlChange(v) {
-    this.setState({
-      valuesYaml: v || '',
-    });
   }
 
   onSubmit(event) {
@@ -399,6 +197,253 @@ class ComponentsActions$$Page extends React.Component {
     });
   }
 
+  initForms(v) {
+    if (this.form() && !this.state.isCreate && this.state.component) {
+      this.form().setValues({
+        // repository: v.component?.repository,
+        // chartName: v.component?.chartName,
+        releaseName: v.releaseName,
+        version: v.version,
+        method: {
+          componentPlanInstallMethod: v?.subscription?.componentPlanInstallMethod || 'manual',
+          schedule:
+            v?.subscription?.schedule && this.utils.cronChangeToDate(v?.subscription?.schedule),
+        },
+        images: {
+          name: v.images?.map(item => {
+            const arr = item?.name?.split('/');
+            const nameReady = arr?.slice(0, arr?.length - 1)?.join('/') + '/';
+            const override = this.state.component?.repositoryCR?.imageOverride?.find(item => {
+              return nameReady === `${item.registry}/${item.path}/`;
+            });
+            return {
+              nameReady: override && `${override.newRegistry}/${override.newPath}/`,
+              name: item.name,
+              newName: item.newName?.split(nameReady)?.[1],
+              newTag: item.newTag,
+            };
+          }),
+        },
+      });
+      return;
+    }
+    setTimeout(() => {
+      this.initForms(v);
+    }, 200);
+  }
+
+  getCluster() {
+    const cluster = this.appHelper?.history?.query?.cluster;
+    return cluster;
+  }
+
+  async initEditor(v) {
+    if (!v.valuesYaml && v) {
+      const res = await this.utils.bff.getComponentChart({
+        name: this.props.appHelper?.match?.params?.id,
+        version: v.version,
+      });
+      v.valuesYaml = res?.component?.chart?.valuesYaml || '';
+    }
+    if (this.state.editor && !this.state.isCreate) {
+      this.setState({
+        valuesYaml: v.valuesYaml || '',
+      });
+      this.state.editor.setValue(v.valuesYaml || '');
+      return;
+    }
+    setTimeout(() => {
+      this.initEditor(v);
+    }, 200);
+  }
+
+  async loadCluster() {
+    const res = await this.props.appHelper?.utils?.bffSdk?.getCluster({
+      name: this.getCluster(),
+    });
+    const cluster = res?.cluster;
+    this.setState({
+      cluster,
+    });
+  }
+
+  async loadTenants() {
+    const res = await this.props.appHelper?.utils?.bffSdk?.getCurrentUserTenants();
+    const tenants =
+      res?.userCurrent?.tenants?.map(item => {
+        item.projects =
+          item.projects
+            ?.filter(item => {
+              return item.clusters?.some(cluster => cluster.name === this.getCluster());
+            })
+            ?.map(item => ({
+              label: item.fullName,
+              value: item.name,
+            })) || [];
+        return {
+          label: item.fullName,
+          value: JSON.stringify(item),
+        };
+      }) || [];
+    this.form()?.setFieldState('position.tenant', {
+      dataSource: tenants || [],
+    });
+    this.setState({
+      tenants,
+    });
+  }
+
+  onEditorLoad(editor) {
+    this.setState({
+      editor,
+    });
+  }
+
+  async loadComponent() {
+    const res = await this.props.appHelper?.utils?.bff?.getComponent({
+      name: this.props.appHelper?.match?.params?.id,
+      cluster: this.getCluster(),
+    });
+    this.setState({
+      component: res?.component,
+    });
+    this.form()?.setFieldState('version', {
+      dataSource:
+        res?.component?.versions?.map(item => ({
+          value: item.version,
+          label: item.version,
+        })) || [],
+    });
+    this.setFormValues({
+      chartName: res?.component?.chartName,
+      repository: res?.component?.repository,
+      file: 'value.yaml',
+    });
+  }
+
+  setFormValues(values) {
+    if (!this.form()) {
+      setTimeout(() => {
+        this.setFormValues(values);
+      }, 200);
+      return;
+    }
+    this.form().setValues(values);
+  }
+
+  async validatorName(value) {
+    try {
+      if (value && this.state.isCreate) {
+        const res = await this.props?.appHelper?.utils?.bff?.getComponentplan({
+          name: this.form?.values?.position?.releaseName,
+          cluster: this.getCluster(),
+          namespace: this.form?.values?.position?.namespace,
+        });
+        if (res?.repository?.name) {
+          return this.i18n('i18n-1y09ypgx');
+        }
+      }
+    } catch (e) {}
+  }
+
+  getClusterInfo() {
+    return this.state.cluster;
+  }
+
+  validatorTenant(value) {
+    const tenant = value && JSON.parse(value)?.name;
+    if (
+      tenant &&
+      this.state.component.restrictedTenants?.length > 0 &&
+      !this.state.component.restrictedTenants?.includes(tenant)
+    ) {
+      return `${this.i18n('i18n-vmtf504c')} ${this.state.component.restrictedTenants.join(
+        ','
+      )} ${this.i18n('i18n-qv53budt')}`;
+    }
+  }
+
+  handleYamlChange(v) {
+    this.setState({
+      valuesYaml: v || '',
+    });
+  }
+
+  validatorNamespace(value) {
+    if (
+      value &&
+      this.state.component.restrictedNamespaces?.length > 0 &&
+      !this.state.component.restrictedNamespaces?.includes(value)
+    ) {
+      return `${this.i18n('i18n-n6vl1gm6')} ${this.state.component.restrictedNamespaces.join(
+        ','
+      )} ${this.i18n('i18n-qv53budt')}`;
+    }
+  }
+
+  async handleVersionChange(v) {
+    this.setState({
+      yamlLoading: true,
+    });
+    const res = await this.utils.bff.getComponentChart({
+      name: this.props.appHelper?.match?.params?.id,
+      version: v,
+    });
+    this.state.editor.setValue(res?.component?.chart?.valuesYaml || '');
+    this.setState({
+      yamlLoading: false,
+      valuesYaml: res?.component?.chart?.valuesYaml || this.state.data?.valuesYaml || '',
+    });
+    this.form()?.setValues({
+      // iamges: {
+      //   name: []
+      // },
+      imagesNames: res?.component?.chart?.images?.map(item => ({
+        label: item,
+        value: item,
+      })),
+      imagesNamesRead: res?.component?.chart?.images?.map(item => {
+        const arr = item?.split('/');
+        return {
+          label: arr?.slice(0, arr?.length - 1) + '/',
+          value: item,
+        };
+      }),
+    });
+  }
+
+  async validatorImagesName(value, ...payload) {
+    const curIndex = payload?.[1]?.field?.index;
+    const arr = value?.split('/');
+    const v = arr?.slice(0, arr?.length - 1)?.join('/') + '/';
+    const override = this.state.component?.repositoryCR?.imageOverride?.find(item => {
+      return v === `${item.registry}/${item.path}/`;
+    });
+    override &&
+      this.form().setValuesIn(
+        `images.name.${curIndex}.nameReady`,
+        `${override.newRegistry}/${override.newPath}/`
+      );
+  }
+
+  getReademeDetailPath() {
+    return `/components/market/subPage/management-detail/detail/${
+      this.props.appHelper?.match?.params?.id
+    }?cluster=${this.getCluster()}&tab=READEME`;
+  }
+
+  async handleInstallMethodChange(v) {
+    if (v === 'auto') {
+      const version = this.state.component?.versions?.sort(
+        (a, b) => new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime()
+      )?.[0]?.version;
+      this.form()?.setValues({
+        version,
+      });
+      this.handleVersionChange(version);
+    }
+  }
+
   componentDidMount() {
     this.loadCluster();
     this.loadTenants();
@@ -478,6 +523,40 @@ class ComponentsActions$$Page extends React.Component {
               hoverable={false}
               __component_name="Card"
             >
+              <Alert
+                icon={
+                  <TenxIconTips
+                    size={14}
+                    color="#7ed321"
+                    style={{ marginRight: '8px' }}
+                    __component_name="TenxIconTips"
+                  />
+                }
+                type="success"
+                style={{ marginBottom: '20px' }}
+                message={
+                  <Space align="center" direction="horizontal" __component_name="Space">
+                    <Typography.Text
+                      style={{ fontSize: '' }}
+                      strong={false}
+                      disabled={false}
+                      ellipsis={true}
+                      __component_name="Typography.Text"
+                    >
+                      {this.i18n('i18n-agx7sv3d') /* 阅读组件安装说明，祝您快速部署体验 */}
+                    </Typography.Text>
+                    <UnifiedLink
+                      to={__$$eval(() => this.getReademeDetailPath())}
+                      target="_blank"
+                      __component_name="UnifiedLink"
+                    >
+                      {this.i18n('i18n-6yyi2qu9') /* 安装说明>> */}
+                    </UnifiedLink>
+                  </Space>
+                }
+                showIcon={true}
+                __component_name="Alert"
+              />
               <FormilyForm
                 ref={this._refsManager.linkRef('formily_create')}
                 formHelper={{ autoFocus: true }}
@@ -571,34 +650,8 @@ class ComponentsActions$$Page extends React.Component {
                       placeholder: this.i18n('i18n-5ndvc0c5') /* 请输入组件仓库名称 */,
                     },
                   }}
-                  __component_name="FormilyInput"
-                />
-                <FormilySelect
-                  style={{ width: '680px' }}
-                  fieldProps={{
-                    enum: [],
-                    name: 'version',
-                    title: this.i18n('i18n-ekp8efeq') /* 组件版本 */,
-                    required: true,
-                    'x-validator': [],
-                    _unsafe_MixedSetter_enum_select: 'ArraySetter',
-                  }}
-                  componentProps={{
-                    'x-component-props': {
-                      disabled: false,
-                      onChange: function () {
-                        return this.handleVersionChange.apply(
-                          this,
-                          Array.prototype.slice.call(arguments).concat([])
-                        );
-                      }.bind(this),
-                      allowClear: false,
-                      placeholder: this.i18n('i18n-lbw8wy6i') /* 请选择组件版本 */,
-                      _sdkSwrGetFunc: {},
-                    },
-                  }}
                   decoratorProps={{ 'x-decorator-props': { labelEllipsis: true } }}
-                  __component_name="FormilySelect"
+                  __component_name="FormilyInput"
                 />
                 <FormilyFormItem
                   fieldProps={{
@@ -715,7 +768,6 @@ class ComponentsActions$$Page extends React.Component {
                     'x-validator': [],
                     _unsafe_MixedSetter_title_select: 'SlotSetter',
                   }}
-                  componentProps={{ 'x-component-props': {} }}
                   decoratorProps={{ 'x-decorator-props': { asterisk: true, labelEllipsis: false } }}
                   __component_name="FormilyFormItem"
                 >
@@ -732,11 +784,18 @@ class ComponentsActions$$Page extends React.Component {
                     componentProps={{
                       'x-component-props': {
                         disabled: false,
+                        onChange: function () {
+                          return this.handleInstallMethodChange.apply(
+                            this,
+                            Array.prototype.slice.call(arguments).concat([])
+                          );
+                        }.bind(this),
                         allowClear: false,
                         placeholder: this.i18n('i18n-t05r1cpz') /* 请选择更新方式 */,
                         _sdkSwrGetFunc: {},
                       },
                     }}
+                    decoratorProps={{ 'x-decorator-props': { labelEllipsis: true } }}
                     __component_name="FormilySelect"
                   />
                   <FormilyTimePicker
@@ -760,9 +819,39 @@ class ComponentsActions$$Page extends React.Component {
                           ) /* 请选择时间（每天），未设置即有新版本发布后立即更新 */,
                       },
                     }}
+                    decoratorProps={{ 'x-decorator-props': { labelEllipsis: true } }}
                     __component_name="FormilyTimePicker"
                   />
                 </FormilyFormItem>
+                <FormilySelect
+                  style={{ width: '680px' }}
+                  fieldProps={{
+                    enum: [],
+                    name: 'version',
+                    title: this.i18n('i18n-ekp8efeq') /* 组件版本 */,
+                    required: true,
+                    'x-pattern': '',
+                    'x-validator': [],
+                    _unsafe_MixedSetter_enum_select: 'ArraySetter',
+                  }}
+                  componentProps={{
+                    'x-component-props': {
+                      disabled:
+                        "{{$form.values?.method?.componentPlanInstallMethod === 'auto' ? true : false}}",
+                      onChange: function () {
+                        return this.handleVersionChange.apply(
+                          this,
+                          Array.prototype.slice.call(arguments).concat([])
+                        );
+                      }.bind(this),
+                      allowClear: false,
+                      placeholder: this.i18n('i18n-lbw8wy6i') /* 请选择组件版本 */,
+                      _sdkSwrGetFunc: {},
+                    },
+                  }}
+                  decoratorProps={{ 'x-decorator-props': { labelEllipsis: true } }}
+                  __component_name="FormilySelect"
+                />
                 {!!__$$eval(() => this.props.appHelper?.match?.params?.action === 'install') && (
                   <FormilyFormItem
                     fieldProps={{
@@ -772,8 +861,9 @@ class ComponentsActions$$Page extends React.Component {
                       'x-validator': [],
                       _unsafe_MixedSetter_title_select: 'I18nSetter',
                     }}
-                    componentProps={{ 'x-component-props': {} }}
-                    decoratorProps={{ 'x-decorator-props': { asterisk: true } }}
+                    decoratorProps={{
+                      'x-decorator-props': { asterisk: true, labelEllipsis: true },
+                    }}
                     __component_name="FormilyFormItem"
                   >
                     <Space align="center" direction="horizontal" __component_name="Space">
@@ -789,7 +879,19 @@ class ComponentsActions$$Page extends React.Component {
                               ? 'editable'
                               : 'disabled'
                           ),
-                          'x-validator': [],
+                          'x-validator': [
+                            {
+                              id: 'disabled',
+                              type: 'disabled',
+                              children: '未知',
+                              validator: function () {
+                                return this.validatorTenant.apply(
+                                  this,
+                                  Array.prototype.slice.call(arguments).concat([])
+                                );
+                              }.bind(this),
+                            },
+                          ],
                           _unsafe_MixedSetter_enum_select: 'ArraySetter',
                         }}
                         componentProps={{
@@ -800,6 +902,7 @@ class ComponentsActions$$Page extends React.Component {
                             _sdkSwrGetFunc: {},
                           },
                         }}
+                        decoratorProps={{ 'x-decorator-props': { labelEllipsis: true } }}
                         __component_name="FormilySelect"
                       />
                       <FormilySelect
@@ -813,7 +916,19 @@ class ComponentsActions$$Page extends React.Component {
                               ? 'editable'
                               : 'disabled'
                           ),
-                          'x-validator': [],
+                          'x-validator': [
+                            {
+                              id: 'disabled',
+                              type: 'disabled',
+                              children: '未知',
+                              validator: function () {
+                                return this.validatorNamespace.apply(
+                                  this,
+                                  Array.prototype.slice.call(arguments).concat([])
+                                );
+                              }.bind(this),
+                            },
+                          ],
                         }}
                         componentProps={{
                           'x-component-props': {
@@ -823,6 +938,7 @@ class ComponentsActions$$Page extends React.Component {
                             _sdkSwrGetFunc: {},
                           },
                         }}
+                        decoratorProps={{ 'x-decorator-props': { labelEllipsis: true } }}
                         __component_name="FormilySelect"
                       />
                     </Space>
@@ -849,6 +965,7 @@ class ComponentsActions$$Page extends React.Component {
                         _sdkSwrGetFunc: {},
                       },
                     }}
+                    decoratorProps={{ 'x-decorator-props': { labelEllipsis: true } }}
                     __component_name="FormilyRadio"
                   />
                 )}
