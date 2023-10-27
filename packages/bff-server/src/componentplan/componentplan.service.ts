@@ -135,6 +135,7 @@ export class ComponentplanService {
     const res = await this.list(auth, namespace, {}, cluster);
     // 过滤出 以releaseName为唯一ID，选择cpl status.latest == true（其中sub创建的cpl（status.latest == null）手动，通过「组件市场」安装入口安装）
     const releasenameMap = new Map();
+    const latestMap = new Map();
     res?.forEach(cpl => {
       if (cpl.releaseName) {
         const current = releasenameMap.get(cpl.releaseName);
@@ -142,15 +143,31 @@ export class ComponentplanService {
           !current ||
           new Date(current.created).valueOf() < new Date(cpl.creationTimestamp).valueOf()
         ) {
-          releasenameMap.set(cpl.releaseName, { name: cpl.name, created: cpl.creationTimestamp });
+          releasenameMap.set(cpl.releaseName, {
+            name: cpl.name,
+            created: cpl.creationTimestamp,
+            reason: cpl.reason,
+          });
+        }
+        if (cpl.latest === true) {
+          latestMap.set(cpl.releaseName, { name: cpl.name });
         }
       }
     });
     const fRes = res?.filter(
       t =>
         t.latest === true ||
-        (releasenameMap.get(t.releaseName)?.name === t.name && t.approved === true)
+        (releasenameMap.get(t.releaseName)?.name === t.name &&
+          t.approved === true &&
+          !latestMap.has(t.releaseName))
     );
+    // 对应的场景：第一次安装成功，后再次操作更新失败，则显示「安装成功」，同时提示更新失败的原因
+    fRes.forEach(f => {
+      const curF = releasenameMap.get(f.releaseName);
+      if (curF && curF.name !== f.name) {
+        f.reason = `Update: ${curF.reason},However,the current component can be used normally`;
+      }
+    });
     // 根据搜索条件过滤
     const filteredRes = fRes?.filter(
       t =>
