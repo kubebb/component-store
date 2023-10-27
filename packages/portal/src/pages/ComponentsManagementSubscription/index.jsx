@@ -127,7 +127,7 @@ class ComponentsManagementSubscription$$Page extends React.Component {
   }
 
   handleQueryChange() {
-    const {} = this.state.filters || {};
+    const { latestVersion } = this.state.filters || {};
     const params = {
       page: this.state?.current || 1,
       pageSize: this.state?.pageSize || 10,
@@ -139,7 +139,7 @@ class ComponentsManagementSubscription$$Page extends React.Component {
       params.sortField = this.state.sorter?.field;
       params.sortDirection = this.state.sorter?.order;
     }
-    params.isNewer = !!this.state.isNewer;
+    params.isNewer = !!latestVersion?.includes('isNewer');
     this.utils?.changeLocationQuery(this, 'useGetSubscriptionsPaged', params);
   }
 
@@ -467,7 +467,7 @@ class ComponentsManagementSubscription$$Page extends React.Component {
                                 () =>
                                   `/components/market/subPage/management-detail/detail/${
                                     record?.repository
-                                  }.${record?.chartName}?cluster=${
+                                  }.${record?.component?.chartName}?cluster=${
                                     __$$context.utils.getAuthData()?.cluster
                                   }`
                               )}
@@ -499,20 +499,22 @@ class ComponentsManagementSubscription$$Page extends React.Component {
                               >
                                 {this.i18n('i18n-7e7t3bw9') /* 版本 */}
                               </Typography.Title>
-                              <Tag
-                                color="success"
-                                style={{ cursor: 'pointer' }}
-                                onClick={function () {
-                                  return this.filterNew.apply(
-                                    this,
-                                    Array.prototype.slice.call(arguments).concat([])
-                                  );
-                                }.bind(__$$context)}
-                                closable={false}
-                                __component_name="Tag"
-                              >
-                                NEW
-                              </Tag>
+                              {!!false && (
+                                <Tag
+                                  color="success"
+                                  style={{ cursor: 'pointer' }}
+                                  onClick={function () {
+                                    return this.filterNew.apply(
+                                      this,
+                                      Array.prototype.slice.call(arguments).concat([])
+                                    );
+                                  }.bind(__$$context)}
+                                  closable={false}
+                                  __component_name="Tag"
+                                >
+                                  NEW
+                                </Tag>
+                              )}
                             </Space>
                           ))(__$$createChildContext(__$$context, { options })),
                         render: (text, record, index) =>
@@ -534,6 +536,12 @@ class ComponentsManagementSubscription$$Page extends React.Component {
                               )}
                             </Space>
                           ))(__$$createChildContext(__$$context, { text, record, index })),
+                        filters: __$$eval(() => [
+                          {
+                            value: 'isNewer',
+                            text: this.i18n('i18n-pj2xiqoz'),
+                          },
+                        ]),
                         dataIndex: 'latestVersion',
                         _unsafe_MixedSetter_title_select: 'SlotSetter',
                       },

@@ -328,12 +328,14 @@ class ComponentsActions$$Page extends React.Component {
   }
 
   async validatorName(value) {
+    const name = this.form()?.values?.releaseName; // @todo
+    const namespace = this.form()?.values?.position?.namespace;
     try {
-      if (value && this.state.isCreate) {
+      if (value && this.state.isCreate && name && namespace) {
         const res = await this.props?.appHelper?.utils?.bff?.getComponentplan({
-          name: this.form?.values?.position?.releaseName,
+          name,
           cluster: this.getCluster(),
-          namespace: this.form?.values?.position?.namespace,
+          namespace,
         });
         if (res?.repository?.name) {
           return this.i18n('i18n-1y09ypgx');
@@ -443,7 +445,7 @@ class ComponentsActions$$Page extends React.Component {
         // this.onCancel()
 
         const tenantId =
-          this.form?.values?.position?.tenant || this.utils.getAuthData()?.tenant?.id;
+          this.form()?.values?.position?.tenant || this.utils.getAuthData()?.tenant?.id;
         const path = `/components/management/install?changeCluster=${this.getCluster()}&changeProject=${namespace}&changeTenant=${tenantId}`;
         this.appHelper.history?.push(path);
         this.setState({
@@ -633,7 +635,12 @@ class ComponentsActions$$Page extends React.Component {
                     },
                   }}
                   decoratorProps={{
-                    'x-decorator-props': { fullness: false, labelWidth: '', wrapperWidth: '' },
+                    'x-decorator-props': {
+                      fullness: false,
+                      labelWidth: '',
+                      wrapperWidth: '',
+                      labelEllipsis: true,
+                    },
                   }}
                   __component_name="FormilyInput"
                 />

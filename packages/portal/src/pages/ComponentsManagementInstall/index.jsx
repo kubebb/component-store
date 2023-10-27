@@ -137,7 +137,7 @@ class ComponentsManagementInstall$$Page extends React.Component {
   }
 
   handleQueryChange() {
-    const { status } = this.state.filters || {};
+    const { status, version } = this.state.filters || {};
     const params = {
       page: this.state?.current || 1,
       pageSize: this.state?.pageSize || 10,
@@ -149,7 +149,7 @@ class ComponentsManagementInstall$$Page extends React.Component {
       params.sortField = this.state.sorter?.field;
       params.sortDirection = this.state.sorter?.order;
     }
-    params.isNewer = !!this.state.isNewer;
+    params.isNewer = !!version?.includes('isNewer');
     if (status?.length > 0) {
       params.status = status;
     } else {
@@ -247,7 +247,9 @@ class ComponentsManagementInstall$$Page extends React.Component {
             );
           }.bind(this)}
           open={__$$eval(() => this.state.isOpenModal && this.state.modalType === 'delete')}
+          style={{}}
           title={this.i18n('i18n-bflyklsf') /* 卸载组件 */}
+          width="550px"
           centered={false}
           keyboard={true}
           onCancel={function () {
@@ -258,11 +260,10 @@ class ComponentsManagementInstall$$Page extends React.Component {
           confirmLoading={__$$eval(() => this.state.deleteLoading)}
           destroyOnClose={true}
           __component_name="Modal"
-          width="550px"
-          style={{}}
         >
           <Alert
             type="warning"
+            style={{ width: '500px' }}
             message={
               <Row wrap={true} gutter={[0, 0]} __component_name="Row">
                 <Col span={24} __component_name="Col">
@@ -317,7 +318,6 @@ class ComponentsManagementInstall$$Page extends React.Component {
             }
             showIcon={true}
             __component_name="Alert"
-            style={{ width: '500px' }}
           />
         </Modal>
         <Row wrap={true} __component_name="Row">
@@ -523,20 +523,22 @@ class ComponentsManagementInstall$$Page extends React.Component {
                               >
                                 {this.i18n('i18n-7e7t3bw9') /* 版本 */}
                               </Typography.Title>
-                              <Tag
-                                color="success"
-                                style={{ cursor: 'pointer' }}
-                                onClick={function () {
-                                  return this.filterNew.apply(
-                                    this,
-                                    Array.prototype.slice.call(arguments).concat([])
-                                  );
-                                }.bind(__$$context)}
-                                closable={false}
-                                __component_name="Tag"
-                              >
-                                NEW
-                              </Tag>
+                              {!!false && (
+                                <Tag
+                                  color="success"
+                                  style={{ cursor: 'pointer' }}
+                                  onClick={function () {
+                                    return this.filterNew.apply(
+                                      this,
+                                      Array.prototype.slice.call(arguments).concat([])
+                                    );
+                                  }.bind(__$$context)}
+                                  closable={false}
+                                  __component_name="Tag"
+                                >
+                                  NEW
+                                </Tag>
+                              )}
                             </Space>
                           ))(__$$createChildContext(__$$context, { options })),
                         render: (text, record, index) =>
@@ -560,6 +562,12 @@ class ComponentsManagementInstall$$Page extends React.Component {
                           ))(__$$createChildContext(__$$context, { text, record, index })),
                         dataIndex: 'version',
                         _unsafe_MixedSetter_title_select: 'SlotSetter',
+                        filters: __$$eval(() => [
+                          {
+                            value: 'isNewer',
+                            text: this.i18n('i18n-pj2xiqoz'),
+                          },
+                        ]),
                       },
                       {
                         key: 'status',

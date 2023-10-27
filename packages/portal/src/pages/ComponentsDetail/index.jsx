@@ -51,8 +51,8 @@ import * as __$$i18n from '../../i18n';
 
 import __$$constants from '../../__constants';
 
+import remarkGfm from 'remark-gfm';
 import './index.css';
-
 class ComponentsDetail$$Page extends React.Component {
   get location() {
     return this.props.self?.location;
@@ -1815,7 +1815,7 @@ class ComponentsDetail$$Page extends React.Component {
                     key: 'READEME',
                     label: 'README',
                     children: (
-                      <TenxUiReactMarkdownLowcodeMaterials>
+                      <TenxUiReactMarkdownLowcodeMaterials remarkPlugins={[remarkGfm]}>
                         {__$$eval(() => this.state.readme || '-')}
                       </TenxUiReactMarkdownLowcodeMaterials>
                     ),
