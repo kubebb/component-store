@@ -696,7 +696,7 @@ type Repository {
   reason: String
 
   """类型"""
-  repositoryType: String
+  repositoryType: RepositoryType
 
   """当前状态"""
   status: RepositoryStatus!
@@ -843,6 +843,18 @@ enum RepositoryStatus {
 
   """同步中"""
   syncing
+
+  """未知"""
+  unknown
+}
+
+"""组件仓库类型"""
+enum RepositoryType {
+  """chartmuseum"""
+  chartmuseum
+
+  """OCI"""
+  oci
 
   """未知"""
   unknown
