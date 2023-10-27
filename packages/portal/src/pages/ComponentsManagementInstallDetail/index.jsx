@@ -80,6 +80,19 @@ class ComponentsManagementInstallDetail$$Page extends React.Component {
 
   $$ = () => [];
 
+  getMethods() {
+    const method =
+      this.utils
+        .getComponentInstallMethods(this)
+        ?.find(
+          item =>
+            item.value ===
+            (this.props.useGetComponentplan?.data?.componentplan?.subscription
+              ?.componentPlanInstallMethod || 'manual')
+        )?.text || '-';
+    return method;
+  }
+
   getImage(item) {
     item = item || {};
     const arr = item?.name?.split('/');
@@ -412,8 +425,8 @@ class ComponentsManagementInstallDetail$$Page extends React.Component {
                                 ?.find(
                                   item =>
                                     item.value ===
-                                      this.state?.componentplan?.subscription
-                                        ?.componentPlanInstallMethod || 'manual'
+                                    (this.state?.componentplan?.subscription
+                                      ?.componentPlanInstallMethod || 'manual')
                                 )?.text || '-'
                           )}
                         </Typography.Text>
@@ -469,8 +482,8 @@ class ComponentsManagementInstallDetail$$Page extends React.Component {
                 items={[
                   {
                     key: 'v0ri9q1zoa',
-                    label: this.i18n('i18n-t6iwy9l2') /* 配置文件 */,
                     span: 1,
+                    label: this.i18n('i18n-t6iwy9l2') /* 配置文件 */,
                     children: (
                       <Row wrap={true} style={{ width: '100%' }} __component_name="Row">
                         <Col span={24} __component_name="Col">
@@ -497,8 +510,8 @@ class ComponentsManagementInstallDetail$$Page extends React.Component {
                   },
                   {
                     key: 'emc49godekc',
-                    label: this.i18n('i18n-trftxv8p') /* 镜像替换 */,
                     span: 1,
+                    label: this.i18n('i18n-trftxv8p') /* 镜像替换 */,
                     children: (
                       <Row wrap={true} gutter={[0, 0]} __component_name="Row">
                         {__$$evalArray(
@@ -577,11 +590,11 @@ class ComponentsManagementInstallDetail$$Page extends React.Component {
                       () => !(this.state?.componentplan?.component?.images?.length > 0)
                     ) && (
                       <Typography.Text
-                        __component_name="Typography.Text"
-                        ellipsis={true}
                         style={{ fontSize: '' }}
-                        disabled={false}
                         strong={false}
+                        disabled={false}
+                        ellipsis={true}
+                        __component_name="Typography.Text"
                         key="node_oclo85lm9e3l"
                       >
                         -
@@ -1031,8 +1044,8 @@ class ComponentsManagementInstallDetail$$Page extends React.Component {
                         items={[
                           {
                             key: 'euyrpz50dzt',
-                            span: 1,
                             label: this.i18n('i18n-cuf6u4di') /* 组件名称 */,
+                            span: 1,
                             children: (
                               <Typography.Text
                                 style={{ fontSize: '' }}
@@ -1041,18 +1054,18 @@ class ComponentsManagementInstallDetail$$Page extends React.Component {
                                 ellipsis={true}
                                 __component_name="Typography.Text"
                               >
-                                {__$$eval(
-                                  () =>
+                                {__$$eval(() =>
+                                  this.getName(
                                     this.props.useGetComponentplan?.data?.componentplan?.component
-                                      ?.chartName || '-'
+                                  )
                                 )}
                               </Typography.Text>
                             ),
                           },
                           {
                             key: '1frgdr88d6n',
-                            span: 1,
                             label: this.i18n('i18n-1po87kgw') /* 组件仓库 */,
+                            span: 1,
                             children: (
                               <Typography.Text
                                 style={{ fontSize: '' }}
@@ -1071,8 +1084,8 @@ class ComponentsManagementInstallDetail$$Page extends React.Component {
                           },
                           {
                             key: 'bg1244wxs0s',
-                            span: 1,
                             label: this.i18n('i18n-ekp8efeq') /* 组件版本 */,
+                            span: 1,
                             children: (
                               <Typography.Text
                                 style={{ fontSize: '' }}
@@ -1091,8 +1104,8 @@ class ComponentsManagementInstallDetail$$Page extends React.Component {
                           },
                           {
                             key: '42s6syjgu89',
-                            span: 1,
                             label: this.i18n('i18n-5u3ohmy6') /* 更新方式 */,
+                            span: 1,
                             children: (
                               <Row wrap={true} gutter={[0, 0]} __component_name="Row">
                                 <Col span={24} __component_name="Col">
@@ -1111,8 +1124,8 @@ class ComponentsManagementInstallDetail$$Page extends React.Component {
                                             item =>
                                               item.value ===
                                                 this.props.useGetComponentplan?.data?.componentplan
-                                                  ?.subscription?.componentPlanInstallMethod ||
-                                              'manual'
+                                                  ?.subscription?.component
+                                                  ?.componentPlanInstallMethod || 'manual'
                                           )?.text || '-'
                                     )}
                                   </Typography.Text>
@@ -1228,18 +1241,7 @@ class ComponentsManagementInstallDetail$$Page extends React.Component {
                                   ellipsis={true}
                                   __component_name="Typography.Text"
                                 >
-                                  {__$$eval(
-                                    () =>
-                                      this.utils
-                                        .getComponentInstallMethods(this)
-                                        ?.find(
-                                          item =>
-                                            item.value ===
-                                              this.props.useGetComponentplan?.data?.componentplan
-                                                ?.subscription?.componentPlanInstallMethod ||
-                                            'manual'
-                                        )?.text || '-'
-                                  )}
+                                  {__$$eval(() => this.getMethods())}
                                 </Typography.Text>
                               </Col>
                               <Col span={24} __component_name="Col">
@@ -1294,8 +1296,8 @@ class ComponentsManagementInstallDetail$$Page extends React.Component {
                         items={[
                           {
                             key: 'euyrpz50dzt',
-                            label: this.i18n('i18n-t6iwy9l2') /* 配置文件 */,
                             span: 1,
+                            label: this.i18n('i18n-t6iwy9l2') /* 配置文件 */,
                             children: (
                               <Row wrap={true} style={{ width: '100%' }} __component_name="Row">
                                 <Col span={24} __component_name="Col">
@@ -1327,8 +1329,8 @@ class ComponentsManagementInstallDetail$$Page extends React.Component {
                           },
                           {
                             key: 'bg1244wxs0s',
-                            label: this.i18n('i18n-hnyjg86b') /* 镜像 */,
                             span: 1,
+                            label: this.i18n('i18n-hnyjg86b') /* 镜像 */,
                             children: (
                               <Row wrap={true} gutter={[0, 0]} __component_name="Row">
                                 {__$$evalArray(
@@ -1419,11 +1421,11 @@ class ComponentsManagementInstallDetail$$Page extends React.Component {
                                 )
                             ) && (
                               <Typography.Text
-                                __component_name="Typography.Text"
-                                ellipsis={true}
                                 style={{ fontSize: '' }}
-                                disabled={false}
                                 strong={false}
+                                disabled={false}
+                                ellipsis={true}
+                                __component_name="Typography.Text"
                                 key="node_oclo85lm9e2k"
                               >
                                 -
@@ -1561,8 +1563,8 @@ class ComponentsManagementInstallDetail$$Page extends React.Component {
                                         ?.find(
                                           item =>
                                             item.value ===
-                                              record?.subscription?.componentPlanInstallMethod ||
-                                            'manual'
+                                            (record?.subscription?.componentPlanInstallMethod ||
+                                              'manual')
                                         )?.text || '-'
                                   )}
                                 </Typography.Text>
