@@ -469,8 +469,8 @@ class ComponentsManagementInstallDetail$$Page extends React.Component {
                 items={[
                   {
                     key: 'v0ri9q1zoa',
-                    span: 1,
                     label: this.i18n('i18n-t6iwy9l2') /* 配置文件 */,
+                    span: 1,
                     children: (
                       <Row wrap={true} style={{ width: '100%' }} __component_name="Row">
                         <Col span={24} __component_name="Col">
@@ -481,19 +481,24 @@ class ComponentsManagementInstallDetail$$Page extends React.Component {
                             ellipsis={true}
                             __component_name="Typography.Text"
                           >
-                            text
+                            value.yaml
                           </Typography.Text>
                         </Col>
                         <Col span={24} __component_name="Col">
-                          <Editor height="300px" __component_name="Editor" />
+                          <Editor
+                            value={__$$eval(() => this.state?.componentplan?.valuesYaml || '-')}
+                            height="300px"
+                            styleVersion="kubebb"
+                            __component_name="Editor"
+                          />
                         </Col>
                       </Row>
                     ),
                   },
                   {
                     key: 'emc49godekc',
-                    span: 1,
                     label: this.i18n('i18n-trftxv8p') /* 镜像替换 */,
+                    span: 1,
                     children: (
                       <Row wrap={true} gutter={[0, 0]} __component_name="Row">
                         {__$$evalArray(
@@ -514,43 +519,7 @@ class ComponentsManagementInstallDetail$$Page extends React.Component {
                                   ellipsis={true}
                                   __component_name="Typography.Text"
                                 >
-                                  {__$$eval(() => record?.name || '-')}
-                                </Typography.Text>
-                                <Typography.Text
-                                  style={{ fontSize: '' }}
-                                  strong={false}
-                                  disabled={false}
-                                  ellipsis={true}
-                                  __component_name="Typography.Text"
-                                >
-                                  /
-                                </Typography.Text>
-                                <Typography.Text
-                                  style={{ fontSize: '' }}
-                                  strong={false}
-                                  disabled={false}
-                                  ellipsis={true}
-                                  __component_name="Typography.Text"
-                                >
-                                  {__$$eval(() => record?.newName || '-')}
-                                </Typography.Text>
-                                <Typography.Text
-                                  style={{ fontSize: '' }}
-                                  strong={false}
-                                  disabled={false}
-                                  ellipsis={true}
-                                  __component_name="Typography.Text"
-                                >
-                                  :
-                                </Typography.Text>
-                                <Typography.Text
-                                  style={{ fontSize: '' }}
-                                  strong={false}
-                                  disabled={false}
-                                  ellipsis={true}
-                                  __component_name="Typography.Text"
-                                >
-                                  {__$$eval(() => record?.newTag || '-')}
+                                  {__$$eval(() => __$$context.getImage(record))}
                                 </Typography.Text>
                               </Space>
                             </Col>
@@ -603,8 +572,22 @@ class ComponentsManagementInstallDetail$$Page extends React.Component {
                   span={1}
                   label={this.i18n('i18n-trftxv8p') /* 镜像替换 */}
                 >
-                  {
-                    <Row wrap={true} gutter={[0, 0]} __component_name="Row">
+                  {[
+                    !!__$$eval(
+                      () => !(this.state?.componentplan?.component?.images?.length > 0)
+                    ) && (
+                      <Typography.Text
+                        __component_name="Typography.Text"
+                        ellipsis={true}
+                        style={{ fontSize: '' }}
+                        disabled={false}
+                        strong={false}
+                        key="node_oclo85lm9e3l"
+                      >
+                        -
+                      </Typography.Text>
+                    ),
+                    <Row wrap={true} gutter={[0, 0]} __component_name="Row" key="node_oclo85lm9e3a">
                       {__$$evalArray(() => this.state?.componentplan?.component?.images || []).map(
                         (record, index) =>
                           (__$$context => (
@@ -628,8 +611,8 @@ class ComponentsManagementInstallDetail$$Page extends React.Component {
                             </Col>
                           ))(__$$createChildContext(__$$context, { record, index }))
                       )}
-                    </Row>
-                  }
+                    </Row>,
+                  ]}
                 </Descriptions.Item>
               </Descriptions>
             </Col>
@@ -1370,49 +1353,6 @@ class ComponentsManagementInstallDetail$$Page extends React.Component {
                                         >
                                           {__$$eval(() => __$$context.getImage(record))}
                                         </Typography.Text>
-                                        <Typography.Text
-                                          style={{ fontSize: '' }}
-                                          strong={false}
-                                          disabled={false}
-                                          ellipsis={true}
-                                          __component_name="Typography.Text"
-                                        >
-                                          {__$$eval(() =>
-                                            (() => {
-                                              const arr = record?.name?.split('/');
-                                              const v =
-                                                arr?.slice(0, arr?.length - 1)?.join('/') + '/';
-                                              return record?.name ? v : '-';
-                                            })()
-                                          )}
-                                        </Typography.Text>
-                                        <Typography.Text
-                                          style={{ fontSize: '' }}
-                                          strong={false}
-                                          disabled={false}
-                                          ellipsis={true}
-                                          __component_name="Typography.Text"
-                                        >
-                                          {__$$eval(() => record?.newName || '-')}
-                                        </Typography.Text>
-                                        <Typography.Text
-                                          style={{ fontSize: '' }}
-                                          strong={false}
-                                          disabled={false}
-                                          ellipsis={true}
-                                          __component_name="Typography.Text"
-                                        >
-                                          :
-                                        </Typography.Text>
-                                        <Typography.Text
-                                          style={{ fontSize: '' }}
-                                          strong={false}
-                                          disabled={false}
-                                          ellipsis={true}
-                                          __component_name="Typography.Text"
-                                        >
-                                          {__$$eval(() => record?.newTag || '-')}
-                                        </Typography.Text>
                                       </Space>
                                     </Col>
                                   ))(__$$createChildContext(__$$context, { record, index }))
@@ -1470,8 +1410,31 @@ class ComponentsManagementInstallDetail$$Page extends React.Component {
                           span={1}
                           label={this.i18n('i18n-hnyjg86b') /* 镜像 */}
                         >
-                          {
-                            <Row wrap={true} gutter={[0, 0]} __component_name="Row">
+                          {[
+                            !!__$$eval(
+                              () =>
+                                !(
+                                  this.props.useGetComponentplan?.data?.componentplan?.component
+                                    ?.images?.length > 0
+                                )
+                            ) && (
+                              <Typography.Text
+                                __component_name="Typography.Text"
+                                ellipsis={true}
+                                style={{ fontSize: '' }}
+                                disabled={false}
+                                strong={false}
+                                key="node_oclo85lm9e2k"
+                              >
+                                -
+                              </Typography.Text>
+                            ),
+                            <Row
+                              wrap={true}
+                              gutter={[0, 0]}
+                              __component_name="Row"
+                              key="node_oclo85lm9e1z"
+                            >
                               {__$$evalArray(
                                 () =>
                                   this.props.useGetComponentplan?.data?.componentplan?.component
@@ -1498,8 +1461,8 @@ class ComponentsManagementInstallDetail$$Page extends React.Component {
                                   </Col>
                                 ))(__$$createChildContext(__$$context, { record, index }))
                               )}
-                            </Row>
-                          }
+                            </Row>,
+                          ]}
                         </Descriptions.Item>
                       </Descriptions>,
                     ],

@@ -63,24 +63,32 @@ class ComponentsManagementSubscription$$Page extends React.Component {
     __$$i18n._inject2(this);
 
     this.state = {
-      isOpenModal: false,
-      modalType: 'delete',
-      searchValue: undefined,
-      searchKey: 'chartName',
       size: 10,
-      current: 1,
       record: {},
-      pagination: undefined,
-      filters: undefined,
       sorter: undefined,
-      deleteLoading: false,
+      current: 1,
+      filters: undefined,
       isNewer: undefined,
+      modalType: 'delete',
+      searchKey: 'chartName',
+      pagination: undefined,
+      isOpenModal: false,
+      searchValue: undefined,
+      deleteLoading: false,
     };
   }
 
   $ = () => null;
 
   $$ = () => [];
+
+  getName(item) {
+    item = item?.component || {};
+    if (item.displayName) {
+      return `${item.displayName}(${item.chartName || '-'})`;
+    }
+    return item.chartName || '-';
+  }
 
   filterNew() {
     this.setState(
@@ -91,12 +99,31 @@ class ComponentsManagementSubscription$$Page extends React.Component {
     );
   }
 
-  getName(item) {
-    item = item?.component || {};
-    if (item.displayName) {
-      return `${item.displayName}(${item.chartName || '-'})`;
-    }
-    return item.chartName || '-';
+  closeModal() {
+    this.setState({
+      isOpenModal: false,
+    });
+  }
+
+  handleSearch(v) {
+    this.setState(
+      {
+        current: 1,
+      },
+      this.handleQueryChange
+    );
+  }
+
+  handleRefresh(event) {
+    this.props.useGetSubscriptionsPaged?.mutate();
+  }
+
+  openDeleteModal(e, { record, type = 'delete' }) {
+    this.setState({
+      isOpenModal: true,
+      modalType: 'delete',
+      record,
+    });
   }
 
   handleQueryChange() {
@@ -116,33 +143,15 @@ class ComponentsManagementSubscription$$Page extends React.Component {
     this.utils?.changeLocationQuery(this, 'useGetSubscriptionsPaged', params);
   }
 
-  handleRefresh(event) {
-    this.props.useGetSubscriptionsPaged?.mutate();
-  }
-
-  handleSearchKeyChange(v) {
+  handleTableChange(pagination, filters, sorter, extra) {
     this.setState(
       {
-        searchValue: undefined,
-        current: 1,
-        searchKey: v,
+        pagination,
+        filters,
+        sorter,
       },
       this.handleQueryChange
     );
-  }
-
-  openDeleteModal(e, { record, type = 'delete' }) {
-    this.setState({
-      isOpenModal: true,
-      modalType: 'delete',
-      record,
-    });
-  }
-
-  closeModal() {
-    this.setState({
-      isOpenModal: false,
-    });
   }
 
   async confirmDeleteModal(e, payload) {
@@ -174,16 +183,16 @@ class ComponentsManagementSubscription$$Page extends React.Component {
     }
   }
 
-  handleSearchValueChange(e) {
-    this.setState({
-      searchValue: e.target.value,
-    });
+  paginationShowTotal(total, range) {
+    return `${this.i18n('i18n-wajqflwo')} ${total} ${this.i18n('i18n-7vre8aeh')}`;
   }
 
-  handleSearch(v) {
+  handleSearchKeyChange(v) {
     this.setState(
       {
+        searchValue: undefined,
         current: 1,
+        searchKey: v,
       },
       this.handleQueryChange
     );
@@ -199,19 +208,10 @@ class ComponentsManagementSubscription$$Page extends React.Component {
     );
   }
 
-  handleTableChange(pagination, filters, sorter, extra) {
-    this.setState(
-      {
-        pagination,
-        filters,
-        sorter,
-      },
-      this.handleQueryChange
-    );
-  }
-
-  paginationShowTotal(total, range) {
-    return `${this.i18n('i18n-wajqflwo')} ${total} ${this.i18n('i18n-7vre8aeh')}`;
+  handleSearchValueChange(e) {
+    this.setState({
+      searchValue: e.target.value,
+    });
   }
 
   componentDidMount() {}
@@ -266,7 +266,7 @@ class ComponentsManagementSubscription$$Page extends React.Component {
                   )}
                 </Col>
                 <Col span={24} __component_name="Col">
-                  <Space size={0} align="center" direction="horizontal">
+                  <Space size={5} align="center" direction="horizontal">
                     <Typography.Text
                       style={{ fontSize: '' }}
                       strong={false}

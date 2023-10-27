@@ -165,6 +165,8 @@ class ComponentsWarehouse$$Page extends React.Component {
     }
     if (status?.length > 0) {
       params.statuses = status;
+    } else {
+      params.statuses = undefined;
     }
     this.utils?.changeLocationQuery(this, 'useGetRepositories', params);
     // this.props.useGetRepositories?.fetch && this.props.useGetRepositories?.fetch({
@@ -459,7 +461,7 @@ class ComponentsWarehouse$$Page extends React.Component {
                                   color="colorTextDescription"
                                   __component_name="Container"
                                 >
-                                  {!!__$$eval(() => record?.status?.includes('false')) && (
+                                  {!!__$$eval(() => record?.status?.includes('failed')) && (
                                     <AntdIconExclamationCircleOutlined
                                       style={{ color: '' }}
                                       __component_name="AntdIconExclamationCircleOutlined"
@@ -595,7 +597,7 @@ class ComponentsWarehouse$$Page extends React.Component {
           <Alert
             type="info"
             message={
-              <Space size={0} align="center" direction="horizontal">
+              <Space size={5} align="center" direction="horizontal" style={{}}>
                 <Typography.Text
                   style={{ fontSize: '' }}
                   strong={false}
@@ -606,7 +608,7 @@ class ComponentsWarehouse$$Page extends React.Component {
                   {this.i18n('i18n-lc4oie5j') /* 删除 */}
                 </Typography.Text>
                 <Typography.Text
-                  style={{ maxWidth: '180px' }}
+                  style={{ maxWidth: '180px', fontSize: '' }}
                   strong={false}
                   disabled={false}
                   ellipsis={{
@@ -633,6 +635,7 @@ class ComponentsWarehouse$$Page extends React.Component {
             }
             showIcon={true}
             __component_name="Alert"
+            style={{}}
           />
         </Modal>
       </Page>

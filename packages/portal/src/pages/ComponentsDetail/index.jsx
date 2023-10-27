@@ -1813,7 +1813,7 @@ class ComponentsDetail$$Page extends React.Component {
                   },
                   {
                     key: 'READEME',
-                    label: 'READEME',
+                    label: 'README',
                     children: (
                       <TenxUiReactMarkdownLowcodeMaterials>
                         {__$$eval(() => this.state.readme || '-')}

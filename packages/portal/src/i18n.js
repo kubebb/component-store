@@ -312,7 +312,7 @@ const i18nConfig = {
     'i18n-xql84ibj': 'name',
     'i18n-xsqa11zo': 'Click or drag and drop the Helm package here to import',
     'i18n-xw5z4b0a': 'Abandoned version',
-    'i18n-xx4ved6h': 'By app version',
+    'i18n-xx4ved6h': 'App version',
     'i18n-xy8qhguk':
       'Use intelligent AI to comprehensively evaluate components in terms of safety, reliability, and usability to provide reference data for your choice.',
     'i18n-y1e6lwsu': 'Components that have not been filtered will retain all their versions',
@@ -630,7 +630,7 @@ const i18nConfig = {
     'i18n-xql84ibj': '姓名',
     'i18n-xsqa11zo': '点击或将 Helm 包拖拽到这里导入',
     'i18n-xw5z4b0a': '废弃版本',
-    'i18n-xx4ved6h': '各应用版本',
+    'i18n-xx4ved6h': '应用版本',
     'i18n-xy8qhguk':
       '使用智能 AI 对组件从安全性、可靠性、可用性三方面进行综合评测，为您的选择提供参考数据。',
     'i18n-y1e6lwsu': '未进行过滤设置的组件将保留其全部版本',
