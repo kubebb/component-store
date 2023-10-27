@@ -73,15 +73,15 @@ class ComponentsActions$$Page extends React.Component {
     __$$i18n._inject2(this);
 
     this.state = {
-      data: undefined,
+      isCreate: true,
+      creating: false,
       name: undefined,
       cluster: undefined,
       tenants: [],
-      creating: false,
-      isCreate: true,
       component: undefined,
       valuesYaml: '',
       yamlLoading: false,
+      data: undefined,
     };
   }
 
@@ -93,8 +93,222 @@ class ComponentsActions$$Page extends React.Component {
     return this._refsManager.getAll(refName);
   };
 
-  form(name) {
-    return this.$(name || 'formily_create')?.formRef?.current?.form;
+  getReademeDetailPath() {
+    return `/component-store/components/market/subPage/management-detail/detail/${
+      this.props.appHelper?.match?.params?.id
+    }?cluster=${this.getCluster()}&tab=READEME`;
+  }
+
+  onEditorLoad(editor) {
+    this.setState({
+      editor,
+    });
+  }
+
+  async handleInstallMethodChange(v) {
+    if (v === 'auto') {
+      const version = this.state.component?.versions?.sort(
+        (a, b) => new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime()
+      )?.[0]?.version;
+      this.form()?.setValues({
+        version,
+      });
+      this.handleVersionChange(version);
+    }
+  }
+
+  async handleVersionChange(v) {
+    this.setState({
+      yamlLoading: true,
+    });
+    const res = await this.utils.bff.getComponentChart({
+      name: this.props.appHelper?.match?.params?.id,
+      version: v,
+    });
+    this.state.editor.setValue(res?.component?.chart?.valuesYaml || '');
+    this.setState({
+      yamlLoading: false,
+      valuesYaml: res?.component?.chart?.valuesYaml || this.state.data?.valuesYaml || '',
+    });
+    this.form()?.setValues({
+      // iamges: {
+      //   name: []
+      // },
+      imagesNames: res?.component?.chart?.images?.map(item => ({
+        label: item,
+        value: item,
+      })),
+      imagesNamesRead: res?.component?.chart?.images?.map(item => {
+        const arr = item?.split('/');
+        return {
+          label: arr?.slice(0, arr?.length - 1) + '/',
+          value: item,
+        };
+      }),
+    });
+  }
+
+  async validatorImagesName(value, ...payload) {
+    const curIndex = payload?.[1]?.field?.index;
+    const arr = value?.split('/');
+    const v = arr?.slice(0, arr?.length - 1)?.join('/') + '/';
+    const override = this.state.component?.repositoryCR?.imageOverride?.find(item => {
+      return v === `${item.registry}/${item.path}/`;
+    });
+    override &&
+      this.form().setValuesIn(
+        `images.name.${curIndex}.nameReady`,
+        `${override.newRegistry}/${override.newPath}/`
+      );
+  }
+
+  setFormValues(values) {
+    if (!this.form()) {
+      setTimeout(() => {
+        this.setFormValues(values);
+      }, 200);
+      return;
+    }
+    this.form().setValues(values);
+  }
+
+  async loadComponent(callback) {
+    const res = await this.props.appHelper?.utils?.bff?.getComponent({
+      name: this.props.appHelper?.match?.params?.id,
+      cluster: this.getCluster(),
+    });
+    this.setState(
+      {
+        component: res?.component,
+      },
+      () => {
+        callback && callback();
+      }
+    );
+    this.form()?.setFieldState('version', {
+      dataSource:
+        res?.component?.versions?.map(item => ({
+          value: item.version,
+          label: item.version,
+        })) || [],
+    });
+    this.setFormValues({
+      chartName: res?.component?.chartName,
+      repository: res?.component?.repository,
+      file: 'value.yaml',
+    });
+  }
+
+  async loadCluster() {
+    const res = await this.props.appHelper?.utils?.bffSdk?.getCluster({
+      name: this.getCluster(),
+    });
+    const cluster = res?.cluster;
+    this.setState({
+      cluster,
+    });
+  }
+
+  getCluster() {
+    const cluster = this.appHelper?.history?.query?.cluster;
+    return cluster;
+  }
+
+  getClusterInfo() {
+    return this.state.cluster;
+  }
+
+  async loadTenants() {
+    const restrictedTenants = this.state.component.restrictedTenants;
+    const restrictedNamespaces = this.state.component.restrictedNamespaces;
+    const res = await this.props.appHelper?.utils?.bffSdk?.getCurrentUserTenants();
+    const tenants =
+      res?.userCurrent?.tenants
+        ?.filter(item => {
+          if (restrictedTenants?.length > 0) {
+            return restrictedTenants.includes(item.name);
+          }
+          return true;
+        })
+        ?.map(item => {
+          item.projects =
+            item.projects
+              ?.filter(item => {
+                return item.clusters?.some(cluster => cluster.name === this.getCluster());
+              })
+              ?.filter(item =>
+                restrictedNamespaces?.length > 0 ? restrictedNamespaces.includes(item.name) : true
+              )
+              ?.map(item => ({
+                label: item.fullName,
+                value: item.name,
+              })) || [];
+          return {
+            label: item.fullName,
+            value: JSON.stringify(item),
+          };
+        }) || [];
+    this.form()?.setFieldState('position.tenant', {
+      dataSource: tenants || [],
+    });
+    this.setState({
+      tenants,
+    });
+  }
+
+  async initEditor(v) {
+    if (!v.valuesYaml && v) {
+      const res = await this.utils.bff.getComponentChart({
+        name: this.props.appHelper?.match?.params?.id,
+        version: v.version,
+      });
+      v.valuesYaml = res?.component?.chart?.valuesYaml || '';
+    }
+    if (this.state.editor && !this.state.isCreate) {
+      this.setState({
+        valuesYaml: v.valuesYaml || '',
+      });
+      this.state.editor.setValue(v.valuesYaml || '');
+      return;
+    }
+    setTimeout(() => {
+      this.initEditor(v);
+    }, 200);
+  }
+
+  initForms(v) {
+    if (this.form() && !this.state.isCreate && this.state.component) {
+      this.form().setValues({
+        // repository: v.component?.repository,
+        // chartName: v.component?.chartName,
+        releaseName: v.releaseName,
+        version: v.version,
+        method: {
+          componentPlanInstallMethod: v?.subscription?.componentPlanInstallMethod || 'manual',
+          schedule:
+            v?.subscription?.schedule && this.utils.cronChangeToDate(v?.subscription?.schedule),
+        },
+        images: {
+          name: v.images?.map(item => {
+            const arr = item?.name?.split('/');
+            const nameReady = arr?.slice(0, arr?.length - 1)?.join('/') + '/';
+            const override = this.state.component?.repositoryCR?.imageOverride?.find(item => {
+              return nameReady === `${item.registry}/${item.path}/`;
+            });
+            return {
+              nameReady: override && `${override.newRegistry}/${override.newPath}/`,
+              name: item.name,
+              newName: item.newName?.split(nameReady)?.[1],
+              newTag: item.newTag,
+            };
+          }),
+        },
+      });
+      return;
+    }
+    setTimeout(() => {
+      this.initForms(v);
+    }, 200);
   }
 
   async initEdit() {
@@ -113,8 +327,58 @@ class ComponentsActions$$Page extends React.Component {
     } catch (e) {}
   }
 
+  async validatorName(value) {
+    try {
+      if (value && this.state.isCreate) {
+        const res = await this.props?.appHelper?.utils?.bff?.getComponentplan({
+          name: this.form?.values?.position?.releaseName,
+          cluster: this.getCluster(),
+          namespace: this.form?.values?.position?.namespace,
+        });
+        if (res?.repository?.name) {
+          return this.i18n('i18n-1y09ypgx');
+        }
+      }
+    } catch (e) {}
+  }
+
+  validatorTenant(value) {
+    const tenant = value && JSON.parse(value)?.name;
+    if (
+      tenant &&
+      this.state.component.restrictedTenants?.length > 0 &&
+      !this.state.component.restrictedTenants?.includes(tenant)
+    ) {
+      return `${this.i18n('i18n-vmtf504c')} ${this.state.component.restrictedTenants.join(
+        ','
+      )} ${this.i18n('i18n-qv53budt')}`;
+    }
+  }
+
+  validatorNamespace(value) {
+    if (
+      value &&
+      this.state.component.restrictedNamespaces?.length > 0 &&
+      !this.state.component.restrictedNamespaces?.includes(value)
+    ) {
+      return `${this.i18n('i18n-n6vl1gm6')} ${this.state.component.restrictedNamespaces.join(
+        ','
+      )} ${this.i18n('i18n-qv53budt')}`;
+    }
+  }
+
   onCancel(event) {
     this.history.go(-1);
+  }
+
+  form(name) {
+    return this.$(name || 'formily_create')?.formRef?.current?.form;
+  }
+
+  handleYamlChange(v) {
+    this.setState({
+      valuesYaml: v || '',
+    });
   }
 
   onSubmit(event) {
@@ -197,257 +461,11 @@ class ComponentsActions$$Page extends React.Component {
     });
   }
 
-  initForms(v) {
-    if (this.form() && !this.state.isCreate && this.state.component) {
-      this.form().setValues({
-        // repository: v.component?.repository,
-        // chartName: v.component?.chartName,
-        releaseName: v.releaseName,
-        version: v.version,
-        method: {
-          componentPlanInstallMethod: v?.subscription?.componentPlanInstallMethod || 'manual',
-          schedule:
-            v?.subscription?.schedule && this.utils.cronChangeToDate(v?.subscription?.schedule),
-        },
-        images: {
-          name: v.images?.map(item => {
-            const arr = item?.name?.split('/');
-            const nameReady = arr?.slice(0, arr?.length - 1)?.join('/') + '/';
-            const override = this.state.component?.repositoryCR?.imageOverride?.find(item => {
-              return nameReady === `${item.registry}/${item.path}/`;
-            });
-            return {
-              nameReady: override && `${override.newRegistry}/${override.newPath}/`,
-              name: item.name,
-              newName: item.newName?.split(nameReady)?.[1],
-              newTag: item.newTag,
-            };
-          }),
-        },
-      });
-      return;
-    }
-    setTimeout(() => {
-      this.initForms(v);
-    }, 200);
-  }
-
-  getCluster() {
-    const cluster = this.appHelper?.history?.query?.cluster;
-    return cluster;
-  }
-
-  async initEditor(v) {
-    if (!v.valuesYaml && v) {
-      const res = await this.utils.bff.getComponentChart({
-        name: this.props.appHelper?.match?.params?.id,
-        version: v.version,
-      });
-      v.valuesYaml = res?.component?.chart?.valuesYaml || '';
-    }
-    if (this.state.editor && !this.state.isCreate) {
-      this.setState({
-        valuesYaml: v.valuesYaml || '',
-      });
-      this.state.editor.setValue(v.valuesYaml || '');
-      return;
-    }
-    setTimeout(() => {
-      this.initEditor(v);
-    }, 200);
-  }
-
-  async loadCluster() {
-    const res = await this.props.appHelper?.utils?.bffSdk?.getCluster({
-      name: this.getCluster(),
-    });
-    const cluster = res?.cluster;
-    this.setState({
-      cluster,
-    });
-  }
-
-  async loadTenants() {
-    const res = await this.props.appHelper?.utils?.bffSdk?.getCurrentUserTenants();
-    const tenants =
-      res?.userCurrent?.tenants?.map(item => {
-        item.projects =
-          item.projects
-            ?.filter(item => {
-              return item.clusters?.some(cluster => cluster.name === this.getCluster());
-            })
-            ?.map(item => ({
-              label: item.fullName,
-              value: item.name,
-            })) || [];
-        return {
-          label: item.fullName,
-          value: JSON.stringify(item),
-        };
-      }) || [];
-    this.form()?.setFieldState('position.tenant', {
-      dataSource: tenants || [],
-    });
-    this.setState({
-      tenants,
-    });
-  }
-
-  onEditorLoad(editor) {
-    this.setState({
-      editor,
-    });
-  }
-
-  async loadComponent() {
-    const res = await this.props.appHelper?.utils?.bff?.getComponent({
-      name: this.props.appHelper?.match?.params?.id,
-      cluster: this.getCluster(),
-    });
-    this.setState({
-      component: res?.component,
-    });
-    this.form()?.setFieldState('version', {
-      dataSource:
-        res?.component?.versions?.map(item => ({
-          value: item.version,
-          label: item.version,
-        })) || [],
-    });
-    this.setFormValues({
-      chartName: res?.component?.chartName,
-      repository: res?.component?.repository,
-      file: 'value.yaml',
-    });
-  }
-
-  setFormValues(values) {
-    if (!this.form()) {
-      setTimeout(() => {
-        this.setFormValues(values);
-      }, 200);
-      return;
-    }
-    this.form().setValues(values);
-  }
-
-  async validatorName(value) {
-    try {
-      if (value && this.state.isCreate) {
-        const res = await this.props?.appHelper?.utils?.bff?.getComponentplan({
-          name: this.form?.values?.position?.releaseName,
-          cluster: this.getCluster(),
-          namespace: this.form?.values?.position?.namespace,
-        });
-        if (res?.repository?.name) {
-          return this.i18n('i18n-1y09ypgx');
-        }
-      }
-    } catch (e) {}
-  }
-
-  getClusterInfo() {
-    return this.state.cluster;
-  }
-
-  validatorTenant(value) {
-    const tenant = value && JSON.parse(value)?.name;
-    if (
-      tenant &&
-      this.state.component.restrictedTenants?.length > 0 &&
-      !this.state.component.restrictedTenants?.includes(tenant)
-    ) {
-      return `${this.i18n('i18n-vmtf504c')} ${this.state.component.restrictedTenants.join(
-        ','
-      )} ${this.i18n('i18n-qv53budt')}`;
-    }
-  }
-
-  handleYamlChange(v) {
-    this.setState({
-      valuesYaml: v || '',
-    });
-  }
-
-  validatorNamespace(value) {
-    if (
-      value &&
-      this.state.component.restrictedNamespaces?.length > 0 &&
-      !this.state.component.restrictedNamespaces?.includes(value)
-    ) {
-      return `${this.i18n('i18n-n6vl1gm6')} ${this.state.component.restrictedNamespaces.join(
-        ','
-      )} ${this.i18n('i18n-qv53budt')}`;
-    }
-  }
-
-  async handleVersionChange(v) {
-    this.setState({
-      yamlLoading: true,
-    });
-    const res = await this.utils.bff.getComponentChart({
-      name: this.props.appHelper?.match?.params?.id,
-      version: v,
-    });
-    this.state.editor.setValue(res?.component?.chart?.valuesYaml || '');
-    this.setState({
-      yamlLoading: false,
-      valuesYaml: res?.component?.chart?.valuesYaml || this.state.data?.valuesYaml || '',
-    });
-    this.form()?.setValues({
-      // iamges: {
-      //   name: []
-      // },
-      imagesNames: res?.component?.chart?.images?.map(item => ({
-        label: item,
-        value: item,
-      })),
-      imagesNamesRead: res?.component?.chart?.images?.map(item => {
-        const arr = item?.split('/');
-        return {
-          label: arr?.slice(0, arr?.length - 1) + '/',
-          value: item,
-        };
-      }),
-    });
-  }
-
-  async validatorImagesName(value, ...payload) {
-    const curIndex = payload?.[1]?.field?.index;
-    const arr = value?.split('/');
-    const v = arr?.slice(0, arr?.length - 1)?.join('/') + '/';
-    const override = this.state.component?.repositoryCR?.imageOverride?.find(item => {
-      return v === `${item.registry}/${item.path}/`;
-    });
-    override &&
-      this.form().setValuesIn(
-        `images.name.${curIndex}.nameReady`,
-        `${override.newRegistry}/${override.newPath}/`
-      );
-  }
-
-  getReademeDetailPath() {
-    return `/components/market/subPage/management-detail/detail/${
-      this.props.appHelper?.match?.params?.id
-    }?cluster=${this.getCluster()}&tab=READEME`;
-  }
-
-  async handleInstallMethodChange(v) {
-    if (v === 'auto') {
-      const version = this.state.component?.versions?.sort(
-        (a, b) => new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime()
-      )?.[0]?.version;
-      this.form()?.setValues({
-        version,
-      });
-      this.handleVersionChange(version);
-    }
-  }
-
   componentDidMount() {
     this.loadCluster();
-    this.loadTenants();
-    this.loadComponent();
+    this.loadComponent(() => {
+      this.loadTenants();
+    });
     const isCreate = this.props.appHelper?.match?.params?.action === 'install';
     this.setState(
       {
@@ -680,7 +698,7 @@ class ComponentsActions$$Page extends React.Component {
                                   style={{ color: 'white', fontSize: '' }}
                                   strong={false}
                                   disabled={false}
-                                  ellipsis={true}
+                                  ellipsis={false}
                                   __component_name="Typography.Text"
                                 >
                                   {
@@ -695,7 +713,7 @@ class ComponentsActions$$Page extends React.Component {
                                   style={{ color: 'white', fontSize: '' }}
                                   strong={false}
                                   disabled={false}
-                                  ellipsis={true}
+                                  ellipsis={false}
                                   __component_name="Typography.Text"
                                 >
                                   {
@@ -710,7 +728,7 @@ class ComponentsActions$$Page extends React.Component {
                                   style={{ color: 'white', fontSize: '' }}
                                   strong={false}
                                   disabled={false}
-                                  ellipsis={true}
+                                  ellipsis={false}
                                   __component_name="Typography.Text"
                                 >
                                   {
@@ -750,6 +768,7 @@ class ComponentsActions$$Page extends React.Component {
                           }
                           placement="right"
                           __component_name="Tooltip"
+                          overlayInnerStyle={{ width: '300px' }}
                         >
                           <Container
                             color="colorTextSecondary"
