@@ -570,7 +570,7 @@ export type Repository = {
   /** 状态为失败的原因 */
   reason?: Maybe<Scalars['String']['output']>;
   /** 类型 */
-  repositoryType?: Maybe<Scalars['String']['output']>;
+  repositoryType?: Maybe<RepositoryType>;
   /** 当前状态 */
   status: RepositoryStatus;
   /** URL */
@@ -690,6 +690,16 @@ export enum RepositoryStatus {
   SyncedTrue = 'synced_true',
   /** 同步中 */
   Syncing = 'syncing',
+  /** 未知 */
+  Unknown = 'unknown',
+}
+
+/** 组件仓库类型 */
+export enum RepositoryType {
+  /** chartmuseum */
+  Chartmuseum = 'chartmuseum',
+  /** OCI */
+  Oci = 'oci',
   /** 未知 */
   Unknown = 'unknown',
 }
@@ -1142,7 +1152,7 @@ export type GetRepositoriesQuery = {
     nodes?: Array<{
       __typename?: 'Repository';
       name: string;
-      repositoryType?: string | null;
+      repositoryType?: RepositoryType | null;
       status: RepositoryStatus;
       reason?: string | null;
       url: string;
@@ -1159,7 +1169,7 @@ export type GetRepositoriesAllQuery = {
   repositoriesAll: Array<{
     __typename?: 'Repository';
     name: string;
-    repositoryType?: string | null;
+    repositoryType?: RepositoryType | null;
     status: RepositoryStatus;
     url: string;
     creationTimestamp: string;
@@ -1177,7 +1187,7 @@ export type GetRepositoryQuery = {
   repository: {
     __typename?: 'Repository';
     name: string;
-    repositoryType?: string | null;
+    repositoryType?: RepositoryType | null;
     status: RepositoryStatus;
     reason?: string | null;
     url: string;
@@ -1221,7 +1231,7 @@ export type CreateRepositoryMutation = {
   repositoryCreate: {
     __typename?: 'Repository';
     name: string;
-    repositoryType?: string | null;
+    repositoryType?: RepositoryType | null;
     status: RepositoryStatus;
     url: string;
     creationTimestamp: string;
@@ -1265,7 +1275,7 @@ export type UpdateRepositoryMutation = {
   repositoryUpdate: {
     __typename?: 'Repository';
     name: string;
-    repositoryType?: string | null;
+    repositoryType?: RepositoryType | null;
     status: RepositoryStatus;
     url: string;
     creationTimestamp: string;

@@ -3,6 +3,7 @@ import { AnyObj } from '@/types';
 import { Field, HideField, ID, ObjectType } from '@nestjs/graphql';
 import { RepositoryFilterOperation } from './repository-filter-operation';
 import { RepositoryStatus } from './repository-status.enum';
+import { RepositoryType } from './repository-type.enum';
 
 @ObjectType()
 export class Repository {
@@ -13,7 +14,7 @@ export class Repository {
   namespacedName: string;
 
   /** 类型 */
-  repositoryType?: string;
+  repositoryType?: RepositoryType;
 
   /** URL */
   url: string;

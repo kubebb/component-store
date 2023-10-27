@@ -74,7 +74,7 @@ export class RepositoryService {
       namespacedName: `${repository.metadata?.name}_${repository.metadata.namespace}_${
         cluster || ''
       }`,
-      repositoryType: repository.spec?.repositoryType,
+      repositoryType: repository.metadata?.labels?.['kubebb.repository.type'],
       url: repository.spec?.url,
       creationTimestamp: new Date(repository.metadata.creationTimestamp).toISOString(),
       lastSuccessfulTime: lastSuccessfulTime ? new Date(lastSuccessfulTime).toISOString() : null,
