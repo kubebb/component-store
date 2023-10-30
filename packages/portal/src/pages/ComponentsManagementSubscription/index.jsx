@@ -482,41 +482,6 @@ class ComponentsManagementSubscription$$Page extends React.Component {
                       },
                       {
                         key: 'latestVersion',
-                        title: options =>
-                          (__$$context => (
-                            <Space
-                              size="small"
-                              align="center"
-                              direction="horizontal"
-                              __component_name="Space"
-                            >
-                              <Typography.Title
-                                bold={true}
-                                level={2}
-                                bordered={false}
-                                ellipsis={true}
-                                __component_name="Typography.Title"
-                              >
-                                {this.i18n('i18n-7e7t3bw9') /* 版本 */}
-                              </Typography.Title>
-                              {!!false && (
-                                <Tag
-                                  color="success"
-                                  style={{ cursor: 'pointer' }}
-                                  onClick={function () {
-                                    return this.filterNew.apply(
-                                      this,
-                                      Array.prototype.slice.call(arguments).concat([])
-                                    );
-                                  }.bind(__$$context)}
-                                  closable={false}
-                                  __component_name="Tag"
-                                >
-                                  NEW
-                                </Tag>
-                              )}
-                            </Space>
-                          ))(__$$createChildContext(__$$context, { options })),
                         render: (text, record, index) =>
                           (__$$context => (
                             <Space align="center" direction="horizontal" __component_name="Space">
@@ -539,11 +504,12 @@ class ComponentsManagementSubscription$$Page extends React.Component {
                         filters: __$$eval(() => [
                           {
                             value: 'isNewer',
-                            text: this.i18n('i18n-pj2xiqoz'),
+                            text: 'NEW',
                           },
                         ]),
                         dataIndex: 'latestVersion',
-                        _unsafe_MixedSetter_title_select: 'SlotSetter',
+                        _unsafe_MixedSetter_title_select: 'I18nSetter',
+                        title: this.i18n('i18n-7e7t3bw9') /* 版本 */,
                       },
                       {
                         key: 'repository',
