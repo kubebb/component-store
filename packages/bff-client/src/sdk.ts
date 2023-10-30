@@ -457,6 +457,8 @@ export type Query = {
   component: Component;
   /** 安装组件详情 */
   componentplan: Componentplan;
+  /** 安装组件列表 */
+  componentplans: Array<Componentplan>;
   /** 安装组件列表（分页） */
   componentplansPaged: PaginatedComponentplan;
   /** 组件列表（分页） */
@@ -484,6 +486,12 @@ export type QueryComponentplanArgs = {
   cluster?: InputMaybe<Scalars['String']['input']>;
   name: Scalars['String']['input'];
   namespace: Scalars['String']['input'];
+};
+
+export type QueryComponentplansArgs = {
+  cluster?: InputMaybe<Scalars['String']['input']>;
+  namespace: Scalars['String']['input'];
+  releaseName?: InputMaybe<Scalars['String']['input']>;
 };
 
 export type QueryComponentplansPagedArgs = {
@@ -824,6 +832,17 @@ export type GetComponentplansPagedQuery = {
       } | null;
     }> | null;
   };
+};
+
+export type GetComponentplansQueryVariables = Exact<{
+  namespace: Scalars['String']['input'];
+  releaseName?: InputMaybe<Scalars['String']['input']>;
+  cluster?: InputMaybe<Scalars['String']['input']>;
+}>;
+
+export type GetComponentplansQuery = {
+  __typename?: 'Query';
+  componentplans: Array<{ __typename?: 'Componentplan'; name: string; releaseName: string }>;
 };
 
 export type GetComponentplanQueryVariables = Exact<{
@@ -1443,6 +1462,14 @@ export const GetComponentplansPagedDocument = gql`
     }
   }
 `;
+export const GetComponentplansDocument = gql`
+  query getComponentplans($namespace: String!, $releaseName: String, $cluster: String) {
+    componentplans(namespace: $namespace, releaseName: $releaseName, cluster: $cluster) {
+      name
+      releaseName
+    }
+  }
+`;
 export const GetComponentplanDocument = gql`
   query getComponentplan($name: String!, $namespace: String!, $cluster: String) {
     componentplan(name: $name, namespace: $namespace, cluster: $cluster) {
@@ -1953,6 +1980,20 @@ export function getSdk(client: GraphQLClient, withWrapper: SdkFunctionWrapper = 
         'query'
       );
     },
+    getComponentplans(
+      variables: GetComponentplansQueryVariables,
+      requestHeaders?: GraphQLClientRequestHeaders
+    ): Promise<GetComponentplansQuery> {
+      return withWrapper(
+        wrappedRequestHeaders =>
+          client.request<GetComponentplansQuery>(GetComponentplansDocument, variables, {
+            ...requestHeaders,
+            ...wrappedRequestHeaders,
+          }),
+        'getComponentplans',
+        'query'
+      );
+    },
     getComponentplan(
       variables: GetComponentplanQueryVariables,
       requestHeaders?: GraphQLClientRequestHeaders
@@ -2378,6 +2419,16 @@ export function getSdkWithHooks(
           GetComponentplansPagedQuery,
           GetComponentplansPagedQueryVariables
         >(sdk.getComponentplansPaged, variables),
+        config
+      );
+    },
+    useGetComponentplans(
+      variables: GetComponentplansQueryVariables,
+      config?: SWRConfigInterface<GetComponentplansQuery, ClientError>
+    ) {
+      return useSWR<GetComponentplansQuery, ClientError>(
+        genKey<GetComponentplansQueryVariables>('GetComponentplans', variables),
+        () => sdk.getComponentplans(variables),
         config
       );
     },

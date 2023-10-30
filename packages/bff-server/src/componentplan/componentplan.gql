@@ -25,6 +25,14 @@ query getComponentplansPaged($namespace: String!, $page: Float = 1, $pageSize: F
   }
 }
 
+# 安装组件列表
+query getComponentplans($namespace: String!, $releaseName: String, $cluster: String) {
+  componentplans(namespace: $namespace, releaseName: $releaseName,cluster: $cluster) {
+      name
+      releaseName
+  }
+}
+
 # 「安装组件」详情
 query getComponentplan($name: String!, $namespace: String!, $cluster: String) {
   componentplan(name: $name, namespace: $namespace, cluster: $cluster) {
