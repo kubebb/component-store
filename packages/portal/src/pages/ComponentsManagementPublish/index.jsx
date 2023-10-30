@@ -403,7 +403,7 @@ class ComponentsManagementPublish$$Page extends React.Component {
                     >
                       <Typography.Text
                         style={{ fontSize: '', maxWidth: '400px' }}
-                        strong={false}
+                        strong={true}
                         disabled={false}
                         ellipsis={{
                           rows: 1,
@@ -477,10 +477,12 @@ class ComponentsManagementPublish$$Page extends React.Component {
               fieldProps={{
                 enum: __$$eval(
                   () =>
-                    this.props.useGetRepositoriesAll?.data?.repositoriesAll?.map(item => ({
-                      value: item.name,
-                      label: item.name,
-                    })) || []
+                    this.props.useGetRepositoriesAll?.data?.repositoriesAll
+                      ?.filter(item => item.repositoryType === 'chartmuseum')
+                      ?.map(item => ({
+                        value: item.name,
+                        label: item.name,
+                      })) || []
                 ),
                 name: 'repository',
                 title: (

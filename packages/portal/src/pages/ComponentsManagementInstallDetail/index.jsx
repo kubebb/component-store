@@ -65,13 +65,13 @@ class ComponentsManagementInstallDetail$$Page extends React.Component {
     __$$i18n._inject2(this);
 
     this.state = {
-      isOpenModal: false,
-      modalType: 'rollback',
-      cluster: undefined,
-      modalLoading: false,
       record: undefined,
-      historyPagination: undefined,
+      cluster: undefined,
+      modalType: 'rollback',
       valuesYaml: '',
+      isOpenModal: false,
+      modalLoading: false,
+      historyPagination: undefined,
       historyValuesYaml: '',
     };
   }
@@ -80,17 +80,12 @@ class ComponentsManagementInstallDetail$$Page extends React.Component {
 
   $$ = () => [];
 
-  getMethods() {
-    const method =
-      this.utils
-        .getComponentInstallMethods(this)
-        ?.find(
-          item =>
-            item.value ===
-            (this.props.useGetComponentplan?.data?.componentplan?.subscription
-              ?.componentPlanInstallMethod || 'manual')
-        )?.text || '-';
-    return method;
+  getName(item) {
+    item = item || {};
+    if (item.displayName) {
+      return `${item.displayName}(${item.chartName || '-'})`;
+    }
+    return item.chartName || '-';
   }
 
   getImage(item) {
@@ -115,45 +110,28 @@ class ComponentsManagementInstallDetail$$Page extends React.Component {
     );
   }
 
-  getName(item) {
-    item = item || {};
-    if (item.displayName) {
-      return `${item.displayName}(${item.chartName || '-'})`;
-    }
-    return item.chartName || '-';
-  }
-
-  handleHistoryTableChange(pagination, filters, sorter, extra) {
-    this.setState({
-      historyPagination: {
-        pagination,
-        filters,
-        sorter,
-      },
-    });
-  }
-
   closeModal() {
     this.setState({
       isOpenModal: false,
     });
   }
 
-  openRollBackModal(e, { record }) {
-    this.setState({
-      record,
-      isOpenModal: true,
-      modalType: 'rollback',
-    });
+  getCluster() {
+    const cluster = this.utils.getAuthData()?.cluster;
+    return cluster;
   }
 
-  openDetailModal(e, { record }) {
-    this.setState({
-      record,
-      isOpenModal: true,
-      modalType: 'detail',
-    });
-    this.loadDetail(record);
+  getMethods() {
+    const method =
+      this.utils
+        .getComponentInstallMethods(this)
+        ?.find(
+          item =>
+            item.value ===
+            (this.props.useGetComponentplan?.data?.componentplan?.subscription
+              ?.componentPlanInstallMethod || 'manual')
+        )?.text || '-';
+    return method;
   }
 
   async loadDetail(record) {
@@ -178,13 +156,25 @@ class ComponentsManagementInstallDetail$$Page extends React.Component {
     });
   }
 
-  getCluster() {
-    const cluster = this.utils.getAuthData()?.cluster;
-    return cluster;
-  }
-
   getClusterInfo() {
     return this.state.cluster;
+  }
+
+  openDetailModal(e, { record }) {
+    this.setState({
+      record,
+      isOpenModal: true,
+      modalType: 'detail',
+    });
+    this.loadDetail(record);
+  }
+
+  openRollBackModal(e, { record }) {
+    this.setState({
+      record,
+      isOpenModal: true,
+      modalType: 'rollback',
+    });
   }
 
   async confirmRollBackModal(e, payload) {
@@ -216,6 +206,16 @@ class ComponentsManagementInstallDetail$$Page extends React.Component {
         errors: error?.response?.errors,
       });
     }
+  }
+
+  handleHistoryTableChange(pagination, filters, sorter, extra) {
+    this.setState({
+      historyPagination: {
+        pagination,
+        filters,
+        sorter,
+      },
+    });
   }
 
   componentDidMount() {
@@ -1044,8 +1044,8 @@ class ComponentsManagementInstallDetail$$Page extends React.Component {
                         items={[
                           {
                             key: 'euyrpz50dzt',
-                            label: this.i18n('i18n-cuf6u4di') /* 组件名称 */,
                             span: 1,
+                            label: this.i18n('i18n-cuf6u4di') /* 组件名称 */,
                             children: (
                               <Typography.Text
                                 style={{ fontSize: '' }}
@@ -1064,8 +1064,8 @@ class ComponentsManagementInstallDetail$$Page extends React.Component {
                           },
                           {
                             key: '1frgdr88d6n',
-                            label: this.i18n('i18n-1po87kgw') /* 组件仓库 */,
                             span: 1,
+                            label: this.i18n('i18n-1po87kgw') /* 组件仓库 */,
                             children: (
                               <Typography.Text
                                 style={{ fontSize: '' }}
@@ -1084,8 +1084,8 @@ class ComponentsManagementInstallDetail$$Page extends React.Component {
                           },
                           {
                             key: 'bg1244wxs0s',
-                            label: this.i18n('i18n-ekp8efeq') /* 组件版本 */,
                             span: 1,
+                            label: this.i18n('i18n-ekp8efeq') /* 组件版本 */,
                             children: (
                               <Typography.Text
                                 style={{ fontSize: '' }}
@@ -1104,8 +1104,8 @@ class ComponentsManagementInstallDetail$$Page extends React.Component {
                           },
                           {
                             key: '42s6syjgu89',
-                            label: this.i18n('i18n-5u3ohmy6') /* 更新方式 */,
                             span: 1,
+                            label: this.i18n('i18n-5u3ohmy6') /* 更新方式 */,
                             children: (
                               <Row wrap={true} gutter={[0, 0]} __component_name="Row">
                                 <Col span={24} __component_name="Col">
@@ -1296,8 +1296,8 @@ class ComponentsManagementInstallDetail$$Page extends React.Component {
                         items={[
                           {
                             key: 'euyrpz50dzt',
-                            span: 1,
                             label: this.i18n('i18n-t6iwy9l2') /* 配置文件 */,
+                            span: 1,
                             children: (
                               <Row wrap={true} style={{ width: '100%' }} __component_name="Row">
                                 <Col span={24} __component_name="Col">
@@ -1329,10 +1329,33 @@ class ComponentsManagementInstallDetail$$Page extends React.Component {
                           },
                           {
                             key: 'bg1244wxs0s',
+                            label: this.i18n('i18n-trftxv8p') /* 镜像替换 */,
                             span: 1,
-                            label: this.i18n('i18n-hnyjg86b') /* 镜像 */,
-                            children: (
-                              <Row wrap={true} gutter={[0, 0]} __component_name="Row">
+                            children: [
+                              !!__$$eval(
+                                () =>
+                                  !(
+                                    this.props.useGetComponentplan?.data?.componentplan?.component
+                                      ?.images?.length > 0
+                                  )
+                              ) && (
+                                <Typography.Text
+                                  style={{ fontSize: '' }}
+                                  strong={false}
+                                  disabled={false}
+                                  ellipsis={true}
+                                  __component_name="Typography.Text"
+                                  key="node_oclocc6wpgp"
+                                >
+                                  -
+                                </Typography.Text>
+                              ),
+                              <Row
+                                wrap={true}
+                                gutter={[0, 0]}
+                                __component_name="Row"
+                                key="node_oclocc6wpgq"
+                              >
                                 {__$$evalArray(
                                   () =>
                                     this.props.useGetComponentplan?.data?.componentplan?.component
@@ -1359,8 +1382,8 @@ class ComponentsManagementInstallDetail$$Page extends React.Component {
                                     </Col>
                                   ))(__$$createChildContext(__$$context, { record, index }))
                                 )}
-                              </Row>
-                            ),
+                              </Row>,
+                            ],
                           },
                         ]}
                         title=""
@@ -1410,7 +1433,7 @@ class ComponentsManagementInstallDetail$$Page extends React.Component {
                         <Descriptions.Item
                           key="bg1244wxs0s"
                           span={1}
-                          label={this.i18n('i18n-hnyjg86b') /* 镜像 */}
+                          label={this.i18n('i18n-trftxv8p') /* 镜像替换 */}
                         >
                           {[
                             !!__$$eval(
@@ -1426,7 +1449,7 @@ class ComponentsManagementInstallDetail$$Page extends React.Component {
                                 disabled={false}
                                 ellipsis={true}
                                 __component_name="Typography.Text"
-                                key="node_oclo85lm9e2k"
+                                key="node_oclocc6wpg74"
                               >
                                 -
                               </Typography.Text>
@@ -1435,7 +1458,7 @@ class ComponentsManagementInstallDetail$$Page extends React.Component {
                               wrap={true}
                               gutter={[0, 0]}
                               __component_name="Row"
-                              key="node_oclo85lm9e1z"
+                              key="node_oclocc6wpg75"
                             >
                               {__$$evalArray(
                                 () =>

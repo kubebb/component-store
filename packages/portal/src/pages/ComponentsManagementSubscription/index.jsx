@@ -278,7 +278,7 @@ class ComponentsManagementSubscription$$Page extends React.Component {
                     </Typography.Text>
                     <Typography.Text
                       style={{ fontSize: '', maxWidth: '330px' }}
-                      strong={false}
+                      strong={true}
                       disabled={false}
                       ellipsis={{
                         rows: 1,

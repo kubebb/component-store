@@ -560,14 +560,14 @@ class ComponentsManagementInstall$$Page extends React.Component {
                               )}
                             </Space>
                           ))(__$$createChildContext(__$$context, { text, record, index })),
-                        dataIndex: 'version',
-                        _unsafe_MixedSetter_title_select: 'SlotSetter',
                         filters: __$$eval(() => [
                           {
                             value: 'isNewer',
                             text: this.i18n('i18n-pj2xiqoz'),
                           },
                         ]),
+                        dataIndex: 'version',
+                        _unsafe_MixedSetter_title_select: 'SlotSetter',
                       },
                       {
                         key: 'status',
@@ -582,7 +582,7 @@ class ComponentsManagementInstall$$Page extends React.Component {
                                 )}
                                 __component_name="Status"
                               />
-                              {!!__$$eval(() => record.status !== 'InstallSuccess') && (
+                              {!!__$$eval(() => record.reason) && (
                                 <Tooltip
                                   title={__$$eval(() => record?.reason || '-')}
                                   __component_name="Tooltip"
