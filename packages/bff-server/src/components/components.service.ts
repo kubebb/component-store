@@ -198,6 +198,7 @@ export class ComponentsService {
         )
       )
     );
+    await this.repositoryService.syncRepository(auth, repository, cluster);
     return true;
   }
 
