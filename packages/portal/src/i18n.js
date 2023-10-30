@@ -160,7 +160,7 @@ const i18nConfig = {
     'i18n-gyax19ni': 'type',
     'i18n-h2dtugcf': 'user name',
     'i18n-h8k0fzco': 'Subscription components',
-    'i18n-ha9unjy9': 'Is it?',
+    'i18n-ha9unjy9': '?',
     'i18n-hm90oqjw':
       'After opening, enter the component market and initiate evaluation of the components in the warehouse. The evaluation results and suggestions for components will be given from three aspects: safety, reliability and usability for your reference',
     'i18n-hnyjg86b': 'mirror image',
@@ -205,7 +205,7 @@ const i18nConfig = {
     'i18n-m2mn87ml': 'Created successfully',
     'i18n-m6kwhtjg': 'Update time',
     'i18n-m6vy7crn': 'Upgrade failed',
-    'i18n-m91z1o9b': 'remove component',
+    'i18n-m91z1o9b': 'Delete component',
     'i18n-m9qnleli': 'Version rollback successful',
     'i18n-mgpcpuj5': 'Ok',
     'i18n-mobzvrte': 'other',
@@ -304,7 +304,7 @@ const i18nConfig = {
     'i18n-x88ueftx': 'Duplicate component names',
     'i18n-x8f9le4i': 'Installation method',
     'i18n-x8jvcd94':
-      'Deleting a component deletes all of its version information and will no longer <组件市场>be displayed. OK to remove the component',
+      'To delete a component is to delete all its version information, which will not be displayed in the component Market. Decide to delete the component',
     'i18n-xaa077da': 'Maintainer Information',
     'i18n-xbsrk4fe': 'rollback',
     'i18n-xbukqryw': 'Component installation?',

@@ -596,8 +596,9 @@ class ComponentsWarehouse$$Page extends React.Component {
         >
           <Alert
             type="info"
+            style={{}}
             message={
-              <Space size={5} align="center" direction="horizontal" style={{}}>
+              <Space size={5} align="center" style={{}} direction="horizontal">
                 <Typography.Text
                   style={{ fontSize: '' }}
                   strong={false}
@@ -608,8 +609,8 @@ class ComponentsWarehouse$$Page extends React.Component {
                   {this.i18n('i18n-lc4oie5j') /* 删除 */}
                 </Typography.Text>
                 <Typography.Text
-                  style={{ maxWidth: '180px', fontSize: '' }}
-                  strong={false}
+                  style={{ fontSize: '', maxWidth: '180px' }}
+                  strong={true}
                   disabled={false}
                   ellipsis={{
                     rows: 1,
@@ -635,7 +636,6 @@ class ComponentsWarehouse$$Page extends React.Component {
             }
             showIcon={true}
             __component_name="Alert"
-            style={{}}
           />
         </Modal>
       </Page>

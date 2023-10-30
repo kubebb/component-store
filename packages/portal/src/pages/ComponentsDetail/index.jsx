@@ -53,6 +53,7 @@ import __$$constants from '../../__constants';
 
 import remarkGfm from 'remark-gfm';
 import './index.css';
+
 class ComponentsDetail$$Page extends React.Component {
   get location() {
     return this.props.self?.location;
@@ -656,6 +657,7 @@ class ComponentsDetail$$Page extends React.Component {
                 type="primary"
                 title={this.i18n('i18n-00cyzhs8') /* 组件详情 */}
                 __component_name="Button.Back"
+                path="/components/market"
               />
             </Space>
             <Tag
@@ -1303,7 +1305,7 @@ class ComponentsDetail$$Page extends React.Component {
                               {
                                 key: '8ju3wht9i04',
                                 span: 1,
-                                label: this.i18n('i18n-xx4ved6h') /* 各应用版本 */,
+                                label: this.i18n('i18n-xx4ved6h') /* 应用版本 */,
                                 children: (
                                   <Typography.Text
                                     style={{ fontSize: '' }}
@@ -1353,7 +1355,7 @@ class ComponentsDetail$$Page extends React.Component {
                             <Descriptions.Item
                               key="8ju3wht9i04"
                               span={1}
-                              label={this.i18n('i18n-xx4ved6h') /* 各应用版本 */}
+                              label={this.i18n('i18n-xx4ved6h') /* 应用版本 */}
                             >
                               {
                                 <Typography.Text
