@@ -30,6 +30,26 @@ export class ComponentplanResolver {
     return this.componentplanService.listPaged(auth, args);
   }
 
+  @Query(() => [Componentplan], { description: '安装组件列表' })
+  async componentplans(
+    @Auth() auth: JwtAuth,
+    @Args('releaseName', { nullable: true, description: '部署名称' }) releaseName: string,
+    @Args('namespace') namespace: string,
+    @Args('cluster', {
+      nullable: true,
+      description: '集群下的资源，不传则为默认集群',
+    })
+    cluster: string
+  ): Promise<Componentplan[]> {
+    const labelSelectors = [`core.kubebb.k8s.com.cn/componentplan-release=${releaseName}`];
+    return this.componentplanService.list(
+      auth,
+      namespace,
+      { labelSelector: labelSelectors.join(',') },
+      cluster
+    );
+  }
+
   @Query(() => Componentplan, { description: '安装组件详情' })
   async componentplan(
     @Auth() auth: JwtAuth,
