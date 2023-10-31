@@ -207,7 +207,7 @@ export class SubscriptionService {
     name: string,
     namespace: string,
     componentplan: UpdateSubscriptionInput,
-    valuesFrom: any[],
+    valuesFrom?: any[],
     cluster?: string
   ): Promise<boolean> {
     const { componentPlanInstallMethod, images, schedule } = componentplan;

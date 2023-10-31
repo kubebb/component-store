@@ -426,7 +426,7 @@ export class ComponentplanService {
           {
             componentPlanInstallMethod: InstallMethod.manual,
           },
-          null,
+          undefined,
           cluster
         )
       )
