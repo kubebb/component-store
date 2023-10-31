@@ -530,6 +530,21 @@ utils.cronChangeToDate = function __cronChangeToDate() {
 }.apply(utils);
 export const cronChangeToDate = utils.cronChangeToDate;
 
+/** 组件来源 */
+utils.getComponentSource = function __getComponentSource() {
+  return (pageThis, isStatus, isTag) => {
+    return [
+      // 官方
+      {
+        color: 'processing',
+        [isStatus ? 'id' : 'value']: 'official',
+        [isStatus || isTag ? 'children' : 'text']: pageThis.i18n('i18n-uvq3yb8j'),
+      },
+    ];
+  };
+}.apply(utils);
+export const getComponentSource = utils.getComponentSource;
+
 export class RefsManager {
   constructor() {
     this.refInsStore = {};
@@ -625,4 +640,6 @@ export default {
   dateChangeToCron,
 
   cronChangeToDate,
+
+  getComponentSource,
 };

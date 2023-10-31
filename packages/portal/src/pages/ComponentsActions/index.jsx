@@ -328,16 +328,15 @@ class ComponentsActions$$Page extends React.Component {
   }
 
   async validatorName(value) {
-    const name = this.form()?.values?.releaseName; // @todo
     const namespace = this.form()?.values?.position?.namespace;
     try {
-      if (value && this.state.isCreate && name && namespace) {
-        const res = await this.props?.appHelper?.utils?.bff?.getComponentplan({
-          name,
+      if (value && this.state.isCreate && namespace) {
+        const res = await this.props?.appHelper?.utils?.bff?.getComponentplans({
+          releaseName: value,
           cluster: this.getCluster(),
           namespace,
         });
-        if (res?.repository?.name) {
+        if (res?.componentplans?.some(item => item.releaseName === value)) {
           return this.i18n('i18n-1y09ypgx');
         }
       }
@@ -563,7 +562,7 @@ class ComponentsActions$$Page extends React.Component {
                       ellipsis={true}
                       __component_name="Typography.Text"
                     >
-                      {this.i18n('i18n-agx7sv3d') /* 阅读组件安装说明，祝您快速部署体验 */}
+                      {this.i18n('i18n-agx7sv3d') /* 阅读组件安装说明，助您快速部署体验 */}
                     </Typography.Text>
                     <UnifiedLink
                       to={__$$eval(() => this.getReademeDetailPath())}
@@ -626,6 +625,7 @@ class ComponentsActions$$Page extends React.Component {
                             Array.prototype.slice.call(arguments).concat([])
                           );
                         }.bind(this),
+                        triggerType: 'onBlur',
                       },
                     ],
                   }}

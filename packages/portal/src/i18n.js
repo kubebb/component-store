@@ -125,6 +125,7 @@ const i18nConfig = {
     'i18n-dj53cnrp': 'Uninstall',
     'i18n-dofmyljq': '“.”  and "-" cannot be used together',
     'i18n-drs45rlh': 'Is it certified',
+    'i18n-duuoxmkm': 'Component source',
     'i18n-dv03soje': 'Please select an image first',
     'i18n-dx6dp5fl': 'Client certificate',
     'i18n-dzffs2mw':
@@ -453,6 +454,7 @@ const i18nConfig = {
     'i18n-dj53cnrp': '卸载',
     'i18n-dofmyljq': '“.”  和 “-” 不能连用',
     'i18n-drs45rlh': '是否认证',
+    'i18n-duuoxmkm': '组件来源',
     'i18n-dv03soje': '请先选择镜像',
     'i18n-dx6dp5fl': '客户端证书',
     'i18n-dzffs2mw': '由3~253个小写字母、数字、中划线“-”或点“.”组成，并以字母、数字开头或结尾',
