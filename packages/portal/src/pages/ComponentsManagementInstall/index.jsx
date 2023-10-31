@@ -141,6 +141,8 @@ class ComponentsManagementInstall$$Page extends React.Component {
     const params = {
       page: this.state?.current || 1,
       pageSize: this.state?.pageSize || 10,
+      chartName: undefined,
+      repository: undefined,
       [this.state.searchKey]: this.state?.searchValue,
       cluster: this.utils.getAuthData()?.cluster,
       namespace: this.utils.getAuthData()?.project,
@@ -383,6 +385,7 @@ class ComponentsManagementInstall$$Page extends React.Component {
                         </Button>
                         <Input.Search
                           style={{ width: '240px' }}
+                          value={__$$eval(() => this.state.searchValue)}
                           onChange={function () {
                             return this.handleSearchValueChange.apply(
                               this,
@@ -506,6 +509,7 @@ class ComponentsManagementInstall$$Page extends React.Component {
                       },
                       {
                         key: 'version',
+                        title: this.i18n('i18n-7e7t3bw9') /* 版本 */,
                         render: (text, record, index) =>
                           (__$$context => (
                             <Space align="center" direction="horizontal" __component_name="Space">
@@ -533,7 +537,6 @@ class ComponentsManagementInstall$$Page extends React.Component {
                         ]),
                         dataIndex: 'version',
                         _unsafe_MixedSetter_title_select: 'I18nSetter',
-                        title: this.i18n('i18n-7e7t3bw9') /* 版本 */,
                       },
                       {
                         key: 'status',

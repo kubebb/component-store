@@ -65,13 +65,13 @@ class ComponentsManagementInstallDetail$$Page extends React.Component {
     __$$i18n._inject2(this);
 
     this.state = {
-      record: undefined,
-      cluster: undefined,
-      modalType: 'rollback',
-      valuesYaml: '',
       isOpenModal: false,
+      modalType: 'rollback',
+      cluster: undefined,
       modalLoading: false,
+      record: undefined,
       historyPagination: undefined,
+      valuesYaml: '',
       historyValuesYaml: '',
     };
   }
@@ -80,12 +80,20 @@ class ComponentsManagementInstallDetail$$Page extends React.Component {
 
   $$ = () => [];
 
-  getName(item) {
-    item = item || {};
-    if (item.displayName) {
-      return `${item.displayName}(${item.chartName || '-'})`;
+  getMethods(componentplan) {
+    const componentPlanInstallMethod = componentplan?.subscription?.componentPlanInstallMethod;
+    const method =
+      this.utils
+        .getComponentInstallMethods(this)
+        ?.find(item => item.value === (componentPlanInstallMethod || 'manual'))?.text || '-';
+    let extra = '';
+    if (componentPlanInstallMethod === 'auto') {
+      const schedule = componentplan?.subscription?.schedule;
+      extra = schedule
+        ? `(${this.utils.cronChangeToDate(schedule)})`
+        : `(${this.i18n('i18n-kzpz5w4j')})`;
     }
-    return item.chartName || '-';
+    return method + extra;
   }
 
   getImage(item) {
@@ -110,28 +118,45 @@ class ComponentsManagementInstallDetail$$Page extends React.Component {
     );
   }
 
+  getName(item) {
+    item = item || {};
+    if (item.displayName) {
+      return `${item.displayName}(${item.chartName || '-'})`;
+    }
+    return item.chartName || '-';
+  }
+
+  handleHistoryTableChange(pagination, filters, sorter, extra) {
+    this.setState({
+      historyPagination: {
+        pagination,
+        filters,
+        sorter,
+      },
+    });
+  }
+
   closeModal() {
     this.setState({
       isOpenModal: false,
     });
   }
 
-  getCluster() {
-    const cluster = this.utils.getAuthData()?.cluster;
-    return cluster;
+  openRollBackModal(e, { record }) {
+    this.setState({
+      record,
+      isOpenModal: true,
+      modalType: 'rollback',
+    });
   }
 
-  getMethods() {
-    const method =
-      this.utils
-        .getComponentInstallMethods(this)
-        ?.find(
-          item =>
-            item.value ===
-            (this.props.useGetComponentplan?.data?.componentplan?.subscription
-              ?.componentPlanInstallMethod || 'manual')
-        )?.text || '-';
-    return method;
+  openDetailModal(e, { record }) {
+    this.setState({
+      record,
+      isOpenModal: true,
+      modalType: 'detail',
+    });
+    this.loadDetail(record);
   }
 
   async loadDetail(record) {
@@ -156,25 +181,13 @@ class ComponentsManagementInstallDetail$$Page extends React.Component {
     });
   }
 
+  getCluster() {
+    const cluster = this.utils.getAuthData()?.cluster;
+    return cluster;
+  }
+
   getClusterInfo() {
     return this.state.cluster;
-  }
-
-  openDetailModal(e, { record }) {
-    this.setState({
-      record,
-      isOpenModal: true,
-      modalType: 'detail',
-    });
-    this.loadDetail(record);
-  }
-
-  openRollBackModal(e, { record }) {
-    this.setState({
-      record,
-      isOpenModal: true,
-      modalType: 'rollback',
-    });
   }
 
   async confirmRollBackModal(e, payload) {
@@ -206,16 +219,6 @@ class ComponentsManagementInstallDetail$$Page extends React.Component {
         errors: error?.response?.errors,
       });
     }
-  }
-
-  handleHistoryTableChange(pagination, filters, sorter, extra) {
-    this.setState({
-      historyPagination: {
-        pagination,
-        filters,
-        sorter,
-      },
-    });
   }
 
   componentDidMount() {
@@ -418,17 +421,7 @@ class ComponentsManagementInstallDetail$$Page extends React.Component {
                           ellipsis={true}
                           __component_name="Typography.Text"
                         >
-                          {__$$eval(
-                            () =>
-                              this.utils
-                                .getComponentInstallMethods(this)
-                                ?.find(
-                                  item =>
-                                    item.value ===
-                                    (this.state?.componentplan?.subscription
-                                      ?.componentPlanInstallMethod || 'manual')
-                                )?.text || '-'
-                          )}
+                          {__$$eval(() => this.getMethods(this.state?.componentplan))}
                         </Typography.Text>
                       </Col>
                       <Col span={24} __component_name="Col">
@@ -573,6 +566,7 @@ class ComponentsManagementInstallDetail$$Page extends React.Component {
                         <Editor
                           value={__$$eval(() => this.state?.componentplan?.valuesYaml || '-')}
                           height="300px"
+                          readOnly={true}
                           styleVersion="kubebb"
                           __component_name="Editor"
                         />
@@ -1241,7 +1235,11 @@ class ComponentsManagementInstallDetail$$Page extends React.Component {
                                   ellipsis={true}
                                   __component_name="Typography.Text"
                                 >
-                                  {__$$eval(() => this.getMethods())}
+                                  {__$$eval(() =>
+                                    this.getMethods(
+                                      this.props.useGetComponentplan?.data?.componentplan
+                                    )
+                                  )}
                                 </Typography.Text>
                               </Col>
                               <Col span={24} __component_name="Col">
@@ -1296,8 +1294,8 @@ class ComponentsManagementInstallDetail$$Page extends React.Component {
                         items={[
                           {
                             key: 'euyrpz50dzt',
-                            label: this.i18n('i18n-t6iwy9l2') /* 配置文件 */,
                             span: 1,
+                            label: this.i18n('i18n-t6iwy9l2') /* 配置文件 */,
                             children: (
                               <Row wrap={true} style={{ width: '100%' }} __component_name="Row">
                                 <Col span={24} __component_name="Col">
@@ -1329,8 +1327,8 @@ class ComponentsManagementInstallDetail$$Page extends React.Component {
                           },
                           {
                             key: 'bg1244wxs0s',
-                            label: this.i18n('i18n-trftxv8p') /* 镜像替换 */,
                             span: 1,
+                            label: this.i18n('i18n-trftxv8p') /* 镜像替换 */,
                             children: [
                               !!__$$eval(
                                 () =>
@@ -1579,17 +1577,7 @@ class ComponentsManagementInstallDetail$$Page extends React.Component {
                                   ellipsis={true}
                                   __component_name="Typography.Text"
                                 >
-                                  {__$$eval(
-                                    () =>
-                                      __$$context.utils
-                                        .getComponentInstallMethods(__$$context)
-                                        ?.find(
-                                          item =>
-                                            item.value ===
-                                            (record?.subscription?.componentPlanInstallMethod ||
-                                              'manual')
-                                        )?.text || '-'
-                                  )}
+                                  {__$$eval(() => __$$context.getMethods(record))}
                                 </Typography.Text>
                               ))(__$$createChildContext(__$$context, { text, record, index })),
                             sorter: false,

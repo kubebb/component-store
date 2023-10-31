@@ -70,19 +70,19 @@ class ComponentsWarehouse$$Page extends React.Component {
     __$$i18n._inject2(this);
 
     this.state = {
-      size: 10,
-      record: {},
-      sorter: undefined,
-      cluster: undefined,
-      current: 1,
-      filters: undefined,
-      clusters: undefined,
-      modalType: 'delete',
-      searchKey: 'name',
-      pagination: undefined,
       isOpenModal: false,
+      modalType: 'delete',
       searchValue: undefined,
+      searchKey: 'name',
+      size: 10,
+      current: 1,
+      record: {},
+      pagination: undefined,
+      filters: undefined,
+      sorter: undefined,
       deleteLoading: false,
+      cluster: undefined,
+      clusters: undefined,
       clusterLoading: true,
     };
   }
@@ -95,32 +95,14 @@ class ComponentsWarehouse$$Page extends React.Component {
     return this._refsManager.getAll(refName);
   };
 
-  closeModal() {
-    this.setState({
-      isOpenModal: false,
-    });
-  }
-
-  getCluster() {
-    return this.state.cluster;
-  }
-
-  handleSearch(v) {
-    this.setState(
-      {
-        current: 1,
-      },
-      this.handleQueryChange
-    );
-  }
-
   async loadClusters() {
-    const res = await this.props.appHelper?.utils?.bffSdk?.getClustersForIsDeployedResource({
-      group: 'core.kubebb.k8s.com.cn',
-      version: 'v1alpha1',
-      plural: 'repositories',
-    });
-    const clusters = res?.clusters
+    const res =
+      await this.props.appHelper?.utils?.bffSdk?.getCurrentUserClustersForIsDeployedResource({
+        group: 'core.kubebb.k8s.com.cn',
+        version: 'v1alpha1',
+        plural: 'repositories',
+      });
+    const clusters = res?.userCurrent?.clusters
       ?.filter(item => item.isDeployedResource === true)
       ?.map(item => ({
         value: item.name,
@@ -136,16 +118,17 @@ class ComponentsWarehouse$$Page extends React.Component {
     );
   }
 
-  handleRefresh(event) {
-    this.props.useGetRepositories?.mutate();
+  getCluster() {
+    return this.state.cluster;
   }
 
-  openDeleteModal(e, { record }) {
-    this.setState({
-      isOpenModal: true,
-      modalType: 'delete',
-      record,
-    });
+  handleClusterChange(v) {
+    this.setState(
+      {
+        cluster: v,
+      },
+      this.handleQueryChange
+    );
   }
 
   handleQueryChange() {
@@ -176,15 +159,22 @@ class ComponentsWarehouse$$Page extends React.Component {
     // })
   }
 
-  handleTableChange(pagination, filters, sorter, extra) {
-    this.setState(
-      {
-        pagination,
-        filters,
-        sorter,
-      },
-      this.handleQueryChange
-    );
+  handleRefresh(event) {
+    this.props.useGetRepositories?.mutate();
+  }
+
+  openDeleteModal(e, { record }) {
+    this.setState({
+      isOpenModal: true,
+      modalType: 'delete',
+      record,
+    });
+  }
+
+  closeModal() {
+    this.setState({
+      isOpenModal: false,
+    });
   }
 
   async confirmDeleteModal(e, payload) {
@@ -217,17 +207,20 @@ class ComponentsWarehouse$$Page extends React.Component {
     }
   }
 
-  handleClusterChange(v) {
+  handleSearchValueChange(e) {
+    this.setState({
+      searchValue: e.target.value,
+      // current: 1,
+    });
+  }
+
+  handleSearch(v) {
     this.setState(
       {
-        cluster: v,
+        current: 1,
       },
       this.handleQueryChange
     );
-  }
-
-  paginationShowTotal(total, range) {
-    return `${this.i18n('i18n-wajqflwo')} ${total} ${this.i18n('i18n-7vre8aeh')}`;
   }
 
   handlePaginationChange(c, s) {
@@ -240,11 +233,19 @@ class ComponentsWarehouse$$Page extends React.Component {
     );
   }
 
-  handleSearchValueChange(e) {
-    this.setState({
-      searchValue: e.target.value,
-      // current: 1,
-    });
+  handleTableChange(pagination, filters, sorter, extra) {
+    this.setState(
+      {
+        pagination,
+        filters,
+        sorter,
+      },
+      this.handleQueryChange
+    );
+  }
+
+  paginationShowTotal(total, range) {
+    return `${this.i18n('i18n-wajqflwo')} ${total} ${this.i18n('i18n-7vre8aeh')}`;
   }
 
   componentDidMount() {

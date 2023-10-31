@@ -160,6 +160,20 @@ class ComponentsActions$$Page extends React.Component {
         `images.name.${curIndex}.nameReady`,
         `${override.newRegistry}/${override.newPath}/`
       );
+
+    // 重复校验
+    const values = this.form()?.values;
+    const currItem = values?.images?.name?.[curIndex];
+    try {
+      if (
+        value &&
+        values?.images?.name?.some(
+          (item, index) => item.name === currItem?.name && curIndex !== index
+        )
+      ) {
+        return this.i18n('i18n-9al8mu54');
+      }
+    } catch (e) {}
   }
 
   setFormValues(values) {
@@ -403,7 +417,7 @@ class ComponentsActions$$Page extends React.Component {
         valuesYaml: this.state.valuesYaml,
         images: v.images?.name?.map(item => ({
           name: item.name,
-          newName: item.nameReady + item.newName,
+          newName: item.nameReady + (item.newName || ''),
           newTag: item.newTag,
         })),
       };
@@ -606,10 +620,11 @@ class ComponentsActions$$Page extends React.Component {
                         message:
                           this.i18n(
                             'i18n-j0gqw15r'
-                          ) /* 由3~56个小写字母、数字、中划线“-”或点“.”组成，并以字母、数字开头或结尾 */,
+                          ) /* 由3~53个小写字母、数字、中划线“-”组成，并以字母、数字开头或结尾 */,
                         pattern: __$$eval(() =>
                           this.utils.getNameReg({
-                            max: 56,
+                            max: 53,
+                            noDot: true,
                           })
                         ),
                         children: '未知',
@@ -803,9 +818,11 @@ class ComponentsActions$$Page extends React.Component {
                       enum: __$$eval(() => this.utils.getComponentInstallMethods(this)),
                       name: 'componentPlanInstallMethod',
                       title: '',
+                      default: 'manual',
                       required: true,
                       'x-validator': [],
                       _unsafe_MixedSetter_enum_select: 'ExpressionSetter',
+                      _unsafe_MixedSetter_default_select: 'StringSetter',
                     }}
                     componentProps={{
                       'x-component-props': {
@@ -1093,7 +1110,7 @@ class ComponentsActions$$Page extends React.Component {
                     'x-validator': [],
                     _unsafe_MixedSetter_title_select: 'I18nSetter',
                   }}
-                  componentProps={{ 'x-component-props': {} }}
+                  decoratorProps={{ 'x-decorator-props': { labelEllipsis: true } }}
                   __component_name="FormilyFormItem"
                 >
                   <FormilyArrayCards
@@ -1168,6 +1185,7 @@ class ComponentsActions$$Page extends React.Component {
                               _sdkSwrGetFunc: {},
                             },
                           }}
+                          decoratorProps={{ 'x-decorator-props': { labelEllipsis: true } }}
                           __component_name="FormilySelect"
                         />
                         <Typography.Text
@@ -1191,7 +1209,7 @@ class ComponentsActions$$Page extends React.Component {
                           fieldProps={{
                             name: 'nameReady',
                             title: '',
-                            'x-pattern': 'disabled',
+                            'x-pattern': 'editable',
                             'x-validator': [],
                           }}
                           componentProps={{

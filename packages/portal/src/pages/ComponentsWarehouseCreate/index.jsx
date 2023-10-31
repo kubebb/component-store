@@ -289,6 +289,9 @@ class ComponentsWarehouseCreate$$Page extends React.Component {
     if (value && !URL_REG_EXP.test(value)) {
       return this.i18n('i18n-q9gsf3z5');
     }
+    if (value && value.endsWith('/')) {
+      return this.i18n('i18n-q9gsf3z5');
+    }
   }
 
   validatorFile(value) {
@@ -1550,12 +1553,13 @@ class ComponentsWarehouseCreate$$Page extends React.Component {
                                     componentProps={{
                                       'x-component-props': {
                                         placeholder:
-                                          this.i18n(
-                                            'i18n-8im5lu89'
-                                          ) /* 请输入原仓库组,* 代表所有 */,
+                                          this.i18n('i18n-8im5lu89') /* 请输入原仓库组 */,
                                       },
                                     }}
                                     __component_name="FormilyInput"
+                                    decoratorProps={{
+                                      'x-decorator-props': { labelEllipsis: true },
+                                    }}
                                   />
                                 </Space>
                                 <Typography.Text
@@ -1606,9 +1610,7 @@ class ComponentsWarehouseCreate$$Page extends React.Component {
                                     componentProps={{
                                       'x-component-props': {
                                         placeholder:
-                                          this.i18n(
-                                            'i18n-jwjqcqiq'
-                                          ) /* 请输入新仓库组,* 代表所有 */,
+                                          this.i18n('i18n-jwjqcqiq') /* 请输入新仓库组 */,
                                       },
                                     }}
                                     __component_name="FormilyInput"
