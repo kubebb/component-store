@@ -121,6 +121,11 @@ utils.getComponentTypes = function __getComponentTypes() {
       },
       {
         color: 'processing',
+        [isStatus ? 'id' : 'value']: 'API网关',
+        [isStatus || isTag ? 'children' : 'text']: pageThis.i18n('i18n-ty6io0vi'),
+      },
+      {
+        color: 'processing',
         [isStatus ? 'id' : 'value']: '数据库',
         [isStatus || isTag ? 'children' : 'text']: pageThis.i18n('i18n-o5a2dp6f'),
       },
@@ -376,8 +381,10 @@ export const changeLocationQuery = utils.changeLocationQuery;
 
 /** 名称校验(由min~max个小写字母、数字、中划线“-”或点“.”组成，并以字母、数字开头或结尾) */
 utils.getNameReg = function __getNameReg() {
-  return ({ min = 3, max = 63 }) => {
-    return `^([a-z0-9]{1}[-a-z0-9.]{${min > 2 ? min - 2 : 0},${max - 2}})[a-z0-9]{1}$`;
+  return ({ min = 3, max = 63, noDot = false }) => {
+    return `^([a-z0-9]{1}[-a-z0-9${noDot ? '' : '.'}]{${min > 2 ? min - 2 : 0},${
+      max - 2
+    }})[a-z0-9]{1}$`;
   };
 }.apply(utils);
 export const getNameReg = utils.getNameReg;
@@ -490,7 +497,7 @@ utils.cronChangeToDate = function __cronChangeToDate() {
     } else {
       let result = str.split(' ').join('');
       let nArr = str.split(' ');
-      let countData = this.getPlaceholderCount(result);
+      let countData = getPlaceholderCount(result);
       if (!countData.count1) {
         // 没有'?'则是按周循环
         toDate.loopType = '周循环';
@@ -520,10 +527,13 @@ utils.cronChangeToDate = function __cronChangeToDate() {
       } else {
         toDate.loopType = '天循环';
       }
-      toDate.loopTime = nArr[2] + ':' + nArr[1] + ':' + nArr[0];
+      toDate.loopTime =
+        (nArr[1]?.length < 2 ? `0${nArr[1]}` : nArr[1]) +
+        ':' +
+        (nArr[0]?.length < 2 ? `0${nArr[0]}` : nArr[0]);
     }
 
-    return toDate;
+    return toDate?.loopTime;
 
     // console.log(toDate)  {loopType: "月循环", loopValue: "2号,4号,21号", loopTime: "16:30:44"}
   };

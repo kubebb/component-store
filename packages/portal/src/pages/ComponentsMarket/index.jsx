@@ -125,12 +125,13 @@ class ComponentsMarket$$Page extends React.Component {
   }
 
   async loadClusters() {
-    const res = await this.props.appHelper?.utils?.bffSdk?.getClustersForIsDeployedResource({
-      group: 'core.kubebb.k8s.com.cn',
-      version: 'v1alpha1',
-      plural: 'repositories',
-    });
-    const clusters = res?.clusters
+    const res =
+      await this.props.appHelper?.utils?.bffSdk?.getCurrentUserClustersForIsDeployedResource({
+        group: 'core.kubebb.k8s.com.cn',
+        version: 'v1alpha1',
+        plural: 'repositories',
+      });
+    const clusters = res?.userCurrent?.clusters
       ?.filter(item => item.isDeployedResource === true)
       ?.map(item => ({
         value: item.name,
@@ -172,6 +173,9 @@ class ComponentsMarket$$Page extends React.Component {
     const params = {
       page: this.state?.current || 1,
       pageSize: this.state?.pageSize || 10,
+      chartName: undefined,
+      repository: undefined,
+      keyword: undefined,
       [this.state.searchKey]: this.state?.searchValue,
       cluster: this.state.cluster,
       sortDirection: this.state.sorter || 'descend',
@@ -333,6 +337,7 @@ class ComponentsMarket$$Page extends React.Component {
               <Row wrap={true} __component_name="Row">
                 <Col span={24} __component_name="Col">
                   <Input.Search
+                    value={__$$eval(() => this.state.searchValue)}
                     onChange={function () {
                       return this.handleSearchValueChange.apply(
                         this,
