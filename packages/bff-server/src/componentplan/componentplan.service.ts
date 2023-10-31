@@ -164,7 +164,7 @@ export class ComponentplanService {
     // 对应的场景：第一次安装成功，后再次操作更新失败，则显示「安装成功」，同时提示更新失败的原因
     fRes.forEach(f => {
       const curF = releasenameMap.get(f.releaseName);
-      if (curF && curF.name !== f.name) {
+      if (curF && curF.name !== f.name && curF.reason) {
         f.reason = `Update: ${curF.reason},However,the current component can be used normally`;
       }
     });
