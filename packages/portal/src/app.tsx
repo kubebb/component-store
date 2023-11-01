@@ -19,8 +19,10 @@ import { getLocale, setLocale } from './i18n';
 import utils from './utils/__utils';
 import { basename, IS_PROD, IS_QIAN_KUN } from './__constants';
 
+const notProdOrQiankun = !IS_PROD && !IS_QIAN_KUN;
+
 // TODO：qiankun umi 子应用 window.routerBase 问题，目前需要手动设置一下 routerBase 的值
-(window as any).routerBase = IS_PROD ? basename : '/';
+(window as any).routerBase = notProdOrQiankun ? '/' : basename;
 
 export const qiankun = {
   // 应用加载之前
@@ -72,13 +74,12 @@ export const getInitialState = () => _qiankunData.state;
 export const layout: RunTimeLayoutConfig = initState => {
   const _theme = initState.initialState?.theme;
   initUnifiedLinkHistory(
-    initState.initialState?.history || {
-      goBack: history.back,
-      ...history,
-    }
+    initState.initialState?.getHistory?.() ||
+      initState.initialState?.history || {
+        goBack: history.back,
+        ...history,
+      }
   );
-
-  const notProdOrQiankun = !IS_PROD && !IS_QIAN_KUN;
 
   return {
     title: false,
