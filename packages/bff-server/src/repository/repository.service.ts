@@ -29,6 +29,10 @@ export class RepositoryService {
     const lastSuccessfulTime = conditions.find(
       c => c.lastSuccessfulTime && c.status === 'True' && c.type === 'Synced'
     )?.lastSuccessfulTime;
+    const lastTransitionTime = conditions.find(
+      c => c.lastTransitionTime && c.status === 'False' && c.type === 'Synced'
+    )?.lastTransitionTime;
+    const lastAsyncedTime = lastSuccessfulTime || lastTransitionTime;
     let reason: string;
     let status = RepositoryStatus.unknown;
     if (conditions.find(c => c.type === 'Synced' && c.status === 'True')) {
@@ -77,7 +81,7 @@ export class RepositoryService {
       repositoryType: repository.metadata?.labels?.['kubebb.repository.type'],
       url: repository.spec?.url,
       creationTimestamp: new Date(repository.metadata.creationTimestamp).toISOString(),
-      lastSuccessfulTime: lastSuccessfulTime ? new Date(lastSuccessfulTime).toISOString() : null,
+      lastSuccessfulTime: lastAsyncedTime ? new Date(lastAsyncedTime).toISOString() : null,
       intervalSeconds: repository.spec?.pullStategy?.intervalSeconds,
       status,
       reason,

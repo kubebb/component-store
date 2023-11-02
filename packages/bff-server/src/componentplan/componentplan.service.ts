@@ -6,6 +6,7 @@ import serverConfig from '@/config/server.config';
 import { ConfigmapService } from '@/configmap/configmap.service';
 import { KubernetesService } from '@/kubernetes/kubernetes.service';
 import { InstallMethod } from '@/subscription/models/installmethod.enum';
+import { Subscription } from '@/subscription/models/subscription.model';
 import { SubscriptionService } from '@/subscription/subscription.service';
 import { CRD, JwtAuth, ListOptions } from '@/types';
 import { Inject, Injectable, Logger } from '@nestjs/common';
@@ -68,6 +69,7 @@ export class ComponentplanService {
       name: cp.metadata?.name,
       creationTimestamp: new Date(cp.metadata?.creationTimestamp).toISOString(),
       namespace: cp.metadata?.namespace,
+      componentName: cp.spec?.component?.name,
       component,
       version: cp.spec?.version,
       releaseName: cp.spec?.name,
@@ -379,20 +381,20 @@ export class ComponentplanService {
             valuesFrom,
             cluster
           );
+        } else {
+          const k8s = await this.k8sService.getClient(auth, { cluster });
+          await k8s.componentplan.patchMerge(name, namespace, {
+            spec: {
+              approved: true,
+              version,
+              override: {
+                images,
+                valuesFrom,
+              },
+            },
+          });
         }
       }
-      // TODO：后端支持 修改sub，会自动修改cpl时，可删掉此步
-      const k8s = await this.k8sService.getClient(auth, { cluster });
-      await k8s.componentplan.patchMerge(name, namespace, {
-        spec: {
-          approved: true,
-          version,
-          override: {
-            images,
-            valuesFrom,
-          },
-        },
-      });
     }
     return true;
   }
@@ -487,5 +489,27 @@ export class ComponentplanService {
       return name;
     }
     return null;
+  }
+
+  async getSubscriptionsForCpl(
+    auth: JwtAuth,
+    releaseName: string,
+    namespace: string,
+    component: string,
+    cluster?: string
+  ): Promise<Subscription[]> {
+    const labelSelectors = [
+      `core.kubebb.k8s.com.cn/component-name=${component}`,
+      `core.kubebb.k8s.com.cn/componentplan-release=${releaseName}`,
+    ];
+    const subs = await this.subscriptionService.list(
+      auth,
+      namespace,
+      {
+        labelSelector: labelSelectors.join(','),
+      },
+      cluster
+    );
+    return subs;
   }
 }

@@ -5,7 +5,6 @@ import { ConfigmapService } from '@/configmap/configmap.service';
 import { Repository } from '@/repository/models/repository.model';
 import { RepositoryLoader } from '@/repository/repository.loader';
 import { Subscription } from '@/subscription/models/subscription.model';
-import SubscriptionLoader from '@/subscription/subscription.loader';
 import { AnyObj, JwtAuth } from '@/types';
 import { Args, Info, Mutation, Parent, Query, ResolveField, Resolver } from '@nestjs/graphql';
 import DataLoader from 'dataloader';
@@ -123,20 +122,22 @@ export class ComponentplanResolver {
 
   @ResolveField(() => Subscription, { nullable: true, description: '订阅' })
   async subscription(
+    @Auth() auth: JwtAuth,
     @Info() info: AnyObj,
-    @Parent() componentplan: Componentplan,
-    @Loader(SubscriptionLoader)
-    subscriptionLoader: DataLoader<Subscription['namespacedName'], Subscription>
+    @Parent() componentplan: Componentplan
   ): Promise<Subscription> {
     const {
       variableValues: { cluster },
     } = info;
-    const { namespace, subscriptionName } = componentplan;
-    if (!subscriptionName) return null;
-    const subscription = await subscriptionLoader.load(
-      `${subscriptionName}_${namespace}_${cluster || ''}`
+    const { namespace, releaseName, componentName } = componentplan;
+    const subs = await this.componentplanService.getSubscriptionsForCpl(
+      auth,
+      releaseName,
+      namespace,
+      componentName,
+      cluster
     );
-    return subscription;
+    return subs?.[0];
   }
 
   @ResolveField(() => Repository, { nullable: true, description: '仓库' })
