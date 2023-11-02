@@ -50,6 +50,9 @@ export class Componentplan {
   component?: Component;
 
   @HideField()
+  componentName?: string;
+
+  @HideField()
   subscriptionName?: string;
 
   /** 订阅 */

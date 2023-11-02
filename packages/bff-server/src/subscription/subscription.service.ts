@@ -7,7 +7,7 @@ import serverConfig from '@/config/server.config';
 import { Inject, Injectable } from '@nestjs/common';
 import { ConfigType } from '@nestjs/config';
 import { KubernetesService } from 'src/kubernetes/kubernetes.service';
-import { CRD, JwtAuth } from 'src/types';
+import { CRD, JwtAuth, ListOptions } from 'src/types';
 import { CreateSubscriptionInput } from './dto/create-subscription.input';
 import { SubscriptionArgs } from './dto/subscription.args';
 import { UpdateSubscriptionInput } from './dto/update-subscription.input';
@@ -63,6 +63,21 @@ export class SubscriptionService {
         const component = components?.find(c => c.name === specComponent?.name);
         return this.format(item, component, cluster);
       })
+      ?.sort(
+        (a, b) => new Date(b.creationTimestamp).valueOf() - new Date(a.creationTimestamp).valueOf()
+      );
+  }
+
+  async list(
+    auth: JwtAuth,
+    namespace: string,
+    options: ListOptions = {},
+    cluster?: string
+  ): Promise<Subscription[]> {
+    const k8s = await this.k8sService.getClient(auth, { cluster });
+    const { body } = await k8s.subscription.list(namespace, options);
+    return body.items
+      ?.map(item => this.format(item, null, cluster))
       ?.sort(
         (a, b) => new Date(b.creationTimestamp).valueOf() - new Date(a.creationTimestamp).valueOf()
       );
@@ -179,6 +194,36 @@ export class SubscriptionService {
   ): Promise<boolean> {
     const { releaseName, chartName, repository, componentPlanInstallMethod, images, schedule } =
       componentplan;
+    // 期望结果：releaseName相同的sub有且只有一个
+    const labelSelectors = [
+      `core.kubebb.k8s.com.cn/component-name=${repository}.${chartName}`,
+      `core.kubebb.k8s.com.cn/componentplan-release=${releaseName}`,
+    ];
+    const subs = await this.list(
+      auth,
+      namespace,
+      {
+        labelSelector: labelSelectors.join(','),
+      },
+      cluster
+    );
+    const sub = subs?.[0];
+    if (sub) {
+      await this.updateSubscription(
+        auth,
+        sub.name,
+        sub.namespace,
+        componentplan,
+        valuesFrom,
+        cluster
+      );
+      if (subs.length > 1) {
+        await Promise.all(
+          (subs.slice(1) || []).map(d => k8s.subscription.delete(d.name, d.namespace))
+        );
+      }
+      return true;
+    }
     const k8s = await this.k8sService.getClient(auth, { cluster });
     await k8s.subscription.create(namespace, {
       metadata: {
