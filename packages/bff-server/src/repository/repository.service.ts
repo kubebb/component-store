@@ -29,10 +29,10 @@ export class RepositoryService {
     const lastSuccessfulTime = conditions.find(
       c => c.lastSuccessfulTime && c.status === 'True' && c.type === 'Synced'
     )?.lastSuccessfulTime;
-    const lastTransitionTime = conditions.find(
-      c => c.lastTransitionTime && c.status === 'False' && c.type === 'Synced'
-    )?.lastTransitionTime;
-    const lastAsyncedTime = lastSuccessfulTime || lastTransitionTime;
+    const lastSuccessfulTimeFalse = conditions.find(
+      c => c.lastSuccessfulTime && c.status === 'False' && c.type === 'Synced'
+    )?.lastSuccessfulTime;
+    const lastAsyncedTime = lastSuccessfulTime || lastSuccessfulTimeFalse;
     let reason: string;
     let status = RepositoryStatus.unknown;
     if (conditions.find(c => c.type === 'Synced' && c.status === 'True')) {
