@@ -57,7 +57,8 @@
     "react-dom": "^18.1.0",
     "remark-gfm": "^4.0.0",
     "shared-components": "workspace:*",
-    "swr": "^2.0.0"
+    "swr": "^2.0.0",
+    "validator": "^13.11.0"
   },
   "devDependencies": {
     "@testing-library/jest-dom": "^5.16.4",

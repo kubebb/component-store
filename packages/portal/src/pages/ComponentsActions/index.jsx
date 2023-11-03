@@ -417,7 +417,7 @@ class ComponentsActions$$Page extends React.Component {
         valuesYaml: this.state.valuesYaml,
         images: v.images?.name?.map(item => ({
           name: item.name,
-          newName: item.nameReady + (item.newName || ''),
+          newName: item.newName && item.nameReady + item.newName,
           newTag: item.newTag,
         })),
       };

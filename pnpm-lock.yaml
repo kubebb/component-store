@@ -379,6 +379,9 @@ importers:
       swr:
         specifier: ^2.0.0
         version: 2.0.0(react@18.1.0)
+      validator:
+        specifier: ^13.11.0
+        version: 13.11.0
     devDependencies:
       '@testing-library/jest-dom':
         specifier: ^5.16.4
@@ -11579,7 +11582,7 @@ packages:
     dependencies:
       '@types/validator': 13.7.17
       libphonenumber-js: 1.10.37
-      validator: 13.9.0
+      validator: 13.11.0
 
   /classnames@2.2.5:
     resolution: {integrity: sha1-+zgB1FNGdknvNgPH1hoCvRKb3m0=}
@@ -24947,8 +24950,8 @@ packages:
       spdx-correct: 3.2.0
       spdx-expression-parse: 3.0.1
 
-  /validator@13.9.0:
-    resolution: {integrity: sha512-B+dGG8U3fdtM0/aNK4/X8CXq/EcxU2WPrPEkJGslb47qyHsxmbggTWK0yEA4qnYVNF+nxNlN88o14hIcPmSIEA==}
+  /validator@13.11.0:
+    resolution: {integrity: sha512-Ii+sehpSfZy+At5nPdnyMhx78fEoPDkR2XW/zimHEL3MyGJQOCQ7WeP20jPYRz7ZCpcKLB21NxuXHF3bxjStBQ==}
     engines: {node: '>= 0.10'}
 
   /valtio@1.9.0(react@18.1.0):
@@ -25540,7 +25543,7 @@ packages:
     dependencies:
       lodash.get: 4.4.2
       lodash.isequal: 4.5.0
-      validator: 13.9.0
+      validator: 13.11.0
     optionalDependencies:
       commander: 9.5.0
     dev: true
