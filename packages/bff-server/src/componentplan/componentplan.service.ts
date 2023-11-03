@@ -236,7 +236,7 @@ export class ComponentplanService {
   ): Promise<boolean> {
     /**
      * 创建：
-     * 1. 自动：只创建sub
+     * 1. 自动：创建sub，同时创建cpl(approved=true)
      * 2. 手动：创建cpl
      */
     const {
@@ -248,6 +248,7 @@ export class ComponentplanService {
       valuesYaml,
       images,
       configmap,
+      schedule,
     } = componentplan;
     let valuesFrom: any[];
     if (valuesYaml) {
@@ -274,7 +275,10 @@ export class ComponentplanService {
         valuesFrom,
         cluster
       );
-      return true;
+      if (!schedule) {
+        // 自动安装，且没有定时的情况下，sub会自动创建cpl(approved=true)
+        return true;
+      }
     }
     const k8s = await this.k8sService.getClient(auth, { cluster });
     await k8s.componentplan.create(namespace, {
