@@ -172,7 +172,7 @@ class ComponentsMarket$$Page extends React.Component {
   handleQueryChange() {
     const params = {
       page: this.state?.current || 1,
-      pageSize: this.state?.pageSize || 10,
+      pageSize: this.state?.size || 12,
       chartName: undefined,
       repository: undefined,
       keyword: undefined,

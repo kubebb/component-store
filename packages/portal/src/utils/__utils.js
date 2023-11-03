@@ -8,6 +8,8 @@ import { sdk as bff } from '@tenx-ui/component-store-bff-client';
 
 import { sdk as bffSdk } from '@tenx-ui/bff-client';
 
+import { isIP } from 'validator';
+
 import { createRef } from 'react';
 
 const utils = {};
@@ -555,6 +557,8 @@ utils.getComponentSource = function __getComponentSource() {
 }.apply(utils);
 export const getComponentSource = utils.getComponentSource;
 
+utils.isIP = isIP;
+
 export class RefsManager {
   constructor() {
     this.refInsStore = {};
@@ -652,4 +656,6 @@ export default {
   cronChangeToDate,
 
   getComponentSource,
+
+  isIP,
 };

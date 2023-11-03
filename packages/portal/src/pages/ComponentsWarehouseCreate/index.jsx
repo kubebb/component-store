@@ -71,7 +71,7 @@ class ComponentsWarehouseCreate$$Page extends React.Component {
 
     __$$i18n._inject2(this);
 
-    this.state = { name: undefined, cluster: undefined, creating: false, isCreate: true };
+    this.state = { isCreate: true, creating: false, name: undefined, cluster: undefined };
   }
 
   $ = refName => {
@@ -82,8 +82,106 @@ class ComponentsWarehouseCreate$$Page extends React.Component {
     return this._refsManager.getAll(refName);
   };
 
-  form(name) {
-    return this.$(name || 'formily_create')?.formRef?.current?.form;
+  async loadCluster() {
+    const res = await this.props.appHelper?.utils?.bffSdk?.getCluster({
+      name: this.getCluster(),
+    });
+    const cluster = res?.cluster;
+    this.setState({
+      cluster,
+    });
+  }
+
+  getCluster() {
+    const cluster = this.appHelper?.history?.query?.cluster;
+    return cluster;
+  }
+
+  getClusterInfo() {
+    return this.state.cluster;
+  }
+
+  initCreate() {
+    if (!this.form()) {
+      setTimeout(() => {
+        this.initCreate();
+      }, 200);
+      return;
+    }
+    this.form().setValues({
+      // repositoryType: 'Git',
+      // insecure: ['true'],
+      filter: {
+        value: [],
+      },
+      imageOverride: {
+        value: [],
+      },
+      pullStategy: {
+        intervalSeconds: 120,
+        retry: 1,
+        timeoutSeconds: 60,
+      },
+    });
+    this.initDisabled();
+  }
+
+  initDisabled() {
+    if (!this.form()) {
+      setTimeout(() => {
+        this.initDisabled();
+      }, 200);
+      return;
+    }
+    const formGraph = this.form().getFormGraph();
+    Object.keys(formGraph || {}).forEach(key => {
+      const pathPre = key.slice(0, key.indexOf('.operation'));
+      if (key.endsWith('.operation') && formGraph[key].value === 'ignore_all') {
+        this.form().setFormGraph({
+          [pathPre + '.regexp']: {
+            pattern: 'disabled',
+          },
+          [pathPre + '.versionConstraint']: {
+            pattern: 'disabled',
+          },
+          [pathPre + '.versions']: {
+            pattern: 'disabled',
+          },
+        });
+      }
+    });
+  }
+
+  initForms(v) {
+    if (this.form() && !this.state.isCreate) {
+      this.form().setValues({
+        name: v.name,
+        url: v.url,
+        // repositoryType: v.repositoryType,
+        insecure: v.insecure ? ['true'] : [],
+        info: {
+          auth: v.username && v.password ? ['true'] : [],
+        },
+        username: v.username && this.utils.decodeBase64(v.username),
+        password: v.password && this.utils.decodeBase64(v.password),
+        pullStategy: v.pullStategy,
+        filter: {
+          value: v.filter?.map(item => ({
+            ...item,
+            keepDeprecated: item.keepDeprecated ? 'true' : 'false',
+            versions: item.versions?.[0],
+          })),
+        },
+        imageOverride: {
+          value: v.imageOverride,
+        },
+      });
+      this.initDisabled();
+      return;
+    }
+    setTimeout(() => {
+      this.initForms(v);
+    }, 200);
   }
 
   async initEdit() {
@@ -100,8 +198,155 @@ class ComponentsWarehouseCreate$$Page extends React.Component {
     } catch (e) {}
   }
 
+  async validatorUrl(value) {
+    const URL_REG_EXP =
+      /^https?:\/\/(([a-zA-Z0-9_-])+(\.)?)*(:\d+)?(\/((\.)?(\?)?=?&?[a-zA-Z0-9_-](\?)?)*)*$/i;
+    if (value && !URL_REG_EXP.test(value)) {
+      return this.i18n('i18n-q9gsf3z5');
+    }
+    if (value && value.endsWith('/')) {
+      return this.i18n('i18n-q9gsf3z5');
+    }
+  }
+
+  async validatorName(value) {
+    try {
+      if (value && this.state.isCreate) {
+        const res = await this.props?.appHelper?.utils?.bff?.getRepository({
+          name: value,
+        });
+        if (res?.repository?.name) {
+          return this.i18n('i18n-52vob0jn');
+        }
+      }
+    } catch (e) {}
+  }
+
+  async validatorNameCharacter(value) {
+    if (value && (value.includes('.-') || value.includes('-.'))) {
+      return this.i18n('i18n-dofmyljq');
+    }
+  }
+
+  async validatorComponentName(value, ...payload) {
+    const values = this.form()?.values;
+    try {
+      if (
+        value &&
+        values?.filter?.value?.some(
+          (item, index) => item.name === value && payload?.[1]?.field?.index !== index
+        )
+      ) {
+        return this.i18n('i18n-ph9t7b7n');
+      }
+    } catch (e) {}
+  }
+
+  validatorDomain(value) {
+    if (value && !this.utils.isIP(value) && !/^([a-zA-Z0-9-]+(\.|\-))+[a-zA-Z]{2,}$/.test(value)) {
+      return this.i18n('i18n-gyegeqvt');
+    }
+  }
+
+  async validatorDomainName(value, ...payload) {
+    const values = this.form()?.values;
+    const curIndex = payload?.[1]?.field?.index;
+    const currItem = values?.imageOverride?.value?.[curIndex];
+    if (this.validatorDomain(value)) {
+      return this.validatorDomain(value);
+    }
+    try {
+      if (
+        value &&
+        values?.imageOverride?.value?.some(
+          (item, index) =>
+            item.registry === currItem?.registry &&
+            item.path === currItem?.path &&
+            curIndex !== index
+        )
+      ) {
+        return this.i18n('i18n-9al8mu54');
+      }
+    } catch (e) {}
+  }
+
+  validatorRepo(value) {
+    if (value && !/^([a-z0-9]{1}[-a-z0-9.]{1,251})[a-z0-9]{1}$/.test(value)) {
+      return this.i18n('i18n-dzffs2mw');
+    }
+  }
+
+  async validatorRepoName(value, ...payload) {
+    const values = this.form()?.values;
+    const curIndex = payload?.[1]?.field?.index;
+    const currItem = values?.imageOverride?.value?.[curIndex];
+    if (this.validatorRepo(value)) {
+      return this.validatorRepo(value);
+    }
+    try {
+      if (
+        value &&
+        values?.imageOverride?.value?.some(
+          (item, index) =>
+            item.registry === currItem?.registry &&
+            item.path === currItem?.path &&
+            curIndex !== index
+        )
+      ) {
+        return this.i18n('i18n-9al8mu54');
+      }
+    } catch (e) {}
+  }
+
+  async validatorDisabled(value, ...payload) {
+    const pathPre = payload?.[1]?.field?.props?.basePath?.entire;
+    if (value === 'ignore_all') {
+      this.form().setFormGraph({
+        [pathPre + '.regexp']: {
+          pattern: 'disabled',
+        },
+        [pathPre + '.versionConstraint']: {
+          pattern: 'disabled',
+        },
+        [pathPre + '.versions']: {
+          pattern: 'disabled',
+        },
+      });
+    } else {
+      this.form().setFormGraph({
+        [pathPre + '.regexp']: {
+          pattern: 'editable',
+        },
+        [pathPre + '.versionConstraint']: {
+          pattern: 'editable',
+        },
+        [pathPre + '.versions']: {
+          pattern: 'editable',
+        },
+      });
+    }
+  }
+
   onCancel(event) {
     this.history.go(-1);
+  }
+
+  form(name) {
+    return this.$(name || 'formily_create')?.formRef?.current?.form;
+  }
+
+  beforeUpload() {
+    return false;
+  }
+
+  validatorFile(value) {
+    if (!value && !this.state.data?.cadata) {
+      return this.i18n('i18n-aa3ink0n');
+    }
+    // // k
+    // if (value?.file.size > 5*1000*) {
+    //   return '文件不能大于 5M'
+    // }
   }
 
   onSubmit(event) {
@@ -179,214 +424,6 @@ class ComponentsWarehouseCreate$$Page extends React.Component {
       }
       // })
     });
-  }
-
-  initForms(v) {
-    if (this.form() && !this.state.isCreate) {
-      this.form().setValues({
-        name: v.name,
-        url: v.url,
-        // repositoryType: v.repositoryType,
-        insecure: v.insecure ? ['true'] : [],
-        info: {
-          auth: v.username && v.password ? ['true'] : [],
-        },
-        username: v.username && this.utils.decodeBase64(v.username),
-        password: v.password && this.utils.decodeBase64(v.password),
-        pullStategy: v.pullStategy,
-        filter: {
-          value: v.filter?.map(item => ({
-            ...item,
-            keepDeprecated: item.keepDeprecated ? 'true' : 'false',
-            versions: item.versions?.[0],
-          })),
-        },
-        imageOverride: {
-          value: v.imageOverride,
-        },
-      });
-      this.initDisabled();
-      return;
-    }
-    setTimeout(() => {
-      this.initForms(v);
-    }, 200);
-  }
-
-  getCluster() {
-    const cluster = this.appHelper?.history?.query?.cluster;
-    return cluster;
-  }
-
-  initCreate() {
-    if (!this.form()) {
-      setTimeout(() => {
-        this.initCreate();
-      }, 200);
-      return;
-    }
-    this.form().setValues({
-      // repositoryType: 'Git',
-      // insecure: ['true'],
-      filter: {
-        value: [],
-      },
-      imageOverride: {
-        value: [],
-      },
-      pullStategy: {
-        intervalSeconds: 120,
-        retry: 1,
-        timeoutSeconds: 60,
-      },
-    });
-    this.initDisabled();
-  }
-
-  async loadCluster() {
-    const res = await this.props.appHelper?.utils?.bffSdk?.getCluster({
-      name: this.getCluster(),
-    });
-    const cluster = res?.cluster;
-    this.setState({
-      cluster,
-    });
-  }
-
-  beforeUpload() {
-    return false;
-  }
-
-  initDisabled() {
-    if (!this.form()) {
-      setTimeout(() => {
-        this.initDisabled();
-      }, 200);
-      return;
-    }
-    const formGraph = this.form().getFormGraph();
-    Object.keys(formGraph || {}).forEach(key => {
-      const pathPre = key.slice(0, key.indexOf('.operation'));
-      if (key.endsWith('.operation') && formGraph[key].value === 'ignore_all') {
-        this.form().setFormGraph({
-          [pathPre + '.regexp']: {
-            pattern: 'disabled',
-          },
-          [pathPre + '.versionConstraint']: {
-            pattern: 'disabled',
-          },
-          [pathPre + '.versions']: {
-            pattern: 'disabled',
-          },
-        });
-      }
-    });
-  }
-
-  async validatorUrl(value) {
-    const URL_REG_EXP =
-      /^https?:\/\/(([a-zA-Z0-9_-])+(\.)?)*(:\d+)?(\/((\.)?(\?)?=?&?[a-zA-Z0-9_-](\?)?)*)*$/i;
-    if (value && !URL_REG_EXP.test(value)) {
-      return this.i18n('i18n-q9gsf3z5');
-    }
-    if (value && value.endsWith('/')) {
-      return this.i18n('i18n-q9gsf3z5');
-    }
-  }
-
-  validatorFile(value) {
-    if (!value && !this.state.data?.cadata) {
-      return this.i18n('i18n-aa3ink0n');
-    }
-    // // k
-    // if (value?.file.size > 5*1000*) {
-    //   return '文件不能大于 5M'
-    // }
-  }
-
-  async validatorName(value) {
-    try {
-      if (value && this.state.isCreate) {
-        const res = await this.props?.appHelper?.utils?.bff?.getRepository({
-          name: value,
-        });
-        if (res?.repository?.name) {
-          return this.i18n('i18n-52vob0jn');
-        }
-      }
-    } catch (e) {}
-  }
-
-  getClusterInfo() {
-    return this.state.cluster;
-  }
-
-  async validatorDisabled(value, ...payload) {
-    const pathPre = payload?.[1]?.field?.props?.basePath?.entire;
-    if (value === 'ignore_all') {
-      this.form().setFormGraph({
-        [pathPre + '.regexp']: {
-          pattern: 'disabled',
-        },
-        [pathPre + '.versionConstraint']: {
-          pattern: 'disabled',
-        },
-        [pathPre + '.versions']: {
-          pattern: 'disabled',
-        },
-      });
-    } else {
-      this.form().setFormGraph({
-        [pathPre + '.regexp']: {
-          pattern: 'editable',
-        },
-        [pathPre + '.versionConstraint']: {
-          pattern: 'editable',
-        },
-        [pathPre + '.versions']: {
-          pattern: 'editable',
-        },
-      });
-    }
-  }
-
-  async validatorRepoName(value, ...payload) {
-    const values = this.form()?.values;
-    const curIndex = payload?.[1]?.field?.index;
-    const currItem = values?.imageOverride?.value?.[curIndex];
-    try {
-      if (
-        value &&
-        values?.imageOverride?.value?.some(
-          (item, index) =>
-            item.registry === currItem?.registry &&
-            item.path === currItem?.path &&
-            curIndex !== index
-        )
-      ) {
-        return this.i18n('i18n-9al8mu54');
-      }
-    } catch (e) {}
-  }
-
-  async validatorComponentName(value, ...payload) {
-    const values = this.form()?.values;
-    try {
-      if (
-        value &&
-        values?.filter?.value?.some(
-          (item, index) => item.name === value && payload?.[1]?.field?.index !== index
-        )
-      ) {
-        return this.i18n('i18n-ph9t7b7n');
-      }
-    } catch (e) {}
-  }
-
-  async validatorNameCharacter(value) {
-    if (value && (value.includes('.-') || value.includes('-.'))) {
-      return this.i18n('i18n-dofmyljq');
-    }
   }
 
   componentDidMount() {
@@ -1206,8 +1243,8 @@ class ComponentsWarehouseCreate$$Page extends React.Component {
                           >
                             <FormilyArrayTable
                               fieldProps={{ name: 'value', type: 'array', 'x-validator': [] }}
-                              componentProps={{ 'x-component-props': {} }}
                               __component_name="FormilyArrayTable"
+                              decoratorProps={{ 'x-decorator-props': { labelEllipsis: true } }}
                             >
                               <FormilyArrayTable.Column
                                 title={this.i18n('i18n-cuf6u4di') /* 组件名称 */}
@@ -1506,7 +1543,7 @@ class ComponentsWarehouseCreate$$Page extends React.Component {
                                           type: 'disabled',
                                           children: '未知',
                                           validator: function () {
-                                            return this.validatorRepoName.apply(
+                                            return this.validatorDomainName.apply(
                                               this,
                                               Array.prototype.slice.call(arguments).concat([])
                                             );
@@ -1520,6 +1557,9 @@ class ComponentsWarehouseCreate$$Page extends React.Component {
                                       },
                                     }}
                                     __component_name="FormilyInput"
+                                    decoratorProps={{
+                                      'x-decorator-props': { labelEllipsis: true },
+                                    }}
                                   />
                                   <Typography.Text
                                     style={{ fontSize: '', verticalAlign: 'bas' }}
@@ -1556,10 +1596,10 @@ class ComponentsWarehouseCreate$$Page extends React.Component {
                                           this.i18n('i18n-8im5lu89') /* 请输入原仓库组 */,
                                       },
                                     }}
-                                    __component_name="FormilyInput"
                                     decoratorProps={{
                                       'x-decorator-props': { labelEllipsis: true },
                                     }}
+                                    __component_name="FormilyInput"
                                   />
                                 </Space>
                                 <Typography.Text
@@ -1582,7 +1622,19 @@ class ComponentsWarehouseCreate$$Page extends React.Component {
                                       name: 'newRegistry',
                                       title: '',
                                       required: true,
-                                      'x-validator': [],
+                                      'x-validator': [
+                                        {
+                                          id: 'disabled',
+                                          children: '未知',
+                                          type: 'disabled',
+                                          validator: function () {
+                                            return this.validatorDomain.apply(
+                                              this,
+                                              Array.prototype.slice.call(arguments).concat([])
+                                            );
+                                          }.bind(this),
+                                        },
+                                      ],
                                     }}
                                     componentProps={{
                                       'x-component-props': {
@@ -1590,6 +1642,9 @@ class ComponentsWarehouseCreate$$Page extends React.Component {
                                       },
                                     }}
                                     __component_name="FormilyInput"
+                                    decoratorProps={{
+                                      'x-decorator-props': { labelEllipsis: true },
+                                    }}
                                   />
                                   <Typography.Text
                                     style={{ fontSize: '', verticalAlign: 'bas' }}
@@ -1605,7 +1660,19 @@ class ComponentsWarehouseCreate$$Page extends React.Component {
                                       name: 'newPath',
                                       title: '',
                                       required: true,
-                                      'x-validator': [],
+                                      'x-validator': [
+                                        {
+                                          id: 'disabled',
+                                          children: '未知',
+                                          type: 'disabled',
+                                          validator: function () {
+                                            return this.validatorRepo.apply(
+                                              this,
+                                              Array.prototype.slice.call(arguments).concat([])
+                                            );
+                                          }.bind(this),
+                                        },
+                                      ],
                                     }}
                                     componentProps={{
                                       'x-component-props': {
@@ -1614,6 +1681,9 @@ class ComponentsWarehouseCreate$$Page extends React.Component {
                                       },
                                     }}
                                     __component_name="FormilyInput"
+                                    decoratorProps={{
+                                      'x-decorator-props': { labelEllipsis: true },
+                                    }}
                                   />
                                 </Space>
                               </Space>
@@ -1673,8 +1743,8 @@ class ComponentsWarehouseCreate$$Page extends React.Component {
                     'x-validator': [],
                     _unsafe_MixedSetter_title_select: 'SlotSetter',
                   }}
-                  componentProps={{ 'x-component-props': {} }}
                   __component_name="FormilyFormItem"
+                  decoratorProps={{ 'x-decorator-props': { labelEllipsis: true } }}
                 >
                   <Space align="center" direction="horizontal" __component_name="Space">
                     <Button
