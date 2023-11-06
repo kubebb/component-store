@@ -65,13 +65,13 @@ class ComponentsManagementInstallDetail$$Page extends React.Component {
     __$$i18n._inject2(this);
 
     this.state = {
-      isOpenModal: false,
-      modalType: 'rollback',
-      cluster: undefined,
-      modalLoading: false,
       record: undefined,
-      historyPagination: undefined,
+      cluster: undefined,
+      modalType: 'rollback',
       valuesYaml: '',
+      isOpenModal: false,
+      modalLoading: false,
+      historyPagination: undefined,
       historyValuesYaml: '',
     };
   }
@@ -79,6 +79,46 @@ class ComponentsManagementInstallDetail$$Page extends React.Component {
   $ = () => null;
 
   $$ = () => [];
+
+  getName(item) {
+    item = item || {};
+    if (item.displayName) {
+      return `${item.displayName}(${item.chartName || '-'})`;
+    }
+    return item.chartName || '-';
+  }
+
+  getImage(item) {
+    item = item || {};
+    const arr = item?.name?.split('/');
+    const pre = arr?.slice(0, arr?.length - 1)?.join('/');
+    const nameReady = pre && pre + '/';
+    const override =
+      this.props.useGetComponentplan?.data?.componentplan?.repository?.imageOverride?.find(item => {
+        return nameReady === `${item.registry}/${item.path}/`;
+      });
+    const newNameReady = `${override.newRegistry || override.registry}/${override.newPath}/`;
+    const info = {
+      nameReady: override && `${override.newRegistry}/${override.newPath}/`,
+      name: item.name,
+      newName: item.newName?.split(newNameReady)?.[1],
+      newTag: item.newTag,
+    };
+    return (
+      `${info.nameReady || nameReady || '-'}${info.newName || ''}:${info.newTag || '-'}` || '-'
+    );
+  }
+
+  closeModal() {
+    this.setState({
+      isOpenModal: false,
+    });
+  }
+
+  getCluster() {
+    const cluster = this.utils.getAuthData()?.cluster;
+    return cluster;
+  }
 
   getMethods(componentplan) {
     const componentPlanInstallMethod = componentplan?.subscription?.componentPlanInstallMethod;
@@ -94,69 +134,6 @@ class ComponentsManagementInstallDetail$$Page extends React.Component {
         : `(${this.i18n('i18n-kzpz5w4j')})`;
     }
     return method + extra;
-  }
-
-  getImage(item) {
-    item = item || {};
-    const arr = item?.name?.split('/');
-    const pre = arr?.slice(0, arr?.length - 1)?.join('/');
-    const nameReady = pre && pre + '/';
-    const override =
-      this.props.useGetComponentplan?.data?.componentplan?.component?.repositoryCR?.imageOverride?.find(
-        item => {
-          return nameReady === `${item.registry}/${item.path}/`;
-        }
-      );
-    const info = {
-      nameReady: override && `${override.newRegistry}/${override.newPath}/`,
-      name: item.name,
-      newName: item.newName?.split(nameReady)?.[1],
-      newTag: item.newTag,
-    };
-    return (
-      `${info.nameReady || nameReady || '-'}${info.newName || ''}:${info.newTag || '-'}` || '-'
-    );
-  }
-
-  getName(item) {
-    item = item || {};
-    if (item.displayName) {
-      return `${item.displayName}(${item.chartName || '-'})`;
-    }
-    return item.chartName || '-';
-  }
-
-  handleHistoryTableChange(pagination, filters, sorter, extra) {
-    this.setState({
-      historyPagination: {
-        pagination,
-        filters,
-        sorter,
-      },
-    });
-  }
-
-  closeModal() {
-    this.setState({
-      isOpenModal: false,
-    });
-  }
-
-  openRollBackModal(e, { record }) {
-    this.setState({
-      record,
-      isOpenModal: true,
-      modalType: 'rollback',
-    });
-  }
-
-  openDetailModal(e, { record }) {
-    this.setState({
-      record,
-      isOpenModal: true,
-      modalType: 'detail',
-    });
-    this.loadDetail(record);
   }
 
   async loadDetail(record) {
@@ -181,13 +158,25 @@ class ComponentsManagementInstallDetail$$Page extends React.Component {
     });
   }
 
-  getCluster() {
-    const cluster = this.utils.getAuthData()?.cluster;
-    return cluster;
-  }
-
   getClusterInfo() {
     return this.state.cluster;
+  }
+
+  openDetailModal(e, { record }) {
+    this.setState({
+      record,
+      isOpenModal: true,
+      modalType: 'detail',
+    });
+    this.loadDetail(record);
+  }
+
+  openRollBackModal(e, { record }) {
+    this.setState({
+      record,
+      isOpenModal: true,
+      modalType: 'rollback',
+    });
   }
 
   async confirmRollBackModal(e, payload) {
@@ -219,6 +208,16 @@ class ComponentsManagementInstallDetail$$Page extends React.Component {
         errors: error?.response?.errors,
       });
     }
+  }
+
+  handleHistoryTableChange(pagination, filters, sorter, extra) {
+    this.setState({
+      historyPagination: {
+        pagination,
+        filters,
+        sorter,
+      },
+    });
   }
 
   componentDidMount() {
@@ -425,21 +424,23 @@ class ComponentsManagementInstallDetail$$Page extends React.Component {
                         </Typography.Text>
                       </Col>
                       <Col span={24} __component_name="Col">
-                        <Typography.Text
-                          style={{ fontSize: '' }}
-                          strong={false}
-                          disabled={false}
-                          ellipsis={true}
-                          __component_name="Typography.Text"
-                        >
-                          {__$$eval(() =>
-                            this.state?.componentplan?.subscription?.schedule
-                              ? this.utils.cronChangeToDate(
-                                  this.state?.componentplan?.subscription?.schedule
-                                )
-                              : ''
-                          )}
-                        </Typography.Text>
+                        {!!false && (
+                          <Typography.Text
+                            style={{ fontSize: '' }}
+                            strong={false}
+                            disabled={false}
+                            ellipsis={true}
+                            __component_name="Typography.Text"
+                          >
+                            {__$$eval(() =>
+                              this.state?.componentplan?.subscription?.schedule
+                                ? this.utils.cronChangeToDate(
+                                    this.state?.componentplan?.subscription?.schedule
+                                  )
+                                : ''
+                            )}
+                          </Typography.Text>
+                        )}
                       </Col>
                     </Row>
                   }
@@ -507,29 +508,28 @@ class ComponentsManagementInstallDetail$$Page extends React.Component {
                     label: this.i18n('i18n-trftxv8p') /* 镜像替换 */,
                     children: (
                       <Row wrap={true} gutter={[0, 0]} __component_name="Row">
-                        {__$$evalArray(
-                          () => this.state?.componentplan?.component?.images || []
-                        ).map((record, index) =>
-                          (__$$context => (
-                            <Col span={24} __component_name="Col">
-                              <Space
-                                size={0}
-                                align="center"
-                                direction="horizontal"
-                                __component_name="Space"
-                              >
-                                <Typography.Text
-                                  style={{ fontSize: '' }}
-                                  strong={false}
-                                  disabled={false}
-                                  ellipsis={true}
-                                  __component_name="Typography.Text"
+                        {__$$evalArray(() => this.state?.componentplan?.images || []).map(
+                          (record, index) =>
+                            (__$$context => (
+                              <Col span={24} __component_name="Col">
+                                <Space
+                                  size={0}
+                                  align="center"
+                                  direction="horizontal"
+                                  __component_name="Space"
                                 >
-                                  {__$$eval(() => __$$context.getImage(record))}
-                                </Typography.Text>
-                              </Space>
-                            </Col>
-                          ))(__$$createChildContext(__$$context, { record, index }))
+                                  <Typography.Text
+                                    style={{ fontSize: '' }}
+                                    strong={false}
+                                    disabled={false}
+                                    ellipsis={true}
+                                    __component_name="Typography.Text"
+                                  >
+                                    {__$$eval(() => __$$context.getImage(record))}
+                                  </Typography.Text>
+                                </Space>
+                              </Col>
+                            ))(__$$createChildContext(__$$context, { record, index }))
                         )}
                       </Row>
                     ),
@@ -580,9 +580,7 @@ class ComponentsManagementInstallDetail$$Page extends React.Component {
                   label={this.i18n('i18n-trftxv8p') /* 镜像替换 */}
                 >
                   {[
-                    !!__$$eval(
-                      () => !(this.state?.componentplan?.component?.images?.length > 0)
-                    ) && (
+                    !!__$$eval(() => !(this.state?.componentplan?.images?.length > 0)) && (
                       <Typography.Text
                         style={{ fontSize: '' }}
                         strong={false}
@@ -595,7 +593,7 @@ class ComponentsManagementInstallDetail$$Page extends React.Component {
                       </Typography.Text>
                     ),
                     <Row wrap={true} gutter={[0, 0]} __component_name="Row" key="node_oclo85lm9e3a">
-                      {__$$evalArray(() => this.state?.componentplan?.component?.images || []).map(
+                      {__$$evalArray(() => this.state?.componentplan?.images || []).map(
                         (record, index) =>
                           (__$$context => (
                             <Col span={24} __component_name="Col">
@@ -1243,23 +1241,25 @@ class ComponentsManagementInstallDetail$$Page extends React.Component {
                                 </Typography.Text>
                               </Col>
                               <Col span={24} __component_name="Col">
-                                <Typography.Text
-                                  style={{ fontSize: '' }}
-                                  strong={false}
-                                  disabled={false}
-                                  ellipsis={true}
-                                  __component_name="Typography.Text"
-                                >
-                                  {__$$eval(() =>
-                                    this.props.useGetComponentplan?.data?.componentplan
-                                      ?.subscription?.schedule
-                                      ? this.utils.cronChangeToDate(
-                                          this.props.useGetComponentplan?.data?.componentplan
-                                            ?.subscription?.schedule
-                                        )
-                                      : ''
-                                  )}
-                                </Typography.Text>
+                                {!!false && (
+                                  <Typography.Text
+                                    style={{ fontSize: '' }}
+                                    strong={false}
+                                    disabled={false}
+                                    ellipsis={true}
+                                    __component_name="Typography.Text"
+                                  >
+                                    {__$$eval(() =>
+                                      this.props.useGetComponentplan?.data?.componentplan
+                                        ?.subscription?.schedule
+                                        ? this.utils.cronChangeToDate(
+                                            this.props.useGetComponentplan?.data?.componentplan
+                                              ?.subscription?.schedule
+                                          )
+                                        : ''
+                                    )}
+                                  </Typography.Text>
+                                )}
                               </Col>
                             </Row>
                           }
@@ -1333,8 +1333,8 @@ class ComponentsManagementInstallDetail$$Page extends React.Component {
                               !!__$$eval(
                                 () =>
                                   !(
-                                    this.props.useGetComponentplan?.data?.componentplan?.component
-                                      ?.images?.length > 0
+                                    this.props.useGetComponentplan?.data?.componentplan?.images
+                                      ?.length > 0
                                   )
                               ) && (
                                 <Typography.Text
@@ -1343,7 +1343,7 @@ class ComponentsManagementInstallDetail$$Page extends React.Component {
                                   disabled={false}
                                   ellipsis={true}
                                   __component_name="Typography.Text"
-                                  key="node_oclocc6wpgp"
+                                  key="node_oclomfmhqtp"
                                 >
                                   -
                                 </Typography.Text>
@@ -1352,12 +1352,12 @@ class ComponentsManagementInstallDetail$$Page extends React.Component {
                                 wrap={true}
                                 gutter={[0, 0]}
                                 __component_name="Row"
-                                key="node_oclocc6wpgq"
+                                key="node_oclomfmhqtq"
                               >
                                 {__$$evalArray(
                                   () =>
-                                    this.props.useGetComponentplan?.data?.componentplan?.component
-                                      ?.images || []
+                                    this.props.useGetComponentplan?.data?.componentplan?.images ||
+                                    []
                                 ).map((record, index) =>
                                   (__$$context => (
                                     <Col span={24} __component_name="Col">
@@ -1437,8 +1437,8 @@ class ComponentsManagementInstallDetail$$Page extends React.Component {
                             !!__$$eval(
                               () =>
                                 !(
-                                  this.props.useGetComponentplan?.data?.componentplan?.component
-                                    ?.images?.length > 0
+                                  this.props.useGetComponentplan?.data?.componentplan?.images
+                                    ?.length > 0
                                 )
                             ) && (
                               <Typography.Text
@@ -1447,7 +1447,7 @@ class ComponentsManagementInstallDetail$$Page extends React.Component {
                                 disabled={false}
                                 ellipsis={true}
                                 __component_name="Typography.Text"
-                                key="node_oclocc6wpg74"
+                                key="node_oclomfmhqt10"
                               >
                                 -
                               </Typography.Text>
@@ -1456,12 +1456,11 @@ class ComponentsManagementInstallDetail$$Page extends React.Component {
                               wrap={true}
                               gutter={[0, 0]}
                               __component_name="Row"
-                              key="node_oclocc6wpg75"
+                              key="node_oclomfmhqt11"
                             >
                               {__$$evalArray(
                                 () =>
-                                  this.props.useGetComponentplan?.data?.componentplan?.component
-                                    ?.images || []
+                                  this.props.useGetComponentplan?.data?.componentplan?.images || []
                               ).map((record, index) =>
                                 (__$$context => (
                                   <Col span={24} __component_name="Col">
