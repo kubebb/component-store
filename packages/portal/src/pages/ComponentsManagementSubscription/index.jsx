@@ -63,32 +63,24 @@ class ComponentsManagementSubscription$$Page extends React.Component {
     __$$i18n._inject2(this);
 
     this.state = {
-      size: 10,
-      record: {},
-      sorter: undefined,
-      current: 1,
-      filters: undefined,
-      isNewer: undefined,
-      modalType: 'delete',
-      searchKey: 'chartName',
-      pagination: undefined,
       isOpenModal: false,
+      modalType: 'delete',
       searchValue: undefined,
+      searchKey: 'chartName',
+      size: 10,
+      current: 1,
+      record: {},
+      pagination: undefined,
+      filters: undefined,
+      sorter: undefined,
       deleteLoading: false,
+      isNewer: undefined,
     };
   }
 
   $ = () => null;
 
   $$ = () => [];
-
-  getName(item) {
-    item = item?.component || {};
-    if (item.displayName) {
-      return `${item.displayName}(${item.chartName || '-'})`;
-    }
-    return item.chartName || '-';
-  }
 
   filterNew() {
     this.setState(
@@ -99,31 +91,12 @@ class ComponentsManagementSubscription$$Page extends React.Component {
     );
   }
 
-  closeModal() {
-    this.setState({
-      isOpenModal: false,
-    });
-  }
-
-  handleSearch(v) {
-    this.setState(
-      {
-        current: 1,
-      },
-      this.handleQueryChange
-    );
-  }
-
-  handleRefresh(event) {
-    this.props.useGetSubscriptionsPaged?.mutate();
-  }
-
-  openDeleteModal(e, { record, type = 'delete' }) {
-    this.setState({
-      isOpenModal: true,
-      modalType: 'delete',
-      record,
-    });
+  getName(item) {
+    item = item?.component || {};
+    if (item.displayName) {
+      return `${item.displayName}(${item.chartName || '-'})`;
+    }
+    return item.chartName || '-';
   }
 
   handleQueryChange() {
@@ -141,19 +114,41 @@ class ComponentsManagementSubscription$$Page extends React.Component {
       params.sortField = this.state.sorter?.field;
       params.sortDirection = this.state.sorter?.order;
     }
-    params.isNewer = !!latestVersion?.includes('isNewer');
+    if (!!latestVersion?.includes('isNewer')) {
+      params.isNewer = true;
+    } else {
+      params.isNewer = undefined;
+    }
     this.utils?.changeLocationQuery(this, 'useGetSubscriptionsPaged', params);
   }
 
-  handleTableChange(pagination, filters, sorter, extra) {
+  handleRefresh(event) {
+    this.props.useGetSubscriptionsPaged?.mutate();
+  }
+
+  handleSearchKeyChange(v) {
     this.setState(
       {
-        pagination,
-        filters,
-        sorter,
+        searchValue: undefined,
+        current: 1,
+        searchKey: v,
       },
       this.handleQueryChange
     );
+  }
+
+  openDeleteModal(e, { record, type = 'delete' }) {
+    this.setState({
+      isOpenModal: true,
+      modalType: 'delete',
+      record,
+    });
+  }
+
+  closeModal() {
+    this.setState({
+      isOpenModal: false,
+    });
   }
 
   async confirmDeleteModal(e, payload) {
@@ -185,16 +180,16 @@ class ComponentsManagementSubscription$$Page extends React.Component {
     }
   }
 
-  paginationShowTotal(total, range) {
-    return `${this.i18n('i18n-wajqflwo')} ${total} ${this.i18n('i18n-7vre8aeh')}`;
+  handleSearchValueChange(e) {
+    this.setState({
+      searchValue: e.target.value,
+    });
   }
 
-  handleSearchKeyChange(v) {
+  handleSearch(v) {
     this.setState(
       {
-        searchValue: undefined,
         current: 1,
-        searchKey: v,
       },
       this.handleQueryChange
     );
@@ -210,10 +205,19 @@ class ComponentsManagementSubscription$$Page extends React.Component {
     );
   }
 
-  handleSearchValueChange(e) {
-    this.setState({
-      searchValue: e.target.value,
-    });
+  handleTableChange(pagination, filters, sorter, extra) {
+    this.setState(
+      {
+        pagination,
+        filters,
+        sorter,
+      },
+      this.handleQueryChange
+    );
+  }
+
+  paginationShowTotal(total, range) {
+    return `${this.i18n('i18n-wajqflwo')} ${total} ${this.i18n('i18n-7vre8aeh')}`;
   }
 
   componentDidMount() {}

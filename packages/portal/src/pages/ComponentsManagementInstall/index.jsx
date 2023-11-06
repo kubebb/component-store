@@ -151,7 +151,11 @@ class ComponentsManagementInstall$$Page extends React.Component {
       params.sortField = this.state.sorter?.field;
       params.sortDirection = this.state.sorter?.order;
     }
-    params.isNewer = !!version?.includes('isNewer');
+    if (!!version?.includes('isNewer')) {
+      params.isNewer = true;
+    } else {
+      params.isNewer = undefined;
+    }
     if (status?.length > 0) {
       params.status = status;
     } else {
