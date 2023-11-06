@@ -559,7 +559,7 @@ class ComponentsManagementInstallDetail$$Page extends React.Component {
                           ellipsis={true}
                           __component_name="Typography.Text"
                         >
-                          value.yaml
+                          values.yaml
                         </Typography.Text>
                       </Col>
                       <Col span={24} __component_name="Col">
@@ -1311,7 +1311,7 @@ class ComponentsManagementInstallDetail$$Page extends React.Component {
                                 </Col>
                                 <Col span={24} __component_name="Col">
                                   <Editor
-                                    style={{ height: '200px' }}
+                                    height="200px"
                                     value={__$$eval(
                                       () =>
                                         this.props.useGetComponentplan?.data?.componentplan
@@ -1409,12 +1409,12 @@ class ComponentsManagementInstallDetail$$Page extends React.Component {
                                   ellipsis={true}
                                   __component_name="Typography.Text"
                                 >
-                                  value.yaml
+                                  values.yaml
                                 </Typography.Text>
                               </Col>
                               <Col span={24} __component_name="Col">
                                 <Editor
-                                  style={{ height: '200px' }}
+                                  height="200px"
                                   value={__$$eval(
                                     () =>
                                       this.props.useGetComponentplan?.data?.componentplan
