@@ -405,7 +405,12 @@ export class ComponentplanService {
 
   async remove(auth: JwtAuth, name: string, namespace: string, cluster?: string): Promise<boolean> {
     const k8s = await this.k8sService.getClient(auth, { cluster });
-    const { releaseName, configmap } = await this.get(auth, name, namespace, cluster);
+    const { releaseName, configmap, componentName } = await this.get(
+      auth,
+      name,
+      namespace,
+      cluster
+    );
     const labelSelectors = [`core.kubebb.k8s.com.cn/componentplan-release=${releaseName}`];
     const cpls = await this.list(
       auth,
@@ -421,21 +426,13 @@ export class ComponentplanService {
         this.logger.warn('deleteConfigmap', `${err.statusCode}: ${err.body?.message}`);
       }
     }
-    // 如果有sub，修改sub的自动更新为手动
-    const subsName = (cpls || []).map(cpl => cpl.subscriptionName).filter(subN => !!subN);
-    await Promise.all(
-      (subsName || []).map(subName =>
-        this.subscriptionService.updateSubscription(
-          auth,
-          subName,
-          namespace,
-          {
-            componentPlanInstallMethod: InstallMethod.manual,
-          },
-          undefined,
-          cluster
-        )
-      )
+    // 如果有sub，自动更新方式需要变为手动
+    await this.manualSubscriptionsByReleaseName(
+      auth,
+      releaseName,
+      namespace,
+      componentName,
+      cluster
     );
     return true;
   }
@@ -447,13 +444,21 @@ export class ComponentplanService {
     cluster?: string
   ): Promise<boolean> {
     const k8s = await this.k8sService.getClient(auth, { cluster });
-    await k8s.componentplan.patchMerge(name, namespace, {
+    const { body: cpl } = await k8s.componentplan.patchMerge(name, namespace, {
       metadata: {
         labels: {
           'core.kubebb.k8s.com.cn/rollback': 'true',
         },
       },
     });
+    // 同时，自动更新方式需要变为手动
+    await this.manualSubscriptionsByReleaseName(
+      auth,
+      cpl.spec?.name,
+      namespace,
+      cpl.spec?.component?.name,
+      cluster
+    );
     return true;
   }
 
@@ -515,5 +520,37 @@ export class ComponentplanService {
       cluster
     );
     return subs;
+  }
+
+  async manualSubscriptionsByReleaseName(
+    auth: JwtAuth,
+    releaseName: string,
+    namespace: string,
+    component: string,
+    cluster?: string
+  ): Promise<boolean> {
+    const subs = await this.getSubscriptionsForCpl(
+      auth,
+      releaseName,
+      namespace,
+      component,
+      cluster
+    );
+    const cSubs = subs?.filter(s => s.componentPlanInstallMethod === InstallMethod.auto);
+    await Promise.all(
+      cSubs?.map(s =>
+        this.subscriptionService.updateSubscription(
+          auth,
+          s.name,
+          namespace,
+          {
+            componentPlanInstallMethod: InstallMethod.manual,
+          },
+          undefined,
+          cluster
+        )
+      )
+    );
+    return true;
   }
 }
