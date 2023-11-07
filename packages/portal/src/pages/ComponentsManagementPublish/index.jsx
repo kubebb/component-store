@@ -772,7 +772,7 @@ class ComponentsManagementPublish$$Page extends React.Component {
                               value={__$$eval(() => this.state.searchKey)}
                               options={[
                                 {
-                                  label: this.i18n('i18n-x25agmsc') /* 名称 */,
+                                  label: this.i18n('i18n-cuf6u4di') /* 组件名称 */,
                                   value: 'chartName',
                                 },
                                 {
