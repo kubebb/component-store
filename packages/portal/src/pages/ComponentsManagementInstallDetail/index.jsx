@@ -65,13 +65,13 @@ class ComponentsManagementInstallDetail$$Page extends React.Component {
     __$$i18n._inject2(this);
 
     this.state = {
-      record: undefined,
-      cluster: undefined,
-      modalType: 'rollback',
-      valuesYaml: '',
       isOpenModal: false,
+      modalType: 'rollback',
+      cluster: undefined,
       modalLoading: false,
+      record: undefined,
       historyPagination: undefined,
+      valuesYaml: '',
       historyValuesYaml: '',
     };
   }
@@ -80,12 +80,20 @@ class ComponentsManagementInstallDetail$$Page extends React.Component {
 
   $$ = () => [];
 
-  getName(item) {
-    item = item || {};
-    if (item.displayName) {
-      return `${item.displayName}(${item.chartName || '-'})`;
+  getMethods(componentplan) {
+    const componentPlanInstallMethod = componentplan?.subscription?.componentPlanInstallMethod;
+    const method =
+      this.utils
+        .getComponentInstallMethods(this)
+        ?.find(item => item.value === (componentPlanInstallMethod || 'manual'))?.text || '-';
+    let extra = '';
+    if (componentPlanInstallMethod === 'auto') {
+      const schedule = componentplan?.subscription?.schedule;
+      extra = schedule
+        ? `(${this.utils.cronChangeToDate(schedule)})`
+        : `(${this.i18n('i18n-kzpz5w4j')})`;
     }
-    return item.chartName || '-';
+    return method + extra;
   }
 
   getImage(item) {
@@ -105,8 +113,28 @@ class ComponentsManagementInstallDetail$$Page extends React.Component {
       newTag: item.newTag,
     };
     return (
-      `${info.nameReady || nameReady || '-'}${info.newName || ''}:${info.newTag || '-'}` || '-'
+      `${item?.name} ${this.i18n('i18n-xeckog8e')} ${info.nameReady || nameReady || '-'}${
+        info.newName || ''
+      }:${info.newTag || '-'}` || '-'
     );
+  }
+
+  getName(item) {
+    item = item || {};
+    if (item.displayName) {
+      return `${item.displayName}(${item.chartName || '-'})`;
+    }
+    return item.chartName || '-';
+  }
+
+  handleHistoryTableChange(pagination, filters, sorter, extra) {
+    this.setState({
+      historyPagination: {
+        pagination,
+        filters,
+        sorter,
+      },
+    });
   }
 
   closeModal() {
@@ -115,25 +143,21 @@ class ComponentsManagementInstallDetail$$Page extends React.Component {
     });
   }
 
-  getCluster() {
-    const cluster = this.utils.getAuthData()?.cluster;
-    return cluster;
+  openRollBackModal(e, { record }) {
+    this.setState({
+      record,
+      isOpenModal: true,
+      modalType: 'rollback',
+    });
   }
 
-  getMethods(componentplan) {
-    const componentPlanInstallMethod = componentplan?.subscription?.componentPlanInstallMethod;
-    const method =
-      this.utils
-        .getComponentInstallMethods(this)
-        ?.find(item => item.value === (componentPlanInstallMethod || 'manual'))?.text || '-';
-    let extra = '';
-    if (componentPlanInstallMethod === 'auto') {
-      const schedule = componentplan?.subscription?.schedule;
-      extra = schedule
-        ? `(${this.utils.cronChangeToDate(schedule)})`
-        : `(${this.i18n('i18n-kzpz5w4j')})`;
-    }
-    return method + extra;
+  openDetailModal(e, { record }) {
+    this.setState({
+      record,
+      isOpenModal: true,
+      modalType: 'detail',
+    });
+    this.loadDetail(record);
   }
 
   async loadDetail(record) {
@@ -158,25 +182,13 @@ class ComponentsManagementInstallDetail$$Page extends React.Component {
     });
   }
 
+  getCluster() {
+    const cluster = this.utils.getAuthData()?.cluster;
+    return cluster;
+  }
+
   getClusterInfo() {
     return this.state.cluster;
-  }
-
-  openDetailModal(e, { record }) {
-    this.setState({
-      record,
-      isOpenModal: true,
-      modalType: 'detail',
-    });
-    this.loadDetail(record);
-  }
-
-  openRollBackModal(e, { record }) {
-    this.setState({
-      record,
-      isOpenModal: true,
-      modalType: 'rollback',
-    });
   }
 
   async confirmRollBackModal(e, payload) {
@@ -208,16 +220,6 @@ class ComponentsManagementInstallDetail$$Page extends React.Component {
         errors: error?.response?.errors,
       });
     }
-  }
-
-  handleHistoryTableChange(pagination, filters, sorter, extra) {
-    this.setState({
-      historyPagination: {
-        pagination,
-        filters,
-        sorter,
-      },
-    });
   }
 
   componentDidMount() {
@@ -1311,12 +1313,12 @@ class ComponentsManagementInstallDetail$$Page extends React.Component {
                                 </Col>
                                 <Col span={24} __component_name="Col">
                                   <Editor
-                                    height="200px"
                                     value={__$$eval(
                                       () =>
                                         this.props.useGetComponentplan?.data?.componentplan
                                           ?.valuesYaml || ''
                                     )}
+                                    height="200px"
                                     readOnly={true}
                                     styleVersion="kubebb"
                                     __component_name="Editor"
@@ -1414,12 +1416,12 @@ class ComponentsManagementInstallDetail$$Page extends React.Component {
                               </Col>
                               <Col span={24} __component_name="Col">
                                 <Editor
-                                  height="200px"
                                   value={__$$eval(
                                     () =>
                                       this.props.useGetComponentplan?.data?.componentplan
                                         ?.valuesYaml || ''
                                   )}
+                                  height="200px"
                                   readOnly={true}
                                   styleVersion="kubebb"
                                   __component_name="Editor"
