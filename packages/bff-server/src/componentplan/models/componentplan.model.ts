@@ -69,6 +69,9 @@ export class Componentplan {
 
   /** 配置文件values.yaml */
   valuesYaml?: string;
+
+  /** 历史版本 */
+  history?: Componentplan[];
 }
 
 @ObjectType({ description: '分页' })

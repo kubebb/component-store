@@ -110,7 +110,7 @@ export class SubscriptionService {
       })
       ?.filter(
         t =>
-          (!chartName || t.chartName?.includes(chartName)) &&
+          (!chartName || t.component?.chartName?.includes(chartName)) &&
           (!repository || t.repository?.includes(repository)) &&
           (isNewer === undefined || t.component?.isNewer === isNewer)
       );

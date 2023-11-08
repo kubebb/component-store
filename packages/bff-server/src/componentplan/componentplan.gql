@@ -87,6 +87,7 @@ query getComponentplanHistory($name: String!, $namespace: String!, $cluster: Str
       version
       subscription {
         componentPlanInstallMethod
+        schedule
       }
     }
   }

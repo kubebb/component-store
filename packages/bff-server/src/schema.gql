@@ -881,9 +881,6 @@ enum SortDirection {
 
 """组件订阅"""
 type Subscription {
-  """组件名称"""
-  chartName: String
-
   """组件"""
   component: Component
 
@@ -892,9 +889,6 @@ type Subscription {
 
   """订阅时间"""
   creationTimestamp: String!
-
-  """组件最新版本"""
-  latestVersion: String
 
   """name"""
   name: ID!
@@ -910,9 +904,6 @@ type Subscription {
 
   """更新时间"""
   schedule: String
-
-  """组件最近更新时间"""
-  updatedAt: String
 }
 
 type SubscriptionEdge {
