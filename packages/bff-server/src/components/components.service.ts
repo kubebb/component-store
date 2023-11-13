@@ -1,5 +1,5 @@
 import { SortDirection } from '@/common/models/sort-direction.enum';
-import { decodeBase64 } from '@/common/utils';
+import { decodeBase64, __ALL__, __OTHER__ } from '@/common/utils';
 import serverConfig from '@/config/server.config';
 import { ConfigmapService } from '@/configmap/configmap.service';
 import { KubernetesService } from '@/kubernetes/kubernetes.service';
@@ -113,7 +113,10 @@ export class ComponentsService {
         (!source || reposName.includes(t.repository)) &&
         (!repository || t.repository?.includes(repository)) &&
         (isNewer === undefined || t.isNewer === isNewer) &&
-        (!classification || t.classification === classification)
+        (!classification ||
+          t.classification === classification ||
+          (classification === __OTHER__ && !t.classification) ||
+          classification === __ALL__)
     );
     if (sortField && sortDirection) {
       filteredRes?.sort((a, b) => {

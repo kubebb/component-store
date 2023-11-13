@@ -18,3 +18,6 @@ export const IS_PROD = env.NODE_ENV === 'production';
 
 /** k8s 注入到 pod 中的 service account token 路径 */
 export const K8S_SA_TOKEN_PATH = '/var/run/secrets/kubernetes.io/serviceaccount/token';
+
+export const __OTHER__ = '__other__';
+export const __ALL__ = '__all__';
