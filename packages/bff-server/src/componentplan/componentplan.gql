@@ -43,6 +43,11 @@ query getComponentplan($name: String!, $namespace: String!, $cluster: String) {
     version
     status
     images {
+      image
+      registry
+      newRegistry
+      path
+      newPath
       name
       newName
       newTag

@@ -280,8 +280,22 @@ export class ComponentsService {
       namespace,
       cluster
     );
+    const images = data?.images?.split(',');
+    const imagesFaked = images?.map(img => {
+      const parts = img?.split(':');
+      const aParts = parts?.[0]?.split('/');
+      const len = aParts?.length;
+      return {
+        image: img,
+        name: aParts[len - 1],
+        path: aParts[len - 2],
+        registry: aParts?.[len - 3] ? aParts[len - 3] : 'docker.io',
+        tag: parts?.[1],
+      };
+    });
     return {
-      images: data?.images?.split(','),
+      images,
+      imagesFaked,
       valuesYaml: data?.['values.yaml'],
       readme: data?.readme,
     };

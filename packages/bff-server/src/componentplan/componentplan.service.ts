@@ -12,9 +12,12 @@ import { CRD, JwtAuth, ListOptions } from '@/types';
 import { Inject, Injectable, Logger } from '@nestjs/common';
 import { ConfigType } from '@nestjs/config';
 import { ComponentplanArgs } from './dto/componentplan.args';
-import { CreateComponentplanInput } from './dto/create-componentplan.input';
+import {
+  ComponentplanImageInput,
+  CreateComponentplanInput,
+} from './dto/create-componentplan.input';
 import { UpdateComponentplanInput } from './dto/update-componentplan.input';
-import { Componentplan, PaginatedComponentplan } from './models/componentplan.model';
+import { Componentplan, PaginatedComponentplan, SpecImage } from './models/componentplan.model';
 import { ExportComponentplanStatus } from './models/export-status-componentplan.enum';
 import { ComponentplanStatus } from './models/status-componentplan.enum';
 
@@ -78,7 +81,7 @@ export class ComponentplanService {
       status,
       reason,
       latest: cp.status?.latest,
-      images: cp.spec?.override?.images,
+      _images: cp.spec?.override?.images,
       configmap: cp.spec?.override?.valuesFrom?.filter(v => v.kind === 'ConfigMap')?.[0]?.name,
     };
   }
@@ -295,7 +298,7 @@ export class ComponentplanService {
         name: releaseName,
         version,
         override: {
-          images,
+          images: this.fakedImages(images),
           valuesFrom,
         },
       },
@@ -392,7 +395,7 @@ export class ComponentplanService {
               approved: true,
               version,
               override: {
-                images,
+                images: this.fakedImages(images),
                 valuesFrom,
               },
             },
@@ -552,5 +555,17 @@ export class ComponentplanService {
       )
     );
     return true;
+  }
+
+  fakedImages(images: ComponentplanImageInput[]): SpecImage[] {
+    return images?.map(img => {
+      return {
+        newTag: img.newTag,
+        name: img.image?.split(':')[0],
+        newName: `${img.registry || img.newRegistry}/${img.path || img.newPath}/${
+          img.newName || img.name || ''
+        }`,
+      };
+    });
   }
 }

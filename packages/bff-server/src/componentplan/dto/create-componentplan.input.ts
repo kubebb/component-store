@@ -2,14 +2,16 @@ import { InstallMethod } from '@/subscription/models/installmethod.enum';
 import { InputType } from '@nestjs/graphql';
 
 @InputType()
-class ComponentplanImageInput {
-  /** 名称（如：ghcr.io/helm/chartmuseum:v0.16.0 或 ghcr.io/helm/chartmuseum） */
+export class ComponentplanImageInput {
+  /** 被覆盖的镜像 */
+  image: string;
+  registry?: string;
+  newRegistry?: string;
+  path?: string;
+  newPath?: string;
   name?: string;
-  /** 替换名称（如：172.22.50.223/kubebb/chartmuseum） */
   newName?: string;
-  /** 替换tag（如：v0.16.0） */
   newTag?: string;
-  digest?: string;
 }
 @InputType()
 export class CreateComponentplanInput {
