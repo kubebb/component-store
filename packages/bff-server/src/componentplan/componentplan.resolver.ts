@@ -12,7 +12,11 @@ import { ComponentplanService } from './componentplan.service';
 import { ComponentplanArgs } from './dto/componentplan.args';
 import { CreateComponentplanInput } from './dto/create-componentplan.input';
 import { UpdateComponentplanInput } from './dto/update-componentplan.input';
-import { Componentplan, PaginatedComponentplan } from './models/componentplan.model';
+import {
+  Componentplan,
+  ComponentplanImage,
+  PaginatedComponentplan,
+} from './models/componentplan.model';
 
 @Resolver(() => Componentplan)
 export class ComponentplanResolver {
@@ -153,6 +157,50 @@ export class ComponentplanResolver {
     const { repository, namespace } = component as Component;
     if (!repository || !namespace) return null;
     return repositoryLoader.load(`${repository}_${namespace}_${cluster || ''}`);
+  }
+
+  @ResolveField(() => [ComponentplanImage], { nullable: true, description: '镜像替换' })
+  async images(
+    @Info() info: AnyObj,
+    @Parent() componentplan: Componentplan,
+    @Loader(RepositoryLoader) repositoryLoader: DataLoader<Repository['namespacedName'], Repository>
+  ): Promise<ComponentplanImage[]> {
+    const {
+      variableValues: { cluster },
+    } = info;
+    const { component = {}, _images } = componentplan;
+    const { repository, namespace } = component as Component;
+    if (!repository || !namespace) return null;
+    const { imageOverride } = await repositoryLoader.load(
+      `${repository}_${namespace}_${cluster || ''}`
+    );
+    return _images?.map(img => {
+      if (!img.newName) {
+        return {
+          image: img.name,
+          newTag: img.newTag,
+        };
+      }
+      const [registry, path, name] = img.newName?.split('/');
+      const aParts = img.name?.split(':')[0]?.split('/');
+      const len = aParts?.length;
+      const [oName, oPath, oRegistry] = [
+        aParts[len - 1],
+        aParts[len - 2],
+        aParts?.[len - 3] ? aParts[len - 3] : 'docker.io',
+      ];
+      const oImage = imageOverride?.find(d => d.path === oPath && d.registry === oRegistry);
+      return {
+        image: img.name,
+        registry: oImage?.newRegistry,
+        newRegistry: registry !== oImage?.newRegistry ? registry : null,
+        path: oImage?.newPath,
+        newPath: path !== oImage?.newPath ? path : null,
+        name: oName,
+        newName: name !== oName ? name : null,
+        newTag: img.newTag,
+      };
+    });
   }
 
   @ResolveField(() => [Componentplan], { nullable: true, description: '历史版本' })

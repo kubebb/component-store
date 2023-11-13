@@ -125,6 +125,13 @@ query getComponentChart($name: String!, $version: String!){
     chart(version: $version) {
       images
       valuesYaml
+      imagesFaked {
+        image
+        registry
+        path
+        name
+        tag
+      }
     }
   }
 }

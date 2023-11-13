@@ -79,8 +79,18 @@ type Component {
 """Chart 信息"""
 type ComponentChart {
   images: [String!]
+  imagesFaked: [ComponentChartImage!]
   readme: String
   valuesYaml: String
+}
+
+"""Chart 信息-镜像"""
+type ComponentChartImage {
+  image: String
+  name: String
+  path: String
+  registry: String
+  tag: String
 }
 
 type ComponentEdge {
@@ -184,29 +194,26 @@ type ComponentplanEdge {
 }
 
 type ComponentplanImage {
-  digest: String
-
-  """名称（如：ghcr.io/helm/chartmuseum:v0.16.0 或 ghcr.io/helm/chartmuseum）"""
+  image: String!
   name: String
-
-  """替换名称（如：172.22.50.223/kubebb/chartmuseum）"""
   newName: String
-
-  """替换tag（如：v0.16.0）"""
+  newPath: String
+  newRegistry: String
   newTag: String
+  path: String
+  registry: String
 }
 
 input ComponentplanImageInput {
-  digest: String
-
-  """名称（如：ghcr.io/helm/chartmuseum:v0.16.0 或 ghcr.io/helm/chartmuseum）"""
+  """被覆盖的镜像"""
+  image: String!
   name: String
-
-  """替换名称（如：172.22.50.223/kubebb/chartmuseum）"""
   newName: String
-
-  """替换tag（如：v0.16.0）"""
+  newPath: String
+  newRegistry: String
   newTag: String
+  path: String
+  registry: String
 }
 
 """上传组件"""

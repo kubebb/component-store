@@ -35,11 +35,21 @@ class ComponentMaintainer {
   url?: string;
 }
 
+@ObjectType({ description: 'Chart 信息-镜像' })
+class ComponentChartImage {
+  image?: string;
+  registry?: string;
+  path?: string;
+  name?: string;
+  tag?: string;
+}
+
 @ObjectType({ description: 'Chart 信息' })
 export class ComponentChart {
   valuesYaml?: string;
   images?: string[];
   readme?: string;
+  imagesFaked?: ComponentChartImage[];
 }
 
 @ObjectType({ description: '组件' })

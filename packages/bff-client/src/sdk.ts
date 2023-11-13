@@ -89,8 +89,19 @@ export type ComponentChartArgs = {
 export type ComponentChart = {
   __typename?: 'ComponentChart';
   images?: Maybe<Array<Scalars['String']['output']>>;
+  imagesFaked?: Maybe<Array<ComponentChartImage>>;
   readme?: Maybe<Scalars['String']['output']>;
   valuesYaml?: Maybe<Scalars['String']['output']>;
+};
+
+/** Chart 信息-镜像 */
+export type ComponentChartImage = {
+  __typename?: 'ComponentChartImage';
+  image?: Maybe<Scalars['String']['output']>;
+  name?: Maybe<Scalars['String']['output']>;
+  path?: Maybe<Scalars['String']['output']>;
+  registry?: Maybe<Scalars['String']['output']>;
+  tag?: Maybe<Scalars['String']['output']>;
 };
 
 export type ComponentEdge = {
@@ -180,23 +191,26 @@ export type ComponentplanEdge = {
 
 export type ComponentplanImage = {
   __typename?: 'ComponentplanImage';
-  digest?: Maybe<Scalars['String']['output']>;
-  /** 名称（如：ghcr.io/helm/chartmuseum:v0.16.0 或 ghcr.io/helm/chartmuseum） */
+  image: Scalars['String']['output'];
   name?: Maybe<Scalars['String']['output']>;
-  /** 替换名称（如：172.22.50.223/kubebb/chartmuseum） */
   newName?: Maybe<Scalars['String']['output']>;
-  /** 替换tag（如：v0.16.0） */
+  newPath?: Maybe<Scalars['String']['output']>;
+  newRegistry?: Maybe<Scalars['String']['output']>;
   newTag?: Maybe<Scalars['String']['output']>;
+  path?: Maybe<Scalars['String']['output']>;
+  registry?: Maybe<Scalars['String']['output']>;
 };
 
 export type ComponentplanImageInput = {
-  digest?: InputMaybe<Scalars['String']['input']>;
-  /** 名称（如：ghcr.io/helm/chartmuseum:v0.16.0 或 ghcr.io/helm/chartmuseum） */
+  /** 被覆盖的镜像 */
+  image: Scalars['String']['input'];
   name?: InputMaybe<Scalars['String']['input']>;
-  /** 替换名称（如：172.22.50.223/kubebb/chartmuseum） */
   newName?: InputMaybe<Scalars['String']['input']>;
-  /** 替换tag（如：v0.16.0） */
+  newPath?: InputMaybe<Scalars['String']['input']>;
+  newRegistry?: InputMaybe<Scalars['String']['input']>;
   newTag?: InputMaybe<Scalars['String']['input']>;
+  path?: InputMaybe<Scalars['String']['input']>;
+  registry?: InputMaybe<Scalars['String']['input']>;
 };
 
 /** 上传组件 */
@@ -723,16 +737,12 @@ export enum SortDirection {
 /** 组件订阅 */
 export type Subscription = {
   __typename?: 'Subscription';
-  /** 组件名称 */
-  chartName?: Maybe<Scalars['String']['output']>;
   /** 组件 */
   component?: Maybe<Component>;
   /** 更新方式 */
   componentPlanInstallMethod?: Maybe<InstallMethod>;
   /** 订阅时间 */
   creationTimestamp: Scalars['String']['output'];
-  /** 组件最新版本 */
-  latestVersion?: Maybe<Scalars['String']['output']>;
   /** name */
   name: Scalars['ID']['output'];
   /** 项目 */
@@ -743,8 +753,6 @@ export type Subscription = {
   repository?: Maybe<Scalars['String']['output']>;
   /** 更新时间 */
   schedule?: Maybe<Scalars['String']['output']>;
-  /** 组件最近更新时间 */
-  updatedAt?: Maybe<Scalars['String']['output']>;
 };
 
 export type SubscriptionEdge = {
@@ -864,6 +872,11 @@ export type GetComponentplanQuery = {
     valuesYaml?: string | null;
     images?: Array<{
       __typename?: 'ComponentplanImage';
+      image: string;
+      registry?: string | null;
+      newRegistry?: string | null;
+      path?: string | null;
+      newPath?: string | null;
       name?: string | null;
       newName?: string | null;
       newTag?: string | null;
@@ -919,6 +932,7 @@ export type GetComponentplanHistoryQuery = {
       subscription?: {
         __typename?: 'Subscription';
         componentPlanInstallMethod?: InstallMethod | null;
+        schedule?: string | null;
       } | null;
     }> | null;
   };
@@ -1133,6 +1147,14 @@ export type GetComponentChartQuery = {
       __typename?: 'ComponentChart';
       images?: Array<string> | null;
       valuesYaml?: string | null;
+      imagesFaked?: Array<{
+        __typename?: 'ComponentChartImage';
+        image?: string | null;
+        registry?: string | null;
+        path?: string | null;
+        name?: string | null;
+        tag?: string | null;
+      }> | null;
     } | null;
   };
 };
@@ -1480,6 +1502,11 @@ export const GetComponentplanDocument = gql`
       version
       status
       images {
+        image
+        registry
+        newRegistry
+        path
+        newPath
         name
         newName
         newTag
@@ -1524,6 +1551,7 @@ export const GetComponentplanHistoryDocument = gql`
         version
         subscription {
           componentPlanInstallMethod
+          schedule
         }
       }
     }
@@ -1716,6 +1744,13 @@ export const GetComponentChartDocument = gql`
       chart(version: $version) {
         images
         valuesYaml
+        imagesFaked {
+          image
+          registry
+          path
+          name
+          tag
+        }
       }
     }
   }
