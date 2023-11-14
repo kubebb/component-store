@@ -178,7 +178,7 @@ utils.getComponentTypes = function __getComponentTypes() {
       },
       {
         color: 'processing',
-        [isStatus ? 'id' : 'value']: '其它',
+        [isStatus ? 'id' : 'value']: '_other_',
         [isStatus || isTag ? 'children' : 'text']: pageThis.i18n('i18n-mobzvrte'),
       },
     ];

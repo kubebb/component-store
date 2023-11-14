@@ -73,15 +73,16 @@ class ComponentsActions$$Page extends React.Component {
     __$$i18n._inject2(this);
 
     this.state = {
-      data: undefined,
+      isCreate: true,
+      creating: false,
       name: undefined,
       cluster: undefined,
       tenants: [],
-      creating: false,
-      isCreate: true,
       component: undefined,
       valuesYaml: '',
       yamlLoading: false,
+      data: undefined,
+      images: undefined,
     };
   }
 
@@ -93,8 +94,233 @@ class ComponentsActions$$Page extends React.Component {
     return this._refsManager.getAll(refName);
   };
 
-  form(name) {
-    return this.$(name || 'formily_create')?.formRef?.current?.form;
+  getReademeDetailPath() {
+    return `/component-store/components/market/subPage/management-detail/detail/${
+      this.props.appHelper?.match?.params?.id
+    }?cluster=${this.getCluster()}&tab=READEME`;
+  }
+
+  onEditorLoad(editor) {
+    this.setState({
+      editor,
+    });
+  }
+
+  async handleInstallMethodChange(v) {
+    if (v === 'auto') {
+      const version = this.state.component?.versions?.sort(
+        (a, b) => new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime()
+      )?.[0]?.version;
+      this.form()?.setValues({
+        version,
+      });
+      this.handleVersionChange(version);
+    }
+  }
+
+  async handleVersionChange(v) {
+    this.setState({
+      yamlLoading: true,
+    });
+    const res = await this.utils.bff.getComponentChart({
+      name: this.props.appHelper?.match?.params?.id,
+      version: v,
+    });
+    this.state.editor.setValue(res?.component?.chart?.valuesYaml || '');
+    this.setState({
+      images: res?.component?.chart?.imagesFaked,
+      yamlLoading: false,
+      valuesYaml: res?.component?.chart?.valuesYaml || this.state.data?.valuesYaml || '',
+    });
+    this.form()?.setValues({
+      // iamges: {
+      //   name: []
+      // },
+      imagesNames: res?.component?.chart?.imagesFaked?.map(item => ({
+        label: `${item.registry}/${item.image}`,
+        value: item.image,
+      })),
+    });
+  }
+
+  async validatorImagesName(value, ...payload) {
+    const values = this.form()?.values;
+    const curIndex = payload?.[1]?.field?.index;
+    const currItem = values?.images?.name?.[curIndex];
+    const curImage = this.state.images?.find(item => item.image === value);
+    const override = this.state.component?.repositoryCR?.imageOverride?.find(item => {
+      return curImage.registry === item.registry && curImage.path === item.path;
+    });
+    !currItem?.newPath &&
+      this.form().setValuesIn(
+        `images.name.${curIndex}.newPath`,
+        override?.newPath || curImage?.path
+      );
+    !currItem?.newRegistry &&
+      this.form().setValuesIn(
+        `images.name.${curIndex}.newRegistry`,
+        override?.newRegistry || curImage?.registry
+      );
+
+    // 重复校验
+    try {
+      if (
+        value &&
+        values?.images?.name?.some(
+          (item, index) => item.name === currItem?.name && curIndex !== index
+        )
+      ) {
+        return this.i18n('i18n-9al8mu54');
+      }
+    } catch (e) {}
+  }
+
+  setFormValues(values) {
+    if (!this.form()) {
+      setTimeout(() => {
+        this.setFormValues(values);
+      }, 200);
+      return;
+    }
+    this.form().setValues(values);
+  }
+
+  async loadComponent(callback) {
+    const res = await this.props.appHelper?.utils?.bff?.getComponent({
+      name: this.props.appHelper?.match?.params?.id,
+      cluster: this.getCluster(),
+    });
+    this.setState(
+      {
+        component: res?.component,
+      },
+      () => {
+        callback && callback();
+      }
+    );
+    this.form()?.setFieldState('version', {
+      dataSource:
+        res?.component?.versions?.map(item => ({
+          value: item.version,
+          label: item.version,
+        })) || [],
+    });
+    this.setFormValues({
+      chartName: res?.component?.chartName,
+      repository: res?.component?.repository,
+      file: 'values.yaml',
+    });
+  }
+
+  async loadCluster() {
+    const res = await this.props.appHelper?.utils?.bffSdk?.getCluster({
+      name: this.getCluster(),
+    });
+    const cluster = res?.cluster;
+    this.setState({
+      cluster,
+    });
+  }
+
+  getCluster() {
+    const cluster = this.appHelper?.history?.query?.cluster;
+    return cluster;
+  }
+
+  getClusterInfo() {
+    return this.state.cluster;
+  }
+
+  async loadTenants() {
+    const restrictedTenants = this.state.component.restrictedTenants;
+    const restrictedNamespaces = this.state.component.restrictedNamespaces;
+    const res = await this.props.appHelper?.utils?.bffSdk?.getCurrentUserTenants();
+    const tenants =
+      res?.userCurrent?.tenants
+        ?.filter(item => {
+          if (restrictedTenants?.length > 0) {
+            return restrictedTenants.includes(item.name);
+          }
+          return true;
+        })
+        ?.map(item => {
+          item.projects =
+            item.projects
+              ?.filter(item => {
+                return item.clusters?.some(cluster => cluster.name === this.getCluster());
+              })
+              ?.filter(item =>
+                restrictedNamespaces?.length > 0 ? restrictedNamespaces.includes(item.name) : true
+              )
+              ?.map(item => ({
+                label: item.fullName,
+                value: item.name,
+              })) || [];
+          return {
+            label: item.fullName,
+            value: JSON.stringify(item),
+          };
+        }) || [];
+    this.form()?.setFieldState('position.tenant', {
+      dataSource: tenants || [],
+    });
+    this.setState({
+      tenants,
+    });
+  }
+
+  async initEditor(v) {
+    if (!v.valuesYaml && v) {
+      const res = await this.utils.bff.getComponentChart({
+        name: this.props.appHelper?.match?.params?.id,
+        version: v.version,
+      });
+      v.valuesYaml = res?.component?.chart?.valuesYaml || '';
+    }
+    if (this.state.editor && !this.state.isCreate) {
+      this.setState({
+        valuesYaml: v.valuesYaml || '',
+      });
+      this.state.editor.setValue(v.valuesYaml || '');
+      return;
+    }
+    setTimeout(() => {
+      this.initEditor(v);
+    }, 200);
+  }
+
+  initForms(v) {
+    if (this.form() && !this.state.isCreate && this.state.component) {
+      this.form().setValues({
+        // repository: v.component?.repository,
+        // chartName: v.component?.chartName,
+        releaseName: v.releaseName,
+        version: v.version,
+        method: {
+          componentPlanInstallMethod: v?.subscription?.componentPlanInstallMethod || 'manual',
+          schedule:
+            v?.subscription?.schedule && this.utils.cronChangeToDate(v?.subscription?.schedule),
+        },
+        images: {
+          name: v.images?.map(item => {
+            return {
+              image: item.image,
+              registry: item.registry,
+              newRegistry: item.newRegistry,
+              path: item.path,
+              newPath: item.newPath,
+              name: item.name,
+              newName: item.newName,
+              newTag: item.newTag,
+            };
+          }),
+        },
+      });
+      return;
+    }
+    setTimeout(() => {
+      this.initForms(v);
+    }, 200);
   }
 
   async initEdit() {
@@ -110,11 +336,63 @@ class ComponentsActions$$Page extends React.Component {
       });
       this.initForms(v);
       this.initEditor(v);
+      this.handleVersionChange(res?.componentplan?.version);
     } catch (e) {}
+  }
+
+  async validatorName(value) {
+    const namespace = this.form()?.values?.position?.namespace;
+    try {
+      if (value && this.state.isCreate && namespace) {
+        const res = await this.props?.appHelper?.utils?.bff?.getComponentplans({
+          releaseName: value,
+          cluster: this.getCluster(),
+          namespace,
+        });
+        if (res?.componentplans?.some(item => item.releaseName === value)) {
+          return this.i18n('i18n-1y09ypgx');
+        }
+      }
+    } catch (e) {}
+  }
+
+  validatorTenant(value) {
+    const tenant = value && JSON.parse(value)?.name;
+    if (
+      tenant &&
+      this.state.component.restrictedTenants?.length > 0 &&
+      !this.state.component.restrictedTenants?.includes(tenant)
+    ) {
+      return `${this.i18n('i18n-vmtf504c')} ${this.state.component.restrictedTenants.join(
+        ','
+      )} ${this.i18n('i18n-qv53budt')}`;
+    }
+  }
+
+  validatorNamespace(value) {
+    if (
+      value &&
+      this.state.component.restrictedNamespaces?.length > 0 &&
+      !this.state.component.restrictedNamespaces?.includes(value)
+    ) {
+      return `${this.i18n('i18n-n6vl1gm6')} ${this.state.component.restrictedNamespaces.join(
+        ','
+      )} ${this.i18n('i18n-qv53budt')}`;
+    }
   }
 
   onCancel(event) {
     this.history.go(-1);
+  }
+
+  form(name) {
+    return this.$(name || 'formily_create')?.formRef?.current?.form;
+  }
+
+  handleYamlChange(v) {
+    this.setState({
+      valuesYaml: v || '',
+    });
   }
 
   onSubmit(event) {
@@ -136,11 +414,19 @@ class ComponentsActions$$Page extends React.Component {
             time: v.method?.schedule,
           }),
         valuesYaml: this.state.valuesYaml,
-        images: v.images?.name?.map(item => ({
-          name: item.name,
-          newName: item.newName && item.nameReady + item.newName,
-          newTag: item.newTag,
-        })),
+        images: v.images?.name?.map(item => {
+          const curImage = this.state.images?.find(c => c.image === item.image);
+          return {
+            image: item.image,
+            registry: curImage.registry,
+            newRegistry: item.newRegistry,
+            path: curImage.path,
+            newPath: item.newPath,
+            name: curImage.name,
+            newName: item.newName,
+            newTag: item.newTag,
+          };
+        }),
       };
       if (!isCreate) {
         delete params.repository;
@@ -195,285 +481,6 @@ class ComponentsActions$$Page extends React.Component {
         });
       }
     });
-  }
-
-  initForms(v) {
-    if (this.form() && !this.state.isCreate && this.state.component) {
-      this.form().setValues({
-        // repository: v.component?.repository,
-        // chartName: v.component?.chartName,
-        releaseName: v.releaseName,
-        version: v.version,
-        method: {
-          componentPlanInstallMethod: v?.subscription?.componentPlanInstallMethod || 'manual',
-          schedule:
-            v?.subscription?.schedule && this.utils.cronChangeToDate(v?.subscription?.schedule),
-        },
-        images: {
-          name: v.images?.map(item => {
-            const arr = item?.name?.split('/');
-            const nameReady = arr?.slice(0, arr?.length - 1)?.join('/') + '/';
-            const override = this.state.component?.repositoryCR?.imageOverride?.find(item => {
-              return nameReady === `${item.registry}/${item.path}/`;
-            });
-            return {
-              nameReady: override && `${override.newRegistry}/${override.newPath}/`,
-              name: item.name,
-              newName: item.newName?.split(nameReady)?.[1],
-              newTag: item.newTag,
-            };
-          }),
-        },
-      });
-      return;
-    }
-    setTimeout(() => {
-      this.initForms(v);
-    }, 200);
-  }
-
-  getCluster() {
-    const cluster = this.appHelper?.history?.query?.cluster;
-    return cluster;
-  }
-
-  async initEditor(v) {
-    if (!v.valuesYaml && v) {
-      const res = await this.utils.bff.getComponentChart({
-        name: this.props.appHelper?.match?.params?.id,
-        version: v.version,
-      });
-      v.valuesYaml = res?.component?.chart?.valuesYaml || '';
-    }
-    if (this.state.editor && !this.state.isCreate) {
-      this.setState({
-        valuesYaml: v.valuesYaml || '',
-      });
-      this.state.editor.setValue(v.valuesYaml || '');
-      return;
-    }
-    setTimeout(() => {
-      this.initEditor(v);
-    }, 200);
-  }
-
-  async loadCluster() {
-    const res = await this.props.appHelper?.utils?.bffSdk?.getCluster({
-      name: this.getCluster(),
-    });
-    const cluster = res?.cluster;
-    this.setState({
-      cluster,
-    });
-  }
-
-  async loadTenants() {
-    const restrictedTenants = this.state.component.restrictedTenants;
-    const restrictedNamespaces = this.state.component.restrictedNamespaces;
-    const res = await this.props.appHelper?.utils?.bffSdk?.getCurrentUserTenants();
-    const tenants =
-      res?.userCurrent?.tenants
-        ?.filter(item => {
-          if (restrictedTenants?.length > 0) {
-            return restrictedTenants.includes(item.name);
-          }
-          return true;
-        })
-        ?.map(item => {
-          item.projects =
-            item.projects
-              ?.filter(item => {
-                return item.clusters?.some(cluster => cluster.name === this.getCluster());
-              })
-              ?.filter(item =>
-                restrictedNamespaces?.length > 0 ? restrictedNamespaces.includes(item.name) : true
-              )
-              ?.map(item => ({
-                label: item.fullName,
-                value: item.name,
-              })) || [];
-          return {
-            label: item.fullName,
-            value: JSON.stringify(item),
-          };
-        }) || [];
-    this.form()?.setFieldState('position.tenant', {
-      dataSource: tenants || [],
-    });
-    this.setState({
-      tenants,
-    });
-  }
-
-  onEditorLoad(editor) {
-    this.setState({
-      editor,
-    });
-  }
-
-  async loadComponent(callback) {
-    const res = await this.props.appHelper?.utils?.bff?.getComponent({
-      name: this.props.appHelper?.match?.params?.id,
-      cluster: this.getCluster(),
-    });
-    this.setState(
-      {
-        component: res?.component,
-      },
-      () => {
-        callback && callback();
-      }
-    );
-    this.form()?.setFieldState('version', {
-      dataSource:
-        res?.component?.versions?.map(item => ({
-          value: item.version,
-          label: item.version,
-        })) || [],
-    });
-    this.setFormValues({
-      chartName: res?.component?.chartName,
-      repository: res?.component?.repository,
-      file: 'values.yaml',
-    });
-  }
-
-  setFormValues(values) {
-    if (!this.form()) {
-      setTimeout(() => {
-        this.setFormValues(values);
-      }, 200);
-      return;
-    }
-    this.form().setValues(values);
-  }
-
-  async validatorName(value) {
-    const namespace = this.form()?.values?.position?.namespace;
-    try {
-      if (value && this.state.isCreate && namespace) {
-        const res = await this.props?.appHelper?.utils?.bff?.getComponentplans({
-          releaseName: value,
-          cluster: this.getCluster(),
-          namespace,
-        });
-        if (res?.componentplans?.some(item => item.releaseName === value)) {
-          return this.i18n('i18n-1y09ypgx');
-        }
-      }
-    } catch (e) {}
-  }
-
-  getClusterInfo() {
-    return this.state.cluster;
-  }
-
-  validatorTenant(value) {
-    const tenant = value && JSON.parse(value)?.name;
-    if (
-      tenant &&
-      this.state.component.restrictedTenants?.length > 0 &&
-      !this.state.component.restrictedTenants?.includes(tenant)
-    ) {
-      return `${this.i18n('i18n-vmtf504c')} ${this.state.component.restrictedTenants.join(
-        ','
-      )} ${this.i18n('i18n-qv53budt')}`;
-    }
-  }
-
-  handleYamlChange(v) {
-    this.setState({
-      valuesYaml: v || '',
-    });
-  }
-
-  validatorNamespace(value) {
-    if (
-      value &&
-      this.state.component.restrictedNamespaces?.length > 0 &&
-      !this.state.component.restrictedNamespaces?.includes(value)
-    ) {
-      return `${this.i18n('i18n-n6vl1gm6')} ${this.state.component.restrictedNamespaces.join(
-        ','
-      )} ${this.i18n('i18n-qv53budt')}`;
-    }
-  }
-
-  async handleVersionChange(v) {
-    this.setState({
-      yamlLoading: true,
-    });
-    const res = await this.utils.bff.getComponentChart({
-      name: this.props.appHelper?.match?.params?.id,
-      version: v,
-    });
-    this.state.editor.setValue(res?.component?.chart?.valuesYaml || '');
-    this.setState({
-      yamlLoading: false,
-      valuesYaml: res?.component?.chart?.valuesYaml || this.state.data?.valuesYaml || '',
-    });
-    this.form()?.setValues({
-      // iamges: {
-      //   name: []
-      // },
-      imagesNames: res?.component?.chart?.images?.map(item => ({
-        label: item,
-        value: item,
-      })),
-      imagesNamesRead: res?.component?.chart?.images?.map(item => {
-        const arr = item?.split('/');
-        return {
-          label: arr?.slice(0, arr?.length - 1) + '/',
-          value: item,
-        };
-      }),
-    });
-  }
-
-  async validatorImagesName(value, ...payload) {
-    const curIndex = payload?.[1]?.field?.index;
-    const arr = value?.split('/');
-    const v = arr?.slice(0, arr?.length - 1)?.join('/') + '/';
-    const override = this.state.component?.repositoryCR?.imageOverride?.find(item => {
-      return v === `${item.registry}/${item.path}/`;
-    });
-    override &&
-      this.form().setValuesIn(
-        `images.name.${curIndex}.nameReady`,
-        `${override.newRegistry}/${override.newPath}/`
-      );
-
-    // 重复校验
-    const values = this.form()?.values;
-    const currItem = values?.images?.name?.[curIndex];
-    try {
-      if (
-        value &&
-        values?.images?.name?.some(
-          (item, index) => item.name === currItem?.name && curIndex !== index
-        )
-      ) {
-        return this.i18n('i18n-9al8mu54');
-      }
-    } catch (e) {}
-  }
-
-  getReademeDetailPath() {
-    return `/component-store/components/market/subPage/management-detail/detail/${
-      this.props.appHelper?.match?.params?.id
-    }?cluster=${this.getCluster()}&tab=READEME`;
-  }
-
-  async handleInstallMethodChange(v) {
-    if (v === 'auto') {
-      const version = this.state.component?.versions?.sort(
-        (a, b) => new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime()
-      )?.[0]?.version;
-      this.form()?.setValues({
-        version,
-      });
-      this.handleVersionChange(version);
-    }
   }
 
   componentDidMount() {
@@ -1061,9 +1068,9 @@ class ComponentsActions$$Page extends React.Component {
                   decoratorProps={{ 'x-decorator-props': { labelEllipsis: true } }}
                   __component_name="FormilySelect"
                 />
-                <Row __component_name="Row" wrap={false}>
-                  <Col __component_name="Col" flex="" span={3} />
-                  <Col __component_name="Col" flex="auto">
+                <Row wrap={false} __component_name="Row">
+                  <Col flex="" span={3} __component_name="Col" />
+                  <Col flex="auto" __component_name="Col">
                     <Spin spinning={__$$eval(() => this.state.yamlLoading)} __component_name="Spin">
                       <Editor
                         style={{ marginBottom: '22px' }}
@@ -1128,7 +1135,7 @@ class ComponentsActions$$Page extends React.Component {
                       },
                       'x-validator': [],
                     }}
-                    componentProps={{ 'x-component-props': {} }}
+                    decoratorProps={{ 'x-decorator-props': { labelEllipsis: true } }}
                     __component_name="FormilyArrayCards"
                   >
                     <Space
@@ -1144,10 +1151,10 @@ class ComponentsActions$$Page extends React.Component {
                         __component_name="Space"
                       >
                         <FormilySelect
-                          style={{ width: '300px' }}
+                          style={{ width: '170px' }}
                           fieldProps={{
                             enum: '{{ $form?.values?.imagesNames|| []}}',
-                            name: 'name',
+                            name: 'image',
                             title: '',
                             'x-validator': [
                               {
@@ -1194,14 +1201,30 @@ class ComponentsActions$$Page extends React.Component {
                         <FormilyInput
                           style={{ width: '170px' }}
                           fieldProps={{
-                            name: 'nameReady',
+                            name: 'newRegistry',
                             title: '',
                             'x-pattern': 'editable',
                             'x-validator': [],
                           }}
                           componentProps={{
                             'x-component-props': {
-                              placeholder: this.i18n('i18n-dv03soje') /* 请先选择镜像 */,
+                              placeholder: this.i18n('i18n-0oa9ae8g') /* 新域名 */,
+                            },
+                          }}
+                          decoratorProps={{ 'x-decorator-props': { labelEllipsis: true } }}
+                          __component_name="FormilyInput"
+                        />
+                        <FormilyInput
+                          style={{ width: '170px' }}
+                          fieldProps={{
+                            name: 'newPath',
+                            title: '',
+                            'x-pattern': 'editable',
+                            'x-validator': [],
+                          }}
+                          componentProps={{
+                            'x-component-props': {
+                              placeholder: this.i18n('i18n-v8m8fg5l') /* 新仓库组 */,
                             },
                           }}
                           decoratorProps={{ 'x-decorator-props': { labelEllipsis: true } }}
