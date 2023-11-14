@@ -98,25 +98,7 @@ class ComponentsManagementInstallDetail$$Page extends React.Component {
 
   getImage(item) {
     item = item || {};
-    const arr = item?.name?.split('/');
-    const pre = arr?.slice(0, arr?.length - 1)?.join('/');
-    const nameReady = pre && pre + '/';
-    const override =
-      this.props.useGetComponentplan?.data?.componentplan?.repository?.imageOverride?.find(item => {
-        return nameReady === `${item.registry}/${item.path}/`;
-      });
-    const newNameReady = `${override.newRegistry || override.registry}/${override.newPath}/`;
-    const info = {
-      nameReady: override && `${override.newRegistry}/${override.newPath}/`,
-      name: item.name,
-      newName: item.newName?.split(newNameReady)?.[1],
-      newTag: item.newTag,
-    };
-    return (
-      `${item?.name} ${this.i18n('i18n-xeckog8e')} ${info.nameReady || nameReady || '-'}${
-        info.newName || ''
-      }:${info.newTag || '-'}` || '-'
-    );
+    return `${item?.image} ${this.i18n('i18n-xeckog8e')} ${item.newImage}` || '-';
   }
 
   getName(item) {
