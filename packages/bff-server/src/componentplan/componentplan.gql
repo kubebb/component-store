@@ -43,14 +43,12 @@ query getComponentplan($name: String!, $namespace: String!, $cluster: String) {
     version
     status
     images {
-      image
+      id
       registry
-      newRegistry
       path
-      newPath
       name
-      newName
-      newTag
+      tag
+      matched
     }
     component {
       chartName
@@ -64,14 +62,6 @@ query getComponentplan($name: String!, $namespace: String!, $cluster: String) {
     subscription {
       componentPlanInstallMethod
       schedule
-    }
-    repository {
-      imageOverride {
-        registry
-        newRegistry
-        path
-        newPath
-      }
     }
     valuesYaml
   }

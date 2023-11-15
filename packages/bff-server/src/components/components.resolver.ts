@@ -1,6 +1,6 @@
 import { Loader } from '@/common/dataloader';
 import { Auth } from '@/common/decorators/auth.decorator';
-import { Repository } from '@/repository/models/repository.model';
+import { Repository, RepositoryImageOverride } from '@/repository/models/repository.model';
 import { RepositoryLoader } from '@/repository/repository.loader';
 import { AnyObj, JwtAuth } from '@/types';
 import { Args, Info, Mutation, Parent, Query, ResolveField, Resolver } from '@nestjs/graphql';
@@ -132,13 +132,40 @@ export class ComponentsResolver {
     @Auth() auth: JwtAuth,
     @Info() info: AnyObj,
     @Parent() component: Component,
+    @Loader(RepositoryLoader)
+    repositoryLoader: DataLoader<Repository['namespacedName'], Repository>,
     @Args('version') version: string
   ): Promise<ComponentChart> {
     const {
       variableValues: { cluster },
     } = info;
-    const { name, namespace } = component;
-    return this.componentsService.getChartValues(auth, name, namespace, version, cluster);
+    const { name, namespace, repository } = component;
+    let imageOverride: RepositoryImageOverride[];
+    if (repository && namespace) {
+      const repo = await repositoryLoader.load(`${repository}_${namespace}_${cluster || ''}`);
+      imageOverride = repo.imageOverride;
+    }
+    const chart = await this.componentsService.getChartValues(
+      auth,
+      name,
+      namespace,
+      version,
+      cluster
+    );
+    const imagesFaked = chart.imagesFaked;
+    chart.imagesOptions = imagesFaked?.map(f => {
+      const matchedImage = imageOverride?.find(d => d.path === f.path && d.registry === f.registry);
+      return {
+        image: f.image,
+        id: f.id,
+        registry: matchedImage?.newRegistry,
+        path: matchedImage?.newPath,
+        name: f.name,
+        tag: f.tag,
+        matched: !!matchedImage?.newRegistry && !!matchedImage?.newPath,
+      };
+    });
+    return chart;
   }
 
   @ResolveField(() => Repository, { nullable: true, description: '所属仓库' })

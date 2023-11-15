@@ -287,6 +287,7 @@ export class ComponentsService {
       const len = aParts?.length;
       return {
         image: img,
+        id: parts?.[0],
         name: aParts[len - 1],
         path: aParts[len - 2],
         registry: aParts?.[len - 3] ? aParts[len - 3] : 'docker.io',

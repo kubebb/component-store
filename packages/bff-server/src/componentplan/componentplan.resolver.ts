@@ -174,31 +174,23 @@ export class ComponentplanResolver {
     const { imageOverride } = await repositoryLoader.load(
       `${repository}_${namespace}_${cluster || ''}`
     );
+
     return _images?.map(img => {
-      if (!img.newName) {
-        return {
-          image: img.name,
-          newTag: img.newTag,
-        };
-      }
       const [registry, path, name] = img.newName?.split('/');
       const aParts = img.name?.split(':')[0]?.split('/');
       const len = aParts?.length;
-      const [oName, oPath, oRegistry] = [
-        aParts[len - 1],
+      const [oPath, oRegistry] = [
         aParts[len - 2],
         aParts?.[len - 3] ? aParts[len - 3] : 'docker.io',
       ];
       const oImage = imageOverride?.find(d => d.path === oPath && d.registry === oRegistry);
       return {
-        image: img.name,
-        registry: oImage?.newRegistry,
-        newRegistry: registry !== oImage?.newRegistry ? registry : null,
-        path: oImage?.newPath,
-        newPath: path !== oImage?.newPath ? path : null,
-        name: oName,
-        newName: name !== oName ? name : null,
-        newTag: img.newTag,
+        id: img.name?.split(':')[0],
+        registry,
+        path,
+        name,
+        tag: img.newTag,
+        matched: oImage?.newRegistry === registry && oImage?.newPath === path,
       };
     });
   }
