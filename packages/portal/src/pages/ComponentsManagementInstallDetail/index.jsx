@@ -98,7 +98,9 @@ class ComponentsManagementInstallDetail$$Page extends React.Component {
 
   getImage(item) {
     item = item || {};
-    return `${item?.image} ${this.i18n('i18n-xeckog8e')} ${item.newImage}` || '-';
+    return `${item?.registry ? item?.registry + '/' : ''}${item?.path ? item?.path + '/' : ''}${
+      item?.name
+    }${item?.tag ? ':' + item?.tag : ''}`;
   }
 
   getName(item) {
