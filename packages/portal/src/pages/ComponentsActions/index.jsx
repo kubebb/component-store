@@ -128,7 +128,7 @@ class ComponentsActions$$Page extends React.Component {
     });
     this.state.editor.setValue(res?.component?.chart?.valuesYaml || '');
     this.setState({
-      images: res?.component?.chart?.imagesFaked,
+      images: res?.component?.chart?.imagesOptions,
       yamlLoading: false,
       valuesYaml: res?.component?.chart?.valuesYaml || this.state.data?.valuesYaml || '',
     });
@@ -136,9 +136,10 @@ class ComponentsActions$$Page extends React.Component {
       // iamges: {
       //   name: []
       // },
-      imagesNames: res?.component?.chart?.imagesFaked?.map(item => ({
-        label: `${item.registry}/${item.image}`,
-        value: item.image,
+
+      imagesNames: res?.component?.chart?.imagesOptions?.map(item => ({
+        label: `${item.registry ? item.registry + '/' : ''}${item.image}`,
+        value: item.id,
       })),
     });
   }
@@ -147,21 +148,31 @@ class ComponentsActions$$Page extends React.Component {
     const values = this.form()?.values;
     const curIndex = payload?.[1]?.field?.index;
     const currItem = values?.images?.name?.[curIndex];
-    const curImage = this.state.images?.find(item => item.image === value);
-    const override = this.state.component?.repositoryCR?.imageOverride?.find(item => {
-      return curImage.registry === item.registry && curImage.path === item.path;
-    });
+    const curImage = this.state.images?.find(item => item.id === value);
     !currItem?.newPath &&
-      this.form().setValuesIn(
-        `images.name.${curIndex}.newPath`,
-        override?.newPath || curImage?.path
-      );
+      this.form().setValuesIn(`images.name.${curIndex}.newPath`, curImage?.path);
     !currItem?.newRegistry &&
-      this.form().setValuesIn(
-        `images.name.${curIndex}.newRegistry`,
-        override?.newRegistry || curImage?.registry
-      );
-
+      this.form().setValuesIn(`images.name.${curIndex}.newRegistry`, curImage?.registry);
+    const pathPre = payload?.[1]?.field?.props?.basePath?.entire;
+    if (this.state.images?.some(item => item.id === value && item.matched)) {
+      this.form().setFormGraph({
+        [pathPre + '.newRegistry']: {
+          pattern: 'disabled',
+        },
+        [pathPre + '.newPath']: {
+          pattern: 'disabled',
+        },
+      });
+    } else {
+      this.form().setFormGraph({
+        [pathPre + '.newRegistry']: {
+          pattern: 'editable',
+        },
+        [pathPre + '.newPath']: {
+          pattern: 'editable',
+        },
+      });
+    }
     // 重复校验
     try {
       if (
@@ -303,24 +314,49 @@ class ComponentsActions$$Page extends React.Component {
         },
         images: {
           name: v.images?.map(item => {
+            // edit matched
             return {
-              image: item.image,
-              registry: item.registry,
-              newRegistry: item.newRegistry,
-              path: item.path,
-              newPath: item.newPath,
-              name: item.name,
-              newName: item.newName,
-              newTag: item.newTag,
+              image: item.id,
+              newRegistry: item.registry,
+              newPath: item.path,
+              newName: item.name,
+              newTag: item.tag,
             };
           }),
         },
       });
+      this.initDisabled();
       return;
     }
     setTimeout(() => {
       this.initForms(v);
     }, 200);
+  }
+
+  initDisabled() {
+    if (!this.form() || !this.state.images) {
+      setTimeout(() => {
+        this.initDisabled();
+      }, 200);
+      return;
+    }
+    const formGraph = this.form().getFormGraph();
+    Object.keys(formGraph || {}).forEach(key => {
+      const pathPre = key.slice(0, key.indexOf('.image'));
+      if (
+        key.endsWith('.image') &&
+        this.state.images?.some(item => item.id === formGraph[key]?.value && item.matched)
+      ) {
+        this.form().setFormGraph({
+          [pathPre + '.newRegistry']: {
+            pattern: 'disabled',
+          },
+          [pathPre + '.newPath']: {
+            pattern: 'disabled',
+          },
+        });
+      }
+    });
   }
 
   async initEdit() {
@@ -415,16 +451,12 @@ class ComponentsActions$$Page extends React.Component {
           }),
         valuesYaml: this.state.valuesYaml,
         images: v.images?.name?.map(item => {
-          const curImage = this.state.images?.find(c => c.image === item.image);
           return {
-            image: item.image,
-            registry: curImage.registry,
-            newRegistry: item.newRegistry,
-            path: curImage.path,
-            newPath: item.newPath,
-            name: curImage.name,
-            newName: item.newName,
-            newTag: item.newTag,
+            id: item.image,
+            registry: item.newRegistry,
+            path: item.newPath,
+            name: item.newName,
+            tag: item.newTag,
           };
         }),
       };
