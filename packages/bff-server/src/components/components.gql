@@ -92,14 +92,6 @@ query getComponent($name: String!, $cluster: String){
       name
       url
     }
-    repositoryCR {
-      imageOverride {
-        registry
-        newRegistry
-        path
-        newPath
-      }
-    }
   }
 }
 
@@ -124,14 +116,16 @@ query getComponentChart($name: String!, $version: String!){
     name
     chart(version: $version) {
       images
-      valuesYaml
-      imagesFaked {
+      imagesOptions {
         image
+        id
         registry
         path
         name
         tag
+        matched
       }
+      valuesYaml
     }
   }
 }

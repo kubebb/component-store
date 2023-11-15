@@ -78,15 +78,24 @@ type Component {
 
 """Chart 信息"""
 type ComponentChart {
+  """manifest.images"""
   images: [String!]
-  imagesFaked: [ComponentChartImage!]
+
+  """镜像替换可选项"""
+  imagesOptions: [ComponentChartImage!]
+
+  """README"""
   readme: String
+
+  """Values.yaml"""
   valuesYaml: String
 }
 
 """Chart 信息-镜像"""
 type ComponentChartImage {
+  id: String!
   image: String
+  matched: Boolean
   name: String
   path: String
   registry: String
@@ -194,26 +203,25 @@ type ComponentplanEdge {
 }
 
 type ComponentplanImage {
-  image: String!
+  """id（image没有tag的部分）如hyperledgerk8s/bc-explorer"""
+  id: String!
+  image: String
+
+  """是否匹配到Repo.imageOverride"""
+  matched: Boolean
   name: String
-  newName: String
-  newPath: String
-  newRegistry: String
-  newTag: String
   path: String
   registry: String
+  tag: String
 }
 
 input ComponentplanImageInput {
-  """被覆盖的镜像"""
-  image: String!
+  """id（image没有tag的部分）如hyperledgerk8s/bc-explorer"""
+  id: String!
   name: String
-  newName: String
-  newPath: String
-  newRegistry: String
-  newTag: String
   path: String
   registry: String
+  tag: String
 }
 
 """上传组件"""

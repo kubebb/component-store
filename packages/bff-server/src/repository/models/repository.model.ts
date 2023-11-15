@@ -97,7 +97,7 @@ class RepositoryFilter {
 }
 
 @ObjectType({ description: '镜像仓库替换' })
-class RepositoryImageOverride {
+export class RepositoryImageOverride {
   /** 新域名 */
   newRegistry?: string;
 

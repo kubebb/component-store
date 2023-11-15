@@ -560,11 +560,9 @@ export class ComponentplanService {
   fakedImages(images: ComponentplanImageInput[]): SpecImage[] {
     return images?.map(img => {
       return {
-        newTag: img.newTag,
-        name: img.image?.split(':')[0],
-        newName: `${img.registry || img.newRegistry}/${img.path || img.newPath}/${
-          img.newName || img.name || ''
-        }`,
+        newTag: img.tag,
+        name: img.id,
+        newName: `${img.registry}/${img.path}/${img.name}`,
       };
     });
   }

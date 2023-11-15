@@ -88,16 +88,22 @@ export type ComponentChartArgs = {
 /** Chart 信息 */
 export type ComponentChart = {
   __typename?: 'ComponentChart';
+  /** manifest.images */
   images?: Maybe<Array<Scalars['String']['output']>>;
-  imagesFaked?: Maybe<Array<ComponentChartImage>>;
+  /** 镜像替换可选项 */
+  imagesOptions?: Maybe<Array<ComponentChartImage>>;
+  /** README */
   readme?: Maybe<Scalars['String']['output']>;
+  /** Values.yaml */
   valuesYaml?: Maybe<Scalars['String']['output']>;
 };
 
 /** Chart 信息-镜像 */
 export type ComponentChartImage = {
   __typename?: 'ComponentChartImage';
+  id: Scalars['String']['output'];
   image?: Maybe<Scalars['String']['output']>;
+  matched?: Maybe<Scalars['Boolean']['output']>;
   name?: Maybe<Scalars['String']['output']>;
   path?: Maybe<Scalars['String']['output']>;
   registry?: Maybe<Scalars['String']['output']>;
@@ -191,26 +197,24 @@ export type ComponentplanEdge = {
 
 export type ComponentplanImage = {
   __typename?: 'ComponentplanImage';
-  image: Scalars['String']['output'];
+  /** id（image没有tag的部分）如hyperledgerk8s/bc-explorer */
+  id: Scalars['String']['output'];
+  image?: Maybe<Scalars['String']['output']>;
+  /** 是否匹配到Repo.imageOverride */
+  matched?: Maybe<Scalars['Boolean']['output']>;
   name?: Maybe<Scalars['String']['output']>;
-  newName?: Maybe<Scalars['String']['output']>;
-  newPath?: Maybe<Scalars['String']['output']>;
-  newRegistry?: Maybe<Scalars['String']['output']>;
-  newTag?: Maybe<Scalars['String']['output']>;
   path?: Maybe<Scalars['String']['output']>;
   registry?: Maybe<Scalars['String']['output']>;
+  tag?: Maybe<Scalars['String']['output']>;
 };
 
 export type ComponentplanImageInput = {
-  /** 被覆盖的镜像 */
-  image: Scalars['String']['input'];
+  /** id（image没有tag的部分）如hyperledgerk8s/bc-explorer */
+  id: Scalars['String']['input'];
   name?: InputMaybe<Scalars['String']['input']>;
-  newName?: InputMaybe<Scalars['String']['input']>;
-  newPath?: InputMaybe<Scalars['String']['input']>;
-  newRegistry?: InputMaybe<Scalars['String']['input']>;
-  newTag?: InputMaybe<Scalars['String']['input']>;
   path?: InputMaybe<Scalars['String']['input']>;
   registry?: InputMaybe<Scalars['String']['input']>;
+  tag?: InputMaybe<Scalars['String']['input']>;
 };
 
 /** 上传组件 */
@@ -872,14 +876,12 @@ export type GetComponentplanQuery = {
     valuesYaml?: string | null;
     images?: Array<{
       __typename?: 'ComponentplanImage';
-      image: string;
+      id: string;
       registry?: string | null;
-      newRegistry?: string | null;
       path?: string | null;
-      newPath?: string | null;
       name?: string | null;
-      newName?: string | null;
-      newTag?: string | null;
+      tag?: string | null;
+      matched?: boolean | null;
     }> | null;
     component?: {
       __typename?: 'Component';
@@ -896,16 +898,6 @@ export type GetComponentplanQuery = {
       __typename?: 'Subscription';
       componentPlanInstallMethod?: InstallMethod | null;
       schedule?: string | null;
-    } | null;
-    repository?: {
-      __typename?: 'Repository';
-      imageOverride?: Array<{
-        __typename?: 'RepositoryImageOverride';
-        registry?: string | null;
-        newRegistry?: string | null;
-        path?: string | null;
-        newPath?: string | null;
-      }> | null;
     } | null;
   };
 };
@@ -1098,16 +1090,6 @@ export type GetComponentQuery = {
       name?: string | null;
       url?: string | null;
     }> | null;
-    repositoryCR?: {
-      __typename?: 'Repository';
-      imageOverride?: Array<{
-        __typename?: 'RepositoryImageOverride';
-        registry?: string | null;
-        newRegistry?: string | null;
-        path?: string | null;
-        newPath?: string | null;
-      }> | null;
-    } | null;
   };
 };
 
@@ -1147,13 +1129,15 @@ export type GetComponentChartQuery = {
       __typename?: 'ComponentChart';
       images?: Array<string> | null;
       valuesYaml?: string | null;
-      imagesFaked?: Array<{
+      imagesOptions?: Array<{
         __typename?: 'ComponentChartImage';
         image?: string | null;
+        id: string;
         registry?: string | null;
         path?: string | null;
         name?: string | null;
         tag?: string | null;
+        matched?: boolean | null;
       }> | null;
     } | null;
   };
@@ -1502,14 +1486,12 @@ export const GetComponentplanDocument = gql`
       version
       status
       images {
-        image
+        id
         registry
-        newRegistry
         path
-        newPath
         name
-        newName
-        newTag
+        tag
+        matched
       }
       component {
         chartName
@@ -1523,14 +1505,6 @@ export const GetComponentplanDocument = gql`
       subscription {
         componentPlanInstallMethod
         schedule
-      }
-      repository {
-        imageOverride {
-          registry
-          newRegistry
-          path
-          newPath
-        }
       }
       valuesYaml
     }
@@ -1711,14 +1685,6 @@ export const GetComponentDocument = gql`
         name
         url
       }
-      repositoryCR {
-        imageOverride {
-          registry
-          newRegistry
-          path
-          newPath
-        }
-      }
     }
   }
 `;
@@ -1743,14 +1709,16 @@ export const GetComponentChartDocument = gql`
       name
       chart(version: $version) {
         images
-        valuesYaml
-        imagesFaked {
+        imagesOptions {
           image
+          id
           registry
           path
           name
           tag
+          matched
         }
+        valuesYaml
       }
     }
   }

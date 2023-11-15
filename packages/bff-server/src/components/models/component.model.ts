@@ -38,18 +38,30 @@ class ComponentMaintainer {
 @ObjectType({ description: 'Chart 信息-镜像' })
 class ComponentChartImage {
   image?: string;
+  id: string;
   registry?: string;
   path?: string;
   name?: string;
   tag?: string;
+  matched?: boolean;
 }
 
 @ObjectType({ description: 'Chart 信息' })
 export class ComponentChart {
+  /** Values.yaml */
   valuesYaml?: string;
+
+  /** manifest.images */
   images?: string[];
+
+  /** README */
   readme?: string;
+
+  @HideField()
   imagesFaked?: ComponentChartImage[];
+
+  /** 镜像替换可选项 */
+  imagesOptions?: ComponentChartImage[];
 }
 
 @ObjectType({ description: '组件' })

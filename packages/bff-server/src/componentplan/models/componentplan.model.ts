@@ -7,14 +7,15 @@ import { ExportComponentplanStatus } from './export-status-componentplan.enum';
 
 @ObjectType()
 export class ComponentplanImage {
-  image: string;
+  /** id（image没有tag的部分）如hyperledgerk8s/bc-explorer */
+  id: string;
+  image?: string;
   registry?: string;
-  newRegistry?: string;
   path?: string;
-  newPath?: string;
   name?: string;
-  newName?: string;
-  newTag?: string;
+  tag?: string;
+  /** 是否匹配到Repo.imageOverride */
+  matched?: boolean;
 }
 
 export class SpecImage {

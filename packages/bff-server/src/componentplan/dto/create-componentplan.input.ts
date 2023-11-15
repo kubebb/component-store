@@ -3,15 +3,12 @@ import { InputType } from '@nestjs/graphql';
 
 @InputType()
 export class ComponentplanImageInput {
-  /** 被覆盖的镜像 */
-  image: string;
+  /** id（image没有tag的部分）如hyperledgerk8s/bc-explorer */
+  id: string;
   registry?: string;
-  newRegistry?: string;
   path?: string;
-  newPath?: string;
   name?: string;
-  newName?: string;
-  newTag?: string;
+  tag?: string;
 }
 @InputType()
 export class CreateComponentplanInput {
