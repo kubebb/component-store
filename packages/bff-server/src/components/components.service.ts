@@ -109,7 +109,8 @@ export class ComponentsService {
       t =>
         (!name || t.name?.includes(name)) &&
         (!chartName || t.chartName?.includes(chartName) || t.displayName?.includes(chartName)) &&
-        (!keyword || t.keywords?.includes(keyword)) &&
+        (!keyword ||
+          t.keywords?.some(d => d?.toLocaleLowerCase()?.includes(keyword?.toLocaleLowerCase()))) &&
         (!source || reposName.includes(t.repository)) &&
         (!repository || t.repository?.includes(repository)) &&
         (isNewer === undefined || t.isNewer === isNewer) &&
