@@ -602,6 +602,9 @@ type Query {
     """组件仓库"""
     repository: String
 
+    """类型"""
+    repositoryType: String
+
     """排序方向"""
     sortDirection: SortDirection
 
@@ -628,6 +631,7 @@ type Query {
 
     """每页数量"""
     pageSize: Float = 20
+    repositoryType: String
 
     """类型"""
     repositoryTypes: [String!]

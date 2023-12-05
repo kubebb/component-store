@@ -537,6 +537,7 @@ export type QueryComponentsArgs = {
   page?: InputMaybe<Scalars['Float']['input']>;
   pageSize?: InputMaybe<Scalars['Float']['input']>;
   repository?: InputMaybe<Scalars['String']['input']>;
+  repositoryType?: InputMaybe<Scalars['String']['input']>;
   sortDirection?: InputMaybe<SortDirection>;
   sortField?: InputMaybe<Scalars['String']['input']>;
   source?: InputMaybe<Scalars['String']['input']>;
@@ -547,6 +548,7 @@ export type QueryRepositoriesArgs = {
   name?: InputMaybe<Scalars['String']['input']>;
   page?: InputMaybe<Scalars['Float']['input']>;
   pageSize?: InputMaybe<Scalars['Float']['input']>;
+  repositoryType?: InputMaybe<Scalars['String']['input']>;
   repositoryTypes?: InputMaybe<Array<Scalars['String']['input']>>;
   sortDirection?: InputMaybe<SortDirection>;
   sortField?: InputMaybe<Scalars['String']['input']>;
@@ -980,6 +982,7 @@ export type GetComponentsQueryVariables = Exact<{
   isNewer?: InputMaybe<Scalars['Boolean']['input']>;
   repository?: InputMaybe<Scalars['String']['input']>;
   classification?: InputMaybe<Scalars['String']['input']>;
+  repositoryType?: InputMaybe<Scalars['String']['input']>;
 }>;
 
 export type GetComponentsQuery = {
@@ -1580,6 +1583,7 @@ export const GetComponentsDocument = gql`
     $isNewer: Boolean
     $repository: String
     $classification: String
+    $repositoryType: String
   ) {
     components(
       page: $page
@@ -1594,6 +1598,7 @@ export const GetComponentsDocument = gql`
       isNewer: $isNewer
       repository: $repository
       classification: $classification
+      repositoryType: $repositoryType
     ) {
       nodes {
         name
