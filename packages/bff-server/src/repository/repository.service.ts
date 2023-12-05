@@ -151,6 +151,9 @@ export class RepositoryService {
     if (args?.source) {
       labelSelector = `kubebb.repository.source=${args.source}`;
     }
+    if (args?.repositoryType) {
+      labelSelector = `kubebb.repository.type=${args.repositoryType}`;
+    }
     const k8s = await this.k8sService.getClient(auth, { cluster });
     const { body } = await k8s.repository.list(this.kubebbNS, {
       fieldSelector,

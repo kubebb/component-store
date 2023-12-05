@@ -12,6 +12,8 @@ export class RepostoryArgs extends PaginationArgs {
   @Field(() => [String], { description: '类型', nullable: true })
   repositoryTypes?: string[];
 
+  repositoryType?: string;
+
   /** 来源（官方） */
   source?: ComponentSource;
 

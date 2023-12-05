@@ -98,10 +98,15 @@ export class ComponentsService {
       isNewer,
       repository,
       classification,
+      repositoryType,
     } = args;
     let reposName: string[] = [];
-    if (source) {
-      const repos = await this.repositoryService.getRepositories(auth, { source }, cluster);
+    if (source || repositoryType) {
+      const repos = await this.repositoryService.getRepositories(
+        auth,
+        { source, repositoryType },
+        cluster
+      );
       reposName = repos?.map(r => r.name);
     }
     const res = await this.listComponents(auth, cluster);
@@ -112,6 +117,7 @@ export class ComponentsService {
         (!keyword ||
           t.keywords?.some(d => d?.toLocaleLowerCase()?.includes(keyword?.toLocaleLowerCase()))) &&
         (!source || reposName.includes(t.repository)) &&
+        (!repositoryType || reposName.includes(t.repository)) &&
         (!repository || t.repository?.includes(repository)) &&
         (isNewer === undefined || t.isNewer === isNewer) &&
         (!classification ||
