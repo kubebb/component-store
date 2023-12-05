@@ -5,8 +5,9 @@ import { InputType } from '@nestjs/graphql';
 export class ComponentplanImageInput {
   /** id（image没有tag的部分）如hyperledgerk8s/bc-explorer */
   id: string;
-  registry?: string;
-  path?: string;
+  registry: string;
+  path: string;
+  matched: boolean;
   name?: string;
   tag?: string;
 }

@@ -559,11 +559,21 @@ export class ComponentplanService {
 
   fakedImages(images: ComponentplanImageInput[]): SpecImage[] {
     return images?.map(img => {
-      return {
+      const result = {
         newTag: img.tag,
         name: img.id,
-        newName: `${img.registry}/${img.path}/${img.name}`,
+        newName: null,
       };
+      if (img.matched && img.name) {
+        const lax = img.id.lastIndexOf('/');
+        result.newName = `${img.id.slice(0, lax)}/${img.name}`;
+      }
+      if (!img.matched) {
+        const arr = img.id.split('/');
+        const _name = arr[arr.length - 1];
+        result.newName = `${img.registry}/${img.path}/${img.name || _name}`;
+      }
+      return result;
     });
   }
 }

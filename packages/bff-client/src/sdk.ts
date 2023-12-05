@@ -211,9 +211,10 @@ export type ComponentplanImage = {
 export type ComponentplanImageInput = {
   /** id（image没有tag的部分）如hyperledgerk8s/bc-explorer */
   id: Scalars['String']['input'];
+  matched: Scalars['Boolean']['input'];
   name?: InputMaybe<Scalars['String']['input']>;
-  path?: InputMaybe<Scalars['String']['input']>;
-  registry?: InputMaybe<Scalars['String']['input']>;
+  path: Scalars['String']['input'];
+  registry: Scalars['String']['input'];
   tag?: InputMaybe<Scalars['String']['input']>;
 };
 

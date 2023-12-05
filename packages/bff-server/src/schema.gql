@@ -218,9 +218,10 @@ type ComponentplanImage {
 input ComponentplanImageInput {
   """id（image没有tag的部分）如hyperledgerk8s/bc-explorer"""
   id: String!
+  matched: Boolean!
   name: String
-  path: String
-  registry: String
+  path: String!
+  registry: String!
   tag: String
 }
 
