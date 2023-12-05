@@ -176,7 +176,7 @@ export class ComponentplanResolver {
     );
 
     return _images?.map(img => {
-      const [registry, path, name] = img.newName?.split('/');
+      let registry: string, path: string, name: string;
       const aParts = img.name?.split(':')[0]?.split('/');
       const len = aParts?.length;
       const [oPath, oRegistry] = [
@@ -184,13 +184,20 @@ export class ComponentplanResolver {
         aParts?.[len - 3] ? aParts[len - 3] : 'docker.io',
       ];
       const oImage = imageOverride?.find(d => d.path === oPath && d.registry === oRegistry);
+      const matched = !!oImage;
+      if (img.newName) {
+        [registry, path, name] = img.newName?.split('/');
+      } else {
+        registry = oImage?.newRegistry;
+        path = oImage?.newPath;
+      }
       return {
         id: img.name?.split(':')[0],
-        registry,
-        path,
+        registry: matched ? oImage?.newRegistry : registry,
+        path: matched ? oImage?.newPath : path,
         name,
         tag: img.newTag,
-        matched: oImage?.newRegistry === registry && oImage?.newPath === path,
+        matched,
       };
     });
   }
