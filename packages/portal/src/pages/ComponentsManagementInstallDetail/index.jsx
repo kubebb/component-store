@@ -65,13 +65,13 @@ class ComponentsManagementInstallDetail$$Page extends React.Component {
     __$$i18n._inject2(this);
 
     this.state = {
-      isOpenModal: false,
-      modalType: 'rollback',
-      cluster: undefined,
-      modalLoading: false,
       record: undefined,
-      historyPagination: undefined,
+      cluster: undefined,
+      modalType: 'rollback',
       valuesYaml: '',
+      isOpenModal: false,
+      modalLoading: false,
+      historyPagination: undefined,
       historyValuesYaml: '',
     };
   }
@@ -79,6 +79,32 @@ class ComponentsManagementInstallDetail$$Page extends React.Component {
   $ = () => null;
 
   $$ = () => [];
+
+  getName(item) {
+    item = item || {};
+    if (item.displayName) {
+      return `${item.displayName}(${item.chartName || '-'})`;
+    }
+    return item.chartName || '-';
+  }
+
+  getImage(item) {
+    item = item || {};
+    return `${item?.registry ? item?.registry + '/' : ''}${item?.path ? item?.path + '/' : ''}${
+      item?.name
+    }${item?.tag ? ':' + item?.tag : ''}`;
+  }
+
+  closeModal() {
+    this.setState({
+      isOpenModal: false,
+    });
+  }
+
+  getCluster() {
+    const cluster = this.utils.getAuthData()?.cluster;
+    return cluster;
+  }
 
   getMethods(componentplan) {
     const componentPlanInstallMethod = componentplan?.subscription?.componentPlanInstallMethod;
@@ -94,54 +120,6 @@ class ComponentsManagementInstallDetail$$Page extends React.Component {
         : `(${this.i18n('i18n-kzpz5w4j')})`;
     }
     return method + extra;
-  }
-
-  getImage(item) {
-    item = item || {};
-    return `${item?.registry ? item?.registry + '/' : ''}${item?.path ? item?.path + '/' : ''}${
-      item?.name
-    }${item?.tag ? ':' + item?.tag : ''}`;
-  }
-
-  getName(item) {
-    item = item || {};
-    if (item.displayName) {
-      return `${item.displayName}(${item.chartName || '-'})`;
-    }
-    return item.chartName || '-';
-  }
-
-  handleHistoryTableChange(pagination, filters, sorter, extra) {
-    this.setState({
-      historyPagination: {
-        pagination,
-        filters,
-        sorter,
-      },
-    });
-  }
-
-  closeModal() {
-    this.setState({
-      isOpenModal: false,
-    });
-  }
-
-  openRollBackModal(e, { record }) {
-    this.setState({
-      record,
-      isOpenModal: true,
-      modalType: 'rollback',
-    });
-  }
-
-  openDetailModal(e, { record }) {
-    this.setState({
-      record,
-      isOpenModal: true,
-      modalType: 'detail',
-    });
-    this.loadDetail(record);
   }
 
   async loadDetail(record) {
@@ -166,13 +144,25 @@ class ComponentsManagementInstallDetail$$Page extends React.Component {
     });
   }
 
-  getCluster() {
-    const cluster = this.utils.getAuthData()?.cluster;
-    return cluster;
-  }
-
   getClusterInfo() {
     return this.state.cluster;
+  }
+
+  openDetailModal(e, { record }) {
+    this.setState({
+      record,
+      isOpenModal: true,
+      modalType: 'detail',
+    });
+    this.loadDetail(record);
+  }
+
+  openRollBackModal(e, { record }) {
+    this.setState({
+      record,
+      isOpenModal: true,
+      modalType: 'rollback',
+    });
   }
 
   async confirmRollBackModal(e, payload) {
@@ -204,6 +194,16 @@ class ComponentsManagementInstallDetail$$Page extends React.Component {
         errors: error?.response?.errors,
       });
     }
+  }
+
+  handleHistoryTableChange(pagination, filters, sorter, extra) {
+    this.setState({
+      historyPagination: {
+        pagination,
+        filters,
+        sorter,
+      },
+    });
   }
 
   componentDidMount() {
@@ -1699,7 +1699,7 @@ class ComponentsManagementInstallDetail$$Page extends React.Component {
   }
 }
 
-const PageWrapper = () => {
+const PageWrapper = (props = {}) => {
   const location = useLocation();
   const history = getUnifiedHistory();
   const match = matchPath({ path: '/components/management/install/detail/:id' }, location.pathname);
@@ -1748,7 +1748,12 @@ const PageWrapper = () => {
         },
       ]}
       render={dataProps => (
-        <ComponentsManagementInstallDetail$$Page {...dataProps} self={self} appHelper={appHelper} />
+        <ComponentsManagementInstallDetail$$Page
+          {...props}
+          {...dataProps}
+          self={self}
+          appHelper={appHelper}
+        />
       )}
     />
   );

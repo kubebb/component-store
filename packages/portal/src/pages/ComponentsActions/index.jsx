@@ -178,7 +178,7 @@ class ComponentsActions$$Page extends React.Component {
       if (
         value &&
         values?.images?.name?.some(
-          (item, index) => item.name === currItem?.name && curIndex !== index
+          (item, index) => item.image === currItem?.image && curIndex !== index
         )
       ) {
         return this.i18n('i18n-9al8mu54');
