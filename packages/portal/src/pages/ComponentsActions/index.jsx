@@ -451,7 +451,7 @@ class ComponentsActions$$Page extends React.Component {
           }),
         valuesYaml: this.state.valuesYaml,
         images: v.images?.name?.map(item => {
-          const image = this.state.images?.find(item => item.id === item.image);
+          const image = this.state.images?.find(i => i.id === item.image);
           return {
             id: item.image,
             registry: item.newRegistry,
