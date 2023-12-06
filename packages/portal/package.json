@@ -35,7 +35,7 @@
     "@tenx-ui/auth-utils": "0.0.1",
     "@tenx-ui/bff-client": "0.1.3",
     "@tenx-ui/charts": "1.1.2",
-    "@tenx-ui/component-store-bff-client": "0.0.37",
+    "@tenx-ui/component-store-bff-client": "0.0.39",
     "@tenx-ui/editor": "3.0.2-beta.1",
     "@tenx-ui/form-helper": "0.0.2",
     "@tenx-ui/icon": "^2.4.28",

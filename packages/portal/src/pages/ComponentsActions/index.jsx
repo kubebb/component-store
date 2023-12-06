@@ -451,12 +451,14 @@ class ComponentsActions$$Page extends React.Component {
           }),
         valuesYaml: this.state.valuesYaml,
         images: v.images?.name?.map(item => {
+          const image = this.state.images?.find(item => item.id === item.image);
           return {
             id: item.image,
             registry: item.newRegistry,
             path: item.newPath,
             name: item.newName,
             tag: item.newTag,
+            matched: image?.matched,
           };
         }),
       };
@@ -1383,7 +1385,7 @@ class ComponentsActions$$Page extends React.Component {
   }
 }
 
-const PageWrapper = () => {
+const PageWrapper = (props = {}) => {
   const location = useLocation();
   const history = getUnifiedHistory();
   const match = matchPath(
@@ -1412,7 +1414,7 @@ const PageWrapper = () => {
       }}
       sdkSwrFuncs={[]}
       render={dataProps => (
-        <ComponentsActions$$Page {...dataProps} self={self} appHelper={appHelper} />
+        <ComponentsActions$$Page {...props} {...dataProps} self={self} appHelper={appHelper} />
       )}
     />
   );
