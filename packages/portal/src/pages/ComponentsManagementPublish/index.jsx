@@ -74,20 +74,20 @@ class ComponentsManagementPublish$$Page extends React.Component {
     __$$i18n._inject2(this);
 
     this.state = {
-      size: 10,
-      record: {},
-      sorter: undefined,
-      cluster: undefined,
-      current: 1,
-      filters: undefined,
-      clusters: undefined,
-      modalType: 'delete',
-      searchKey: 'chartName',
-      pagination: undefined,
       isOpenModal: false,
+      modalType: 'delete',
       searchValue: undefined,
+      searchKey: 'chartName',
+      size: 10,
+      current: 1,
+      record: {},
+      pagination: undefined,
+      filters: undefined,
+      sorter: undefined,
       modalLoading: false,
+      cluster: undefined,
       uploadVisible: true,
+      clusters: undefined,
       clusterLoading: true,
     };
   }
@@ -100,59 +100,12 @@ class ComponentsManagementPublish$$Page extends React.Component {
     return this._refsManager.getAll(refName);
   };
 
-  form(name) {
-    return this.$(name || 'formily_create')?.formRef?.current?.form;
-  }
-
   getName(item) {
     item = item || {};
     if (item.displayName) {
       return `${item.displayName}(${item.chartName || '-'})`;
     }
     return item.chartName || '-';
-  }
-
-  openModal(e, { record, type = 'delete' }) {
-    this.setState(
-      {
-        isOpenModal: true,
-        modalType: type,
-        record,
-        uploadVisible: true,
-      },
-      () => {
-        setTimeout(() => {
-          if (type === 'update') {
-            this.form()?.setValues({
-              repository: record?.repository,
-            });
-          }
-        }, 200);
-      }
-    );
-  }
-
-  closeModal() {
-    this.setState({
-      isOpenModal: false,
-    });
-  }
-
-  getCluster() {
-    return this.state.cluster;
-  }
-
-  beforeUpload() {
-    return false;
-  }
-
-  handleSearch(v) {
-    this.setState(
-      {
-        current: 1,
-      },
-      this.handleQueryChange
-    );
   }
 
   async loadClusters() {
@@ -178,8 +131,25 @@ class ComponentsManagementPublish$$Page extends React.Component {
     );
   }
 
-  handleRefresh(event) {
-    this.props.useGetComponents?.mutate();
+  getCluster() {
+    return this.state.cluster;
+  }
+
+  handleClusterChange(v) {
+    this.setState(
+      {
+        cluster: v,
+      },
+      this.handleQueryChange
+    );
+  }
+
+  form(name) {
+    return this.$(name || 'formily_create')?.formRef?.current?.form;
+  }
+
+  beforeUpload() {
+    return false;
   }
 
   validatorFile(value) {
@@ -208,6 +178,7 @@ class ComponentsManagementPublish$$Page extends React.Component {
       pageSize: this.state?.pageSize || 10,
       chartName: undefined,
       repository: undefined,
+      repositoryType: 'chartmuseum',
       [this.state.searchKey]: this.state?.searchValue,
     };
     if (this.state.sorter?.order) {
@@ -227,15 +198,66 @@ class ComponentsManagementPublish$$Page extends React.Component {
     this.utils?.changeLocationQuery(this, 'useGetComponents', params);
   }
 
-  handleTableChange(pagination, filters, sorter, extra) {
+  handleRefresh(event) {
+    this.props.useGetComponents?.mutate();
+  }
+
+  openModal(e, { record, type = 'delete' }) {
     this.setState(
       {
-        pagination,
-        filters,
-        sorter,
+        isOpenModal: true,
+        modalType: type,
+        record,
+        uploadVisible: true,
       },
-      this.handleQueryChange
+      () => {
+        setTimeout(() => {
+          if (type === 'update') {
+            this.form()?.setValues({
+              repository: record?.repository,
+            });
+          }
+        }, 200);
+      }
     );
+  }
+
+  closeModal() {
+    this.setState({
+      isOpenModal: false,
+    });
+  }
+
+  async confirmDeleteModal(e, payload) {
+    this.setState({
+      modalLoading: true,
+    });
+    try {
+      await this.utils.bff.deleteComponent({
+        chart: {
+          chartName: this.state.record?.chartName,
+          repository: this.state.record?.repository,
+          versions: this.state.record?.versions?.map(item => item.version),
+        },
+        cluster: this.state.record?.cluster || this.getCluster(),
+      });
+      this.closeModal();
+      this.utils.notification.success({
+        message: this.i18n('i18n-6fr7wu19'),
+      });
+      this.props.useGetComponents.mutate();
+      this.setState({
+        modalLoading: false,
+      });
+    } catch (error) {
+      this.setState({
+        modalLoading: false,
+      });
+      this.utils.notification.warnings({
+        message: this.i18n('i18n-6ov650p4'),
+        errors: error?.response?.errors,
+      });
+    }
   }
 
   async confirmCreateModal(e, payload) {
@@ -274,57 +296,27 @@ class ComponentsManagementPublish$$Page extends React.Component {
     });
   }
 
-  async confirmDeleteModal(e, payload) {
-    this.setState({
-      modalLoading: true,
-    });
-    try {
-      await this.utils.bff.deleteComponent({
-        chart: {
-          chartName: this.state.record?.chartName,
-          repository: this.state.record?.repository,
-          versions: this.state.record?.versions?.map(item => item.version),
-        },
-        cluster: this.state.record?.cluster || this.getCluster(),
-      });
-      this.closeModal();
-      this.utils.notification.success({
-        message: this.i18n('i18n-6fr7wu19'),
-      });
-      this.props.useGetComponents.mutate();
-      this.setState({
-        modalLoading: false,
-      });
-    } catch (error) {
-      this.setState({
-        modalLoading: false,
-      });
-      this.utils.notification.warnings({
-        message: this.i18n('i18n-6ov650p4'),
-        errors: error?.response?.errors,
-      });
-    }
-  }
-
-  handleClusterChange(v) {
-    this.setState(
-      {
-        cluster: v,
-      },
-      this.handleQueryChange
-    );
-  }
-
-  paginationShowTotal(total, range) {
-    return `${this.i18n('i18n-wajqflwo')} ${total} ${this.i18n('i18n-7vre8aeh')}`;
-  }
-
   handleSearchKeyChange(v) {
     this.setState(
       {
         searchValue: undefined,
         current: 1,
         searchKey: v,
+      },
+      this.handleQueryChange
+    );
+  }
+
+  handleSearchValueChange(e) {
+    this.setState({
+      searchValue: e.target.value,
+    });
+  }
+
+  handleSearch(v) {
+    this.setState(
+      {
+        current: 1,
       },
       this.handleQueryChange
     );
@@ -340,10 +332,19 @@ class ComponentsManagementPublish$$Page extends React.Component {
     );
   }
 
-  handleSearchValueChange(e) {
-    this.setState({
-      searchValue: e.target.value,
-    });
+  handleTableChange(pagination, filters, sorter, extra) {
+    this.setState(
+      {
+        pagination,
+        filters,
+        sorter,
+      },
+      this.handleQueryChange
+    );
+  }
+
+  paginationShowTotal(total, range) {
+    return `${this.i18n('i18n-wajqflwo')} ${total} ${this.i18n('i18n-7vre8aeh')}`;
   }
 
   componentDidMount() {
@@ -992,7 +993,12 @@ class ComponentsManagementPublish$$Page extends React.Component {
                     dataSource={__$$eval(
                       () => this.props.useGetComponents?.data?.components?.nodes || []
                     )}
-                    pagination={false}
+                    pagination={{
+                      showSizeChanger: false,
+                      showQuickJumper: false,
+                      simple: false,
+                      size: 'default',
+                    }}
                     showHeader={true}
                     __component_name="Table"
                   />
@@ -1006,7 +1012,7 @@ class ComponentsManagementPublish$$Page extends React.Component {
   }
 }
 
-const PageWrapper = () => {
+const PageWrapper = (props = {}) => {
   const location = useLocation();
   const history = getUnifiedHistory();
   const match = matchPath({ path: '/components/management/publish' }, location.pathname);
@@ -1045,7 +1051,12 @@ const PageWrapper = () => {
         },
       ]}
       render={dataProps => (
-        <ComponentsManagementPublish$$Page {...dataProps} self={self} appHelper={appHelper} />
+        <ComponentsManagementPublish$$Page
+          {...props}
+          {...dataProps}
+          self={self}
+          appHelper={appHelper}
+        />
       )}
     />
   );

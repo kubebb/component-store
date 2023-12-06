@@ -311,7 +311,7 @@ importers:
         specifier: 1.1.2
         version: 1.1.2(@babel/core@7.22.20)(antd@5.11.0)(classnames@2.2.5)(prop-types@15.8.1)(react-dom@18.1.0)(react@18.1.0)
       '@tenx-ui/component-store-bff-client':
-        specifier: 0.0.37
+        specifier: 0.0.39
         version: link:../bff-client
       '@tenx-ui/editor':
         specifier: 3.0.2-beta.1
