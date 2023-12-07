@@ -73,16 +73,16 @@ class ComponentsActions$$Page extends React.Component {
     __$$i18n._inject2(this);
 
     this.state = {
-      isCreate: true,
-      creating: false,
+      data: undefined,
       name: undefined,
+      images: undefined,
       cluster: undefined,
       tenants: [],
+      creating: false,
+      isCreate: true,
       component: undefined,
       valuesYaml: '',
       yamlLoading: false,
-      data: undefined,
-      images: undefined,
     };
   }
 
@@ -94,269 +94,8 @@ class ComponentsActions$$Page extends React.Component {
     return this._refsManager.getAll(refName);
   };
 
-  getReademeDetailPath() {
-    return `/component-store/components/market/subPage/management-detail/detail/${
-      this.props.appHelper?.match?.params?.id
-    }?cluster=${this.getCluster()}&tab=READEME`;
-  }
-
-  onEditorLoad(editor) {
-    this.setState({
-      editor,
-    });
-  }
-
-  async handleInstallMethodChange(v) {
-    if (v === 'auto') {
-      const version = this.state.component?.versions?.sort(
-        (a, b) => new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime()
-      )?.[0]?.version;
-      this.form()?.setValues({
-        version,
-      });
-      this.handleVersionChange(version);
-    }
-  }
-
-  async handleVersionChange(v) {
-    this.setState({
-      yamlLoading: true,
-    });
-    const res = await this.utils.bff.getComponentChart({
-      name: this.props.appHelper?.match?.params?.id,
-      version: v,
-    });
-    this.state.editor.setValue(res?.component?.chart?.valuesYaml || '');
-    this.setState({
-      images: res?.component?.chart?.imagesOptions,
-      yamlLoading: false,
-      valuesYaml: res?.component?.chart?.valuesYaml || this.state.data?.valuesYaml || '',
-    });
-    this.form()?.setValues({
-      // iamges: {
-      //   name: []
-      // },
-
-      imagesNames: res?.component?.chart?.imagesOptions?.map(item => ({
-        label: `${item.registry ? item.registry + '/' : ''}${item.image}`,
-        value: item.id,
-      })),
-    });
-  }
-
-  async validatorImagesName(value, ...payload) {
-    const values = this.form()?.values;
-    const curIndex = payload?.[1]?.field?.index;
-    const currItem = values?.images?.name?.[curIndex];
-    const curImage = this.state.images?.find(item => item.id === value);
-    !currItem?.newPath &&
-      this.form().setValuesIn(`images.name.${curIndex}.newPath`, curImage?.path);
-    !currItem?.newRegistry &&
-      this.form().setValuesIn(`images.name.${curIndex}.newRegistry`, curImage?.registry);
-    const pathPre = payload?.[1]?.field?.props?.basePath?.entire;
-    if (this.state.images?.some(item => item.id === value && item.matched)) {
-      this.form().setFormGraph({
-        [pathPre + '.newRegistry']: {
-          pattern: 'disabled',
-        },
-        [pathPre + '.newPath']: {
-          pattern: 'disabled',
-        },
-      });
-    } else {
-      this.form().setFormGraph({
-        [pathPre + '.newRegistry']: {
-          pattern: 'editable',
-        },
-        [pathPre + '.newPath']: {
-          pattern: 'editable',
-        },
-      });
-    }
-    // 重复校验
-    try {
-      if (
-        value &&
-        values?.images?.name?.some(
-          (item, index) => item.image === currItem?.image && curIndex !== index
-        )
-      ) {
-        return this.i18n('i18n-9al8mu54');
-      }
-    } catch (e) {}
-  }
-
-  setFormValues(values) {
-    if (!this.form()) {
-      setTimeout(() => {
-        this.setFormValues(values);
-      }, 200);
-      return;
-    }
-    this.form().setValues(values);
-  }
-
-  async loadComponent(callback) {
-    const res = await this.props.appHelper?.utils?.bff?.getComponent({
-      name: this.props.appHelper?.match?.params?.id,
-      cluster: this.getCluster(),
-    });
-    this.setState(
-      {
-        component: res?.component,
-      },
-      () => {
-        callback && callback();
-      }
-    );
-    this.form()?.setFieldState('version', {
-      dataSource:
-        res?.component?.versions?.map(item => ({
-          value: item.version,
-          label: item.version,
-        })) || [],
-    });
-    this.setFormValues({
-      chartName: res?.component?.chartName,
-      repository: res?.component?.repository,
-      file: 'values.yaml',
-    });
-  }
-
-  async loadCluster() {
-    const res = await this.props.appHelper?.utils?.bffSdk?.getCluster({
-      name: this.getCluster(),
-    });
-    const cluster = res?.cluster;
-    this.setState({
-      cluster,
-    });
-  }
-
-  getCluster() {
-    const cluster = this.appHelper?.history?.query?.cluster;
-    return cluster;
-  }
-
-  getClusterInfo() {
-    return this.state.cluster;
-  }
-
-  async loadTenants() {
-    const restrictedTenants = this.state.component.restrictedTenants;
-    const restrictedNamespaces = this.state.component.restrictedNamespaces;
-    const res = await this.props.appHelper?.utils?.bffSdk?.getCurrentUserTenants();
-    const tenants =
-      res?.userCurrent?.tenants
-        ?.filter(item => {
-          if (restrictedTenants?.length > 0) {
-            return restrictedTenants.includes(item.name);
-          }
-          return true;
-        })
-        ?.map(item => {
-          item.projects =
-            item.projects
-              ?.filter(item => {
-                return item.clusters?.some(cluster => cluster.name === this.getCluster());
-              })
-              ?.filter(item =>
-                restrictedNamespaces?.length > 0 ? restrictedNamespaces.includes(item.name) : true
-              )
-              ?.map(item => ({
-                label: item.fullName,
-                value: item.name,
-              })) || [];
-          return {
-            label: item.fullName,
-            value: JSON.stringify(item),
-          };
-        }) || [];
-    this.form()?.setFieldState('position.tenant', {
-      dataSource: tenants || [],
-    });
-    this.setState({
-      tenants,
-    });
-  }
-
-  async initEditor(v) {
-    if (!v.valuesYaml && v) {
-      const res = await this.utils.bff.getComponentChart({
-        name: this.props.appHelper?.match?.params?.id,
-        version: v.version,
-      });
-      v.valuesYaml = res?.component?.chart?.valuesYaml || '';
-    }
-    if (this.state.editor && !this.state.isCreate) {
-      this.setState({
-        valuesYaml: v.valuesYaml || '',
-      });
-      this.state.editor.setValue(v.valuesYaml || '');
-      return;
-    }
-    setTimeout(() => {
-      this.initEditor(v);
-    }, 200);
-  }
-
-  initForms(v) {
-    if (this.form() && !this.state.isCreate && this.state.component) {
-      this.form().setValues({
-        // repository: v.component?.repository,
-        // chartName: v.component?.chartName,
-        releaseName: v.releaseName,
-        version: v.version,
-        method: {
-          componentPlanInstallMethod: v?.subscription?.componentPlanInstallMethod || 'manual',
-          schedule:
-            v?.subscription?.schedule && this.utils.cronChangeToDate(v?.subscription?.schedule),
-        },
-        images: {
-          name: v.images?.map(item => {
-            // edit matched
-            return {
-              image: item.id,
-              newRegistry: item.registry,
-              newPath: item.path,
-              newName: item.name,
-              newTag: item.tag,
-            };
-          }),
-        },
-      });
-      this.initDisabled();
-      return;
-    }
-    setTimeout(() => {
-      this.initForms(v);
-    }, 200);
-  }
-
-  initDisabled() {
-    if (!this.form() || !this.state.images) {
-      setTimeout(() => {
-        this.initDisabled();
-      }, 200);
-      return;
-    }
-    const formGraph = this.form().getFormGraph();
-    Object.keys(formGraph || {}).forEach(key => {
-      const pathPre = key.slice(0, key.indexOf('.image'));
-      if (
-        key.endsWith('.image') &&
-        this.state.images?.some(item => item.id === formGraph[key]?.value && item.matched)
-      ) {
-        this.form().setFormGraph({
-          [pathPre + '.newRegistry']: {
-            pattern: 'disabled',
-          },
-          [pathPre + '.newPath']: {
-            pattern: 'disabled',
-          },
-        });
-      }
-    });
+  form(name) {
+    return this.$(name || 'formily_create')?.formRef?.current?.form;
   }
 
   async initEdit() {
@@ -376,59 +115,8 @@ class ComponentsActions$$Page extends React.Component {
     } catch (e) {}
   }
 
-  async validatorName(value) {
-    const namespace = this.form()?.values?.position?.namespace;
-    try {
-      if (value && this.state.isCreate && namespace) {
-        const res = await this.props?.appHelper?.utils?.bff?.getComponentplans({
-          releaseName: value,
-          cluster: this.getCluster(),
-          namespace,
-        });
-        if (res?.componentplans?.some(item => item.releaseName === value)) {
-          return this.i18n('i18n-1y09ypgx');
-        }
-      }
-    } catch (e) {}
-  }
-
-  validatorTenant(value) {
-    const tenant = value && JSON.parse(value)?.name;
-    if (
-      tenant &&
-      this.state.component.restrictedTenants?.length > 0 &&
-      !this.state.component.restrictedTenants?.includes(tenant)
-    ) {
-      return `${this.i18n('i18n-vmtf504c')} ${this.state.component.restrictedTenants.join(
-        ','
-      )} ${this.i18n('i18n-qv53budt')}`;
-    }
-  }
-
-  validatorNamespace(value) {
-    if (
-      value &&
-      this.state.component.restrictedNamespaces?.length > 0 &&
-      !this.state.component.restrictedNamespaces?.includes(value)
-    ) {
-      return `${this.i18n('i18n-n6vl1gm6')} ${this.state.component.restrictedNamespaces.join(
-        ','
-      )} ${this.i18n('i18n-qv53budt')}`;
-    }
-  }
-
   onCancel(event) {
     this.history.go(-1);
-  }
-
-  form(name) {
-    return this.$(name || 'formily_create')?.formRef?.current?.form;
-  }
-
-  handleYamlChange(v) {
-    this.setState({
-      valuesYaml: v || '',
-    });
   }
 
   onSubmit(event) {
@@ -451,7 +139,7 @@ class ComponentsActions$$Page extends React.Component {
           }),
         valuesYaml: this.state.valuesYaml,
         images: v.images?.name?.map(item => {
-          const image = this.state.images?.find(item => item.id === item.image);
+          const image = this.state.images?.find(i => i.id === item.image);
           return {
             id: item.image,
             registry: item.newRegistry,
@@ -515,6 +203,321 @@ class ComponentsActions$$Page extends React.Component {
         });
       }
     });
+  }
+
+  initForms(v) {
+    if (this.form() && !this.state.isCreate && this.state.component) {
+      this.form().setValues({
+        // repository: v.component?.repository,
+        // chartName: v.component?.chartName,
+        releaseName: v.releaseName,
+        version: v.version,
+        method: {
+          componentPlanInstallMethod: v?.subscription?.componentPlanInstallMethod || 'manual',
+          schedule:
+            v?.subscription?.schedule &&
+            this.utils.dayjs(
+              `2022-01-01 ${this.utils.cronChangeToDate(v?.subscription?.schedule)}:00`
+            ),
+        },
+        images: {
+          name: v.images?.map(item => {
+            // edit matched
+            return {
+              image: item.id,
+              newRegistry: item.registry,
+              newPath: item.path,
+              newName: item.name,
+              newTag: item.tag,
+            };
+          }),
+        },
+      });
+      this.initDisabled();
+      return;
+    }
+    setTimeout(() => {
+      this.initForms(v);
+    }, 200);
+  }
+
+  getCluster() {
+    const cluster = this.appHelper?.history?.query?.cluster;
+    return cluster;
+  }
+
+  async initEditor(v) {
+    if (!v.valuesYaml && v) {
+      const res = await this.utils.bff.getComponentChart({
+        name: this.props.appHelper?.match?.params?.id,
+        version: v.version,
+      });
+      v.valuesYaml = res?.component?.chart?.valuesYaml || '';
+    }
+    if (this.state.editor && !this.state.isCreate) {
+      this.setState({
+        valuesYaml: v.valuesYaml || '',
+      });
+      this.state.editor.setValue(v.valuesYaml || '');
+      return;
+    }
+    setTimeout(() => {
+      this.initEditor(v);
+    }, 200);
+  }
+
+  async loadCluster() {
+    const res = await this.props.appHelper?.utils?.bffSdk?.getCluster({
+      name: this.getCluster(),
+    });
+    const cluster = res?.cluster;
+    this.setState({
+      cluster,
+    });
+  }
+
+  async loadTenants() {
+    const restrictedTenants = this.state.component.restrictedTenants;
+    const restrictedNamespaces = this.state.component.restrictedNamespaces;
+    const res = await this.props.appHelper?.utils?.bffSdk?.getCurrentUserTenants();
+    const tenants =
+      res?.userCurrent?.tenants
+        ?.filter(item => {
+          if (restrictedTenants?.length > 0) {
+            return restrictedTenants.includes(item.name);
+          }
+          return true;
+        })
+        ?.map(item => {
+          item.projects =
+            item.projects
+              ?.filter(item => {
+                return item.clusters?.some(cluster => cluster.name === this.getCluster());
+              })
+              ?.filter(item =>
+                restrictedNamespaces?.length > 0 ? restrictedNamespaces.includes(item.name) : true
+              )
+              ?.map(item => ({
+                label: item.fullName,
+                value: item.name,
+              })) || [];
+          return {
+            label: item.fullName,
+            value: JSON.stringify(item),
+          };
+        }) || [];
+    this.form()?.setFieldState('position.tenant', {
+      dataSource: tenants || [],
+    });
+    this.setState({
+      tenants,
+    });
+  }
+
+  initDisabled() {
+    if (!this.form() || !this.state.images) {
+      setTimeout(() => {
+        this.initDisabled();
+      }, 200);
+      return;
+    }
+    const formGraph = this.form().getFormGraph();
+    Object.keys(formGraph || {}).forEach(key => {
+      const pathPre = key.slice(0, key.indexOf('.image'));
+      if (
+        key.endsWith('.image') &&
+        this.state.images?.some(item => item.id === formGraph[key]?.value && item.matched)
+      ) {
+        this.form().setFormGraph({
+          [pathPre + '.newRegistry']: {
+            pattern: 'disabled',
+          },
+          [pathPre + '.newPath']: {
+            pattern: 'disabled',
+          },
+        });
+      }
+    });
+  }
+
+  onEditorLoad(editor) {
+    this.setState({
+      editor,
+    });
+  }
+
+  async loadComponent(callback) {
+    const res = await this.props.appHelper?.utils?.bff?.getComponent({
+      name: this.props.appHelper?.match?.params?.id,
+      cluster: this.getCluster(),
+    });
+    this.setState(
+      {
+        component: res?.component,
+      },
+      () => {
+        callback && callback();
+      }
+    );
+    this.form()?.setFieldState('version', {
+      dataSource:
+        res?.component?.versions?.map(item => ({
+          value: item.version,
+          label: item.version,
+        })) || [],
+    });
+    this.setFormValues({
+      chartName: res?.component?.chartName,
+      repository: res?.component?.repository,
+      file: 'values.yaml',
+    });
+  }
+
+  setFormValues(values) {
+    if (!this.form()) {
+      setTimeout(() => {
+        this.setFormValues(values);
+      }, 200);
+      return;
+    }
+    this.form().setValues(values);
+  }
+
+  async validatorName(value) {
+    const namespace = this.form()?.values?.position?.namespace;
+    try {
+      if (value && this.state.isCreate && namespace) {
+        const res = await this.props?.appHelper?.utils?.bff?.getComponentplans({
+          releaseName: value,
+          cluster: this.getCluster(),
+          namespace,
+        });
+        if (res?.componentplans?.some(item => item.releaseName === value)) {
+          return this.i18n('i18n-1y09ypgx');
+        }
+      }
+    } catch (e) {}
+  }
+
+  getClusterInfo() {
+    return this.state.cluster;
+  }
+
+  validatorTenant(value) {
+    const tenant = value && JSON.parse(value)?.name;
+    if (
+      tenant &&
+      this.state.component.restrictedTenants?.length > 0 &&
+      !this.state.component.restrictedTenants?.includes(tenant)
+    ) {
+      return `${this.i18n('i18n-vmtf504c')} ${this.state.component.restrictedTenants.join(
+        ','
+      )} ${this.i18n('i18n-qv53budt')}`;
+    }
+  }
+
+  handleYamlChange(v) {
+    this.setState({
+      valuesYaml: v || '',
+    });
+  }
+
+  validatorNamespace(value) {
+    if (
+      value &&
+      this.state.component.restrictedNamespaces?.length > 0 &&
+      !this.state.component.restrictedNamespaces?.includes(value)
+    ) {
+      return `${this.i18n('i18n-n6vl1gm6')} ${this.state.component.restrictedNamespaces.join(
+        ','
+      )} ${this.i18n('i18n-qv53budt')}`;
+    }
+  }
+
+  async handleVersionChange(v) {
+    this.setState({
+      yamlLoading: true,
+    });
+    const res = await this.utils.bff.getComponentChart({
+      name: this.props.appHelper?.match?.params?.id,
+      version: v,
+    });
+    this.state.editor.setValue(res?.component?.chart?.valuesYaml || '');
+    this.setState({
+      images: res?.component?.chart?.imagesOptions,
+      yamlLoading: false,
+      valuesYaml: res?.component?.chart?.valuesYaml || this.state.data?.valuesYaml || '',
+    });
+    this.form()?.setValues({
+      // iamges: {
+      //   name: []
+      // },
+
+      imagesNames: res?.component?.chart?.imagesOptions?.map(item => ({
+        label: `${item.image}`,
+        value: item.id,
+      })),
+    });
+  }
+
+  async validatorImagesName(value, ...payload) {
+    const values = this.form()?.values;
+    const curIndex = payload?.[1]?.field?.index;
+    const currItem = values?.images?.name?.[curIndex];
+    const curImage = this.state.images?.find(item => item.id === value);
+    !currItem?.newPath &&
+      this.form().setValuesIn(`images.name.${curIndex}.newPath`, curImage?.path);
+    !currItem?.newRegistry &&
+      this.form().setValuesIn(`images.name.${curIndex}.newRegistry`, curImage?.registry);
+    const pathPre = payload?.[1]?.field?.props?.basePath?.entire;
+    if (this.state.images?.some(item => item.id === value && item.matched)) {
+      this.form().setFormGraph({
+        [pathPre + '.newRegistry']: {
+          pattern: 'disabled',
+        },
+        [pathPre + '.newPath']: {
+          pattern: 'disabled',
+        },
+      });
+    } else {
+      this.form().setFormGraph({
+        [pathPre + '.newRegistry']: {
+          pattern: 'editable',
+        },
+        [pathPre + '.newPath']: {
+          pattern: 'editable',
+        },
+      });
+    }
+    // 重复校验
+    try {
+      if (
+        value &&
+        values?.images?.name?.some(
+          (item, index) => item.image === currItem?.image && curIndex !== index
+        )
+      ) {
+        return this.i18n('i18n-9al8mu54');
+      }
+    } catch (e) {}
+  }
+
+  getReademeDetailPath() {
+    return `/component-store/components/market/subPage/management-detail/detail/${
+      this.props.appHelper?.match?.params?.id
+    }?cluster=${this.getCluster()}&tab=READEME`;
+  }
+
+  async handleInstallMethodChange(v) {
+    if (v === 'auto') {
+      const version = this.state.component?.versions?.sort(
+        (a, b) => new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime()
+      )?.[0]?.version;
+      this.form()?.setValues({
+        version,
+      });
+      this.handleVersionChange(version);
+    }
   }
 
   componentDidMount() {

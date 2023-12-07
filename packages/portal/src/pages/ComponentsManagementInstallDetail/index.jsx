@@ -90,9 +90,9 @@ class ComponentsManagementInstallDetail$$Page extends React.Component {
 
   getImage(item) {
     item = item || {};
-    return `${item?.registry ? item?.registry + '/' : ''}${item?.path ? item?.path + '/' : ''}${
-      item?.name
-    }${item?.tag ? ':' + item?.tag : ''}`;
+    return `${item.id} 替换为 ${item?.registry ? item?.registry + '/' : ''}${
+      item?.path ? item?.path + '/' : ''
+    }${item?.name}${item?.tag ? ':' + item?.tag : ''}`;
   }
 
   closeModal() {
@@ -237,8 +237,8 @@ class ComponentsManagementInstallDetail$$Page extends React.Component {
                 items={[
                   {
                     key: '3jcvyze4yyx',
-                    span: 1,
                     label: this.i18n('i18n-cuf6u4di') /* 组件名称 */,
+                    span: 1,
                     children: (
                       <Typography.Text
                         style={{ fontSize: '' }}
@@ -247,14 +247,14 @@ class ComponentsManagementInstallDetail$$Page extends React.Component {
                         ellipsis={true}
                         __component_name="Typography.Text"
                       >
-                        {__$$eval(() => this.state?.componentplan?.component?.chartName || '-')}
+                        {__$$eval(() => this.getName(this.state?.componentplan?.component))}
                       </Typography.Text>
                     ),
                   },
                   {
                     key: 'e2jwe7g7qe9',
-                    span: 1,
                     label: this.i18n('i18n-1po87kgw') /* 组件仓库 */,
+                    span: 1,
                     children: (
                       <Typography.Text
                         style={{ fontSize: '' }}
@@ -269,8 +269,8 @@ class ComponentsManagementInstallDetail$$Page extends React.Component {
                   },
                   {
                     key: 'rusuyx13gj',
-                    span: 1,
                     label: this.i18n('i18n-ekp8efeq') /* 组件版本 */,
+                    span: 1,
                     children: (
                       <Typography.Text
                         style={{ fontSize: '' }}
@@ -284,50 +284,19 @@ class ComponentsManagementInstallDetail$$Page extends React.Component {
                     ),
                   },
                   {
-                    key: '86jag7lsmvt',
-                    span: 1,
+                    key: 'fg3c8eb78ma',
                     label: this.i18n('i18n-5u3ohmy6') /* 更新方式 */,
+                    span: 1,
                     children: (
-                      <Row wrap={true} gutter={[0, 0]} __component_name="Row">
-                        <Col span={24} __component_name="Col">
-                          <Typography.Text
-                            style={{ fontSize: '' }}
-                            strong={false}
-                            disabled={false}
-                            ellipsis={true}
-                            __component_name="Typography.Text"
-                          >
-                            {__$$eval(
-                              () =>
-                                this.utils
-                                  .getComponentInstallMethods(this)
-                                  ?.find(
-                                    item =>
-                                      item.value ===
-                                        this.state?.componentplan?.subscription
-                                          ?.componentPlanInstallMethod || 'manual'
-                                  )?.text || '-'
-                            )}
-                          </Typography.Text>
-                        </Col>
-                        <Col span={24} __component_name="Col">
-                          <Typography.Text
-                            style={{ fontSize: '' }}
-                            strong={false}
-                            disabled={false}
-                            ellipsis={true}
-                            __component_name="Typography.Text"
-                          >
-                            {__$$eval(() =>
-                              this.state?.componentplan?.subscription?.schedule
-                                ? this.utils.cronChangeToDate(
-                                    this.state?.componentplan?.subscription?.schedule
-                                  )
-                                : ''
-                            )}
-                          </Typography.Text>
-                        </Col>
-                      </Row>
+                      <Typography.Text
+                        style={{ fontSize: '' }}
+                        strong={false}
+                        disabled={false}
+                        ellipsis={true}
+                        __component_name="Typography.Text"
+                      >
+                        {__$$eval(() => this.getMethods(this.state?.componentplan))}
+                      </Typography.Text>
                     ),
                   },
                 ]}
@@ -392,43 +361,20 @@ class ComponentsManagementInstallDetail$$Page extends React.Component {
                   }
                 </Descriptions.Item>
                 <Descriptions.Item
-                  key="86jag7lsmvt"
-                  span={1}
+                  key="fg3c8eb78ma"
                   label={this.i18n('i18n-5u3ohmy6') /* 更新方式 */}
+                  span={1}
                 >
                   {
-                    <Row wrap={true} gutter={[0, 0]} __component_name="Row">
-                      <Col span={24} __component_name="Col">
-                        <Typography.Text
-                          style={{ fontSize: '' }}
-                          strong={false}
-                          disabled={false}
-                          ellipsis={true}
-                          __component_name="Typography.Text"
-                        >
-                          {__$$eval(() => this.getMethods(this.state?.componentplan))}
-                        </Typography.Text>
-                      </Col>
-                      <Col span={24} __component_name="Col">
-                        {!!false && (
-                          <Typography.Text
-                            style={{ fontSize: '' }}
-                            strong={false}
-                            disabled={false}
-                            ellipsis={true}
-                            __component_name="Typography.Text"
-                          >
-                            {__$$eval(() =>
-                              this.state?.componentplan?.subscription?.schedule
-                                ? this.utils.cronChangeToDate(
-                                    this.state?.componentplan?.subscription?.schedule
-                                  )
-                                : ''
-                            )}
-                          </Typography.Text>
-                        )}
-                      </Col>
-                    </Row>
+                    <Typography.Text
+                      style={{ fontSize: '' }}
+                      strong={false}
+                      disabled={false}
+                      ellipsis={true}
+                      __component_name="Typography.Text"
+                    >
+                      {__$$eval(() => this.getMethods(this.state?.componentplan))}
+                    </Typography.Text>
                   }
                 </Descriptions.Item>
               </Descriptions>
@@ -1081,53 +1027,23 @@ class ComponentsManagementInstallDetail$$Page extends React.Component {
                             ),
                           },
                           {
-                            key: '42s6syjgu89',
+                            key: '94gr9b0gv2',
                             span: 1,
                             label: this.i18n('i18n-5u3ohmy6') /* 更新方式 */,
                             children: (
-                              <Row wrap={true} gutter={[0, 0]} __component_name="Row">
-                                <Col span={24} __component_name="Col">
-                                  <Typography.Text
-                                    style={{ fontSize: '' }}
-                                    strong={false}
-                                    disabled={false}
-                                    ellipsis={true}
-                                    __component_name="Typography.Text"
-                                  >
-                                    {__$$eval(
-                                      () =>
-                                        this.utils
-                                          .getComponentInstallMethods(this)
-                                          ?.find(
-                                            item =>
-                                              item.value ===
-                                                this.props.useGetComponentplan?.data?.componentplan
-                                                  ?.subscription?.component
-                                                  ?.componentPlanInstallMethod || 'manual'
-                                          )?.text || '-'
-                                    )}
-                                  </Typography.Text>
-                                </Col>
-                                <Col span={24} __component_name="Col">
-                                  <Typography.Text
-                                    style={{ fontSize: '' }}
-                                    strong={false}
-                                    disabled={false}
-                                    ellipsis={true}
-                                    __component_name="Typography.Text"
-                                  >
-                                    {__$$eval(() =>
-                                      this.props.useGetComponentplan?.data?.componentplan
-                                        ?.subscription?.schedule
-                                        ? this.utils.cronChangeToDate(
-                                            this.props.useGetComponentplan?.data?.componentplan
-                                              ?.subscription?.schedule
-                                          )
-                                        : ''
-                                    )}
-                                  </Typography.Text>
-                                </Col>
-                              </Row>
+                              <Typography.Text
+                                style={{ fontSize: '' }}
+                                strong={false}
+                                disabled={false}
+                                ellipsis={true}
+                                __component_name="Typography.Text"
+                              >
+                                {__$$eval(() =>
+                                  this.getMethods(
+                                    this.props.useGetComponentplan?.data?.componentplan
+                                  )
+                                )}
+                              </Typography.Text>
                             ),
                           },
                         ]}
@@ -1205,49 +1121,22 @@ class ComponentsManagementInstallDetail$$Page extends React.Component {
                           }
                         </Descriptions.Item>
                         <Descriptions.Item
-                          key="42s6syjgu89"
+                          key="94gr9b0gv2"
                           span={1}
                           label={this.i18n('i18n-5u3ohmy6') /* 更新方式 */}
                         >
                           {
-                            <Row wrap={true} gutter={[0, 0]} __component_name="Row">
-                              <Col span={24} __component_name="Col">
-                                <Typography.Text
-                                  style={{ fontSize: '' }}
-                                  strong={false}
-                                  disabled={false}
-                                  ellipsis={true}
-                                  __component_name="Typography.Text"
-                                >
-                                  {__$$eval(() =>
-                                    this.getMethods(
-                                      this.props.useGetComponentplan?.data?.componentplan
-                                    )
-                                  )}
-                                </Typography.Text>
-                              </Col>
-                              <Col span={24} __component_name="Col">
-                                {!!false && (
-                                  <Typography.Text
-                                    style={{ fontSize: '' }}
-                                    strong={false}
-                                    disabled={false}
-                                    ellipsis={true}
-                                    __component_name="Typography.Text"
-                                  >
-                                    {__$$eval(() =>
-                                      this.props.useGetComponentplan?.data?.componentplan
-                                        ?.subscription?.schedule
-                                        ? this.utils.cronChangeToDate(
-                                            this.props.useGetComponentplan?.data?.componentplan
-                                              ?.subscription?.schedule
-                                          )
-                                        : ''
-                                    )}
-                                  </Typography.Text>
-                                )}
-                              </Col>
-                            </Row>
+                            <Typography.Text
+                              style={{ fontSize: '' }}
+                              strong={false}
+                              disabled={false}
+                              ellipsis={true}
+                              __component_name="Typography.Text"
+                            >
+                              {__$$eval(() =>
+                                this.getMethods(this.props.useGetComponentplan?.data?.componentplan)
+                              )}
+                            </Typography.Text>
                           }
                         </Descriptions.Item>
                       </Descriptions>,
@@ -1707,6 +1596,7 @@ const PageWrapper = (props = {}) => {
   history.query = qs.parse(location.search);
   const appHelper = {
     utils,
+    constants: __$$constants,
     location,
     match,
     history,
@@ -1720,7 +1610,6 @@ const PageWrapper = (props = {}) => {
       self={self}
       sdkInitFunc={{
         enabled: undefined,
-        func: 'undefined',
         params: undefined,
       }}
       sdkSwrFuncs={[

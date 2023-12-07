@@ -10,6 +10,8 @@ import { sdk as bffSdk } from '@tenx-ui/bff-client';
 
 import { isIP } from 'validator';
 
+import dayjs from 'dayjs';
+
 import { createRef } from 'react';
 
 const utils = {};
@@ -178,7 +180,7 @@ utils.getComponentTypes = function __getComponentTypes() {
       },
       {
         color: 'processing',
-        [isStatus ? 'id' : 'value']: '_other_',
+        [isStatus ? 'id' : 'value']: '__other__',
         [isStatus || isTag ? 'children' : 'text']: pageThis.i18n('i18n-mobzvrte'),
       },
     ];
@@ -559,6 +561,8 @@ export const getComponentSource = utils.getComponentSource;
 
 utils.isIP = isIP;
 
+utils.dayjs = dayjs;
+
 export class RefsManager {
   constructor() {
     this.refInsStore = {};
@@ -658,4 +662,6 @@ export default {
   getComponentSource,
 
   isIP,
+
+  dayjs,
 };
