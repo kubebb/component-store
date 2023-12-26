@@ -1,3 +1,11 @@
 body {
   font-size: 12px;
 }
+
+.componentsInstallDetailNoEdit {
+  .tenx-ui-materials-formily-item {
+    .tenx-ui-materials-btn {
+      display: none !important;
+    }
+  }
+}
