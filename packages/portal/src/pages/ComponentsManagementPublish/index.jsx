@@ -74,21 +74,21 @@ class ComponentsManagementPublish$$Page extends React.Component {
     __$$i18n._inject2(this);
 
     this.state = {
-      isOpenModal: false,
-      modalType: 'delete',
-      searchValue: undefined,
-      searchKey: 'chartName',
-      size: 10,
-      current: 1,
-      record: {},
-      pagination: undefined,
-      filters: undefined,
-      sorter: undefined,
-      modalLoading: false,
       cluster: undefined,
-      uploadVisible: true,
-      clusters: undefined,
       clusterLoading: true,
+      clusters: undefined,
+      current: 1,
+      filters: undefined,
+      isOpenModal: false,
+      modalLoading: false,
+      modalType: 'delete',
+      pagination: undefined,
+      record: {},
+      searchKey: 'chartName',
+      searchValue: undefined,
+      size: 10,
+      sorter: undefined,
+      uploadVisible: true,
     };
   }
 
@@ -100,164 +100,14 @@ class ComponentsManagementPublish$$Page extends React.Component {
     return this._refsManager.getAll(refName);
   };
 
-  getName(item) {
-    item = item || {};
-    if (item.displayName) {
-      return `${item.displayName}(${item.chartName || '-'})`;
-    }
-    return item.chartName || '-';
-  }
-
-  async loadClusters() {
-    const res =
-      await this.props.appHelper?.utils?.bffSdk?.getCurrentUserClustersForIsDeployedResource({
-        group: 'core.kubebb.k8s.com.cn',
-        version: 'v1alpha1',
-        plural: 'repositories',
-      });
-    const clusters = res?.userCurrent?.clusters
-      ?.filter(item => item.isDeployedResource === true)
-      ?.map(item => ({
-        value: item.name,
-        label: item.fullName,
-      }));
-    this.setState(
-      {
-        clusters,
-        cluster: clusters?.[0]?.value,
-        clusterLoading: false,
-      },
-      this.handleQueryChange
-    );
-  }
-
-  getCluster() {
-    return this.state.cluster;
-  }
-
-  handleClusterChange(v) {
-    this.setState(
-      {
-        cluster: v,
-      },
-      this.handleQueryChange
-    );
-  }
-
-  form(name) {
-    return this.$(name || 'formily_create')?.formRef?.current?.form;
-  }
-
   beforeUpload() {
     return false;
-  }
-
-  validatorFile(value) {
-    if (!value && !this.state.data?.certData) {
-      return this.i18n('i18n-aa3ink0n');
-    }
-    // // k
-    // if (value?.file.size > 5*1000*) {
-    //   return '文件不能大于 5M'
-    // }
-  }
-
-  handleFileChange(v) {
-    this.setState(
-      {
-        uploadVisible: !(v?.fileList?.length > 0),
-      },
-      () => {}
-    );
-  }
-
-  handleQueryChange() {
-    const { repositoryType, status } = this.state.filters || {};
-    const params = {
-      page: this.state?.current || 1,
-      pageSize: this.state?.pageSize || 10,
-      chartName: undefined,
-      repository: undefined,
-      repositoryType: 'chartmuseum',
-      [this.state.searchKey]: this.state?.searchValue,
-    };
-    if (this.state.sorter?.order) {
-      params.sortField = this.state.sorter?.field;
-      params.sortDirection = this.state.sorter?.order;
-    }
-    if (this.state.cluster) {
-      params.cluster = this.state.cluster;
-    }
-    // @todo
-    // if (repositoryType?.length > 0) {
-    //   params.repositoryTypes = repositoryType
-    // }
-    // if (status?.length > 0) {
-    //   params.statuses = status
-    // }
-    this.utils?.changeLocationQuery(this, 'useGetComponents', params);
-  }
-
-  handleRefresh(event) {
-    this.props.useGetComponents?.mutate();
-  }
-
-  openModal(e, { record, type = 'delete' }) {
-    this.setState(
-      {
-        isOpenModal: true,
-        modalType: type,
-        record,
-        uploadVisible: true,
-      },
-      () => {
-        setTimeout(() => {
-          if (type === 'update') {
-            this.form()?.setValues({
-              repository: record?.repository,
-            });
-          }
-        }, 200);
-      }
-    );
   }
 
   closeModal() {
     this.setState({
       isOpenModal: false,
     });
-  }
-
-  async confirmDeleteModal(e, payload) {
-    this.setState({
-      modalLoading: true,
-    });
-    try {
-      await this.utils.bff.deleteComponent({
-        chart: {
-          chartName: this.state.record?.chartName,
-          repository: this.state.record?.repository,
-          versions: this.state.record?.versions?.map(item => item.version),
-        },
-        cluster: this.state.record?.cluster || this.getCluster(),
-      });
-      this.closeModal();
-      this.utils.notification.success({
-        message: this.i18n('i18n-6fr7wu19'),
-      });
-      this.props.useGetComponents.mutate();
-      this.setState({
-        modalLoading: false,
-      });
-    } catch (error) {
-      this.setState({
-        modalLoading: false,
-      });
-      this.utils.notification.warnings({
-        message: this.i18n('i18n-6ov650p4'),
-        errors: error?.response?.errors,
-      });
-    }
   }
 
   async confirmCreateModal(e, payload) {
@@ -296,6 +146,122 @@ class ComponentsManagementPublish$$Page extends React.Component {
     });
   }
 
+  async confirmDeleteModal(e, payload) {
+    this.setState({
+      modalLoading: true,
+    });
+    try {
+      await this.utils.bff.deleteComponent({
+        chart: {
+          chartName: this.state.record?.chartName,
+          repository: this.state.record?.repository,
+          versions: this.state.record?.versions?.map(item => item.version),
+        },
+        cluster: this.state.record?.cluster || this.getCluster(),
+      });
+      this.closeModal();
+      this.utils.notification.success({
+        message: this.i18n('i18n-6fr7wu19'),
+      });
+      this.props.useGetComponents.mutate();
+      this.setState({
+        modalLoading: false,
+      });
+    } catch (error) {
+      this.setState({
+        modalLoading: false,
+      });
+      this.utils.notification.warnings({
+        message: this.i18n('i18n-6ov650p4'),
+        errors: error?.response?.errors,
+      });
+    }
+  }
+
+  form(name) {
+    return this.$(name || 'formily_create')?.formRef?.current?.form;
+  }
+
+  getCluster() {
+    return this.state.cluster;
+  }
+
+  getName(item) {
+    item = item || {};
+    if (item.displayName) {
+      return `${item.displayName}(${item.chartName || '-'})`;
+    }
+    return item.chartName || '-';
+  }
+
+  handleClusterChange(v) {
+    this.setState(
+      {
+        cluster: v,
+      },
+      this.handleQueryChange
+    );
+  }
+
+  handleFileChange(v) {
+    this.setState(
+      {
+        uploadVisible: !(v?.fileList?.length > 0),
+      },
+      () => {}
+    );
+  }
+
+  handlePaginationChange(c, s) {
+    this.setState(
+      {
+        size: s,
+        current: c,
+      },
+      this.handleQueryChange
+    );
+  }
+
+  handleQueryChange() {
+    const { repositoryType, status } = this.state.filters || {};
+    const params = {
+      page: this.state?.current || 1,
+      pageSize: this.state?.pageSize || 10,
+      chartName: undefined,
+      repository: undefined,
+      repositoryType: 'chartmuseum',
+      [this.state.searchKey]: this.state?.searchValue,
+    };
+    if (this.state.sorter?.order) {
+      params.sortField = this.state.sorter?.field;
+      params.sortDirection = this.state.sorter?.order;
+    }
+    if (this.state.cluster) {
+      params.cluster = this.state.cluster;
+    }
+    // @todo
+    // if (repositoryType?.length > 0) {
+    //   params.repositoryTypes = repositoryType
+    // }
+    // if (status?.length > 0) {
+    //   params.statuses = status
+    // }
+    this.utils?.changeLocationQuery(this, 'useGetComponents', params);
+  }
+
+  handleRefresh(event) {
+    this.props.useGetComponents?.mutate();
+  }
+
+  handleSearch(v) {
+    this.setState(
+      {
+        current: 1,
+      },
+      this.handleQueryChange
+    );
+  }
+
   handleSearchKeyChange(v) {
     this.setState(
       {
@@ -313,25 +279,6 @@ class ComponentsManagementPublish$$Page extends React.Component {
     });
   }
 
-  handleSearch(v) {
-    this.setState(
-      {
-        current: 1,
-      },
-      this.handleQueryChange
-    );
-  }
-
-  handlePaginationChange(c, s) {
-    this.setState(
-      {
-        size: s,
-        current: c,
-      },
-      this.handleQueryChange
-    );
-  }
-
   handleTableChange(pagination, filters, sorter, extra) {
     this.setState(
       {
@@ -343,8 +290,61 @@ class ComponentsManagementPublish$$Page extends React.Component {
     );
   }
 
+  async loadClusters() {
+    const res =
+      await this.props.appHelper?.utils?.bffSdk?.getCurrentUserClustersForIsDeployedResource({
+        group: 'core.kubebb.k8s.com.cn',
+        version: 'v1alpha1',
+        plural: 'repositories',
+      });
+    const clusters = res?.userCurrent?.clusters
+      ?.filter(item => item.isDeployedResource === true)
+      ?.map(item => ({
+        value: item.name,
+        label: item.fullName,
+      }));
+    this.setState(
+      {
+        clusters,
+        cluster: clusters?.[0]?.value,
+        clusterLoading: false,
+      },
+      this.handleQueryChange
+    );
+  }
+
+  openModal(e, { record, type = 'delete' }) {
+    this.setState(
+      {
+        isOpenModal: true,
+        modalType: type,
+        record,
+        uploadVisible: true,
+      },
+      () => {
+        setTimeout(() => {
+          if (type === 'update') {
+            this.form()?.setValues({
+              repository: record?.repository,
+            });
+          }
+        }, 200);
+      }
+    );
+  }
+
   paginationShowTotal(total, range) {
     return `${this.i18n('i18n-wajqflwo')} ${total} ${this.i18n('i18n-7vre8aeh')}`;
+  }
+
+  validatorFile(value) {
+    if (!value && !this.state.data?.certData) {
+      return this.i18n('i18n-aa3ink0n');
+    }
+    // // k
+    // if (value?.file.size > 5*1000*) {
+    //   return '文件不能大于 5M'
+    // }
   }
 
   componentDidMount() {
@@ -357,7 +357,17 @@ class ComponentsManagementPublish$$Page extends React.Component {
     return (
       <Page>
         <Modal
+          __component_name="Modal"
+          centered={false}
+          confirmLoading={__$$eval(() => this.state.modalLoading)}
+          destroyOnClose={true}
+          forceRender={false}
+          keyboard={true}
           mask={true}
+          maskClosable={false}
+          onCancel={function () {
+            return this.closeModal.apply(this, Array.prototype.slice.call(arguments).concat([]));
+          }.bind(this)}
           onOk={function () {
             return this.confirmDeleteModal.apply(
               this,
@@ -367,29 +377,19 @@ class ComponentsManagementPublish$$Page extends React.Component {
           open={__$$eval(() => this.state.isOpenModal && this.state.modalType === 'delete')}
           style={{}}
           title={this.i18n('i18n-m91z1o9b') /* 删除组件 */}
-          centered={false}
-          keyboard={true}
-          onCancel={function () {
-            return this.closeModal.apply(this, Array.prototype.slice.call(arguments).concat([]));
-          }.bind(this)}
-          forceRender={false}
-          maskClosable={false}
-          confirmLoading={__$$eval(() => this.state.modalLoading)}
-          destroyOnClose={true}
-          __component_name="Modal"
         >
           <Alert
-            type="info"
+            __component_name="Alert"
             message={
-              <Space size={0} align="center" direction="horizontal">
-                <Row wrap={true} gutter={[0, 0]} __component_name="Row">
-                  <Col span={24} __component_name="Col">
+              <Space align="center" direction="horizontal" size={0}>
+                <Row __component_name="Row" gutter={[0, 0]} wrap={true}>
+                  <Col __component_name="Col" span={24}>
                     <Typography.Text
-                      style={{ fontSize: '' }}
-                      strong={false}
+                      __component_name="Typography.Text"
                       disabled={false}
                       ellipsis={true}
-                      __component_name="Typography.Text"
+                      strong={false}
+                      style={{ fontSize: '' }}
                     >
                       {
                         this.i18n(
@@ -398,34 +398,34 @@ class ComponentsManagementPublish$$Page extends React.Component {
                       }
                     </Typography.Text>
                   </Col>
-                  <Col span={24} __component_name="Col">
+                  <Col __component_name="Col" span={24}>
                     <Space
-                      size="small"
+                      __component_name="Space"
                       align="center"
                       direction="horizontal"
-                      __component_name="Space"
+                      size="small"
                     >
                       <Typography.Text
-                        style={{ fontSize: '', maxWidth: '400px' }}
-                        strong={true}
+                        __component_name="Typography.Text"
                         disabled={false}
                         ellipsis={{
                           rows: 1,
                           tooltip: {
-                            title: __$$eval(() => this.getName(this.state?.record)),
                             _unsafe_MixedSetter_title_select: 'VariableSetter',
+                            title: __$$eval(() => this.getName(this.state?.record)),
                           },
                         }}
-                        __component_name="Typography.Text"
+                        strong={true}
+                        style={{ fontSize: '', maxWidth: '400px' }}
                       >
                         {__$$eval(() => this.getName(this.state?.record))}
                       </Typography.Text>
                       <Typography.Text
-                        style={{ fontSize: '' }}
-                        strong={false}
+                        __component_name="Typography.Text"
                         disabled={false}
                         ellipsis={true}
-                        __component_name="Typography.Text"
+                        strong={false}
+                        style={{ fontSize: '' }}
                       >
                         {this.i18n('i18n-ha9unjy9') /* 吗？ */}
                       </Typography.Text>
@@ -435,11 +435,22 @@ class ComponentsManagementPublish$$Page extends React.Component {
               </Space>
             }
             showIcon={true}
-            __component_name="Alert"
+            type="info"
           />
         </Modal>
         <Modal
+          __component_name="Modal"
+          centered={false}
+          className="componentPublishUpdateModal"
+          confirmLoading={__$$eval(() => this.state.modalLoading)}
+          destroyOnClose={true}
+          forceRender={false}
+          keyboard={true}
           mask={true}
+          maskClosable={false}
+          onCancel={function () {
+            return this.closeModal.apply(this, Array.prototype.slice.call(arguments).concat([]));
+          }.bind(this)}
           onOk={function () {
             return this.confirmCreateModal.apply(
               this,
@@ -454,31 +465,34 @@ class ComponentsManagementPublish$$Page extends React.Component {
               ? this.i18n('i18n-uefj93m4')
               : this.i18n('i18n-gtwznpyj')
           )}
-          centered={false}
-          keyboard={true}
-          onCancel={function () {
-            return this.closeModal.apply(this, Array.prototype.slice.call(arguments).concat([]));
-          }.bind(this)}
-          forceRender={false}
-          maskClosable={false}
-          confirmLoading={__$$eval(() => this.state.modalLoading)}
-          destroyOnClose={true}
-          __component_name="Modal"
         >
           <FormilyForm
-            ref={this._refsManager.linkRef('formily_create')}
-            formHelper={{ autoFocus: true }}
+            __component_name="FormilyForm"
             componentProps={{
               colon: false,
-              layout: 'horizontal',
-              labelCol: 8,
               labelAlign: 'left',
+              labelCol: 5,
+              layout: 'horizontal',
               wrapperCol: 20,
             }}
-            __component_name="FormilyForm"
+            formHelper={{ autoFocus: true }}
+            ref={this._refsManager.linkRef('formily_create')}
           >
             <FormilySelect
+              __component_name="FormilySelect"
+              componentProps={{
+                'x-component-props': {
+                  _sdkSwrGetFunc: {},
+                  allowClear: false,
+                  disabled: __$$eval(() => this.state.modalType === 'update'),
+                  placeholder: this.i18n('i18n-ydshspew') /* 请选择组件仓库 */,
+                },
+              }}
+              decoratorProps={{ 'x-decorator-props': { labelEllipsis: false, tooltip: '' } }}
               fieldProps={{
+                _unsafe_MixedSetter_enum_select: 'ExpressionSetter',
+                _unsafe_MixedSetter_title_select: 'SlotSetter',
+                description: '',
                 enum: __$$eval(
                   () =>
                     this.props.useGetRepositoriesAll?.data?.repositoriesAll
@@ -489,62 +503,73 @@ class ComponentsManagementPublish$$Page extends React.Component {
                       })) || []
                 ),
                 name: 'repository',
+                required: true,
                 title: (
-                  <Space align="center" style={{}} direction="horizontal">
+                  <Space align="center" direction="horizontal" size={3} style={{}}>
                     <Typography.Text
-                      style={{ fontSize: '' }}
-                      strong={false}
+                      __component_name="Typography.Text"
                       disabled={false}
                       ellipsis={false}
-                      __component_name="Typography.Text"
+                      strong={false}
+                      style={{ fontSize: '' }}
                     >
                       {this.i18n('i18n-1po87kgw') /* 组件仓库 */}
                     </Typography.Text>
                     <Tooltip
+                      __component_name="Tooltip"
                       title={
                         this.i18n(
                           'i18n-2izsqnki'
                         ) /* 现只支持手动发布组件到Chart Museum类型的组件仓库 */
                       }
-                      __component_name="Tooltip"
                     >
-                      <Container color="colorTextDescription" __component_name="Container">
+                      <Container
+                        __component_name="Container"
+                        className="icon"
+                        color="colorTextDescription"
+                      >
                         <AntdIconQuestionCircleOutlined
-                          style={{ color: '' }}
                           __component_name="AntdIconQuestionCircleOutlined"
+                          style={{ color: '' }}
                         />
                       </Container>
                     </Tooltip>
                   </Space>
                 ),
-                required: true,
-                description: '',
                 'x-validator': [],
-                _unsafe_MixedSetter_enum_select: 'ExpressionSetter',
-                _unsafe_MixedSetter_title_select: 'SlotSetter',
               }}
-              componentProps={{
-                'x-component-props': {
-                  disabled: __$$eval(() => this.state.modalType === 'update'),
-                  allowClear: false,
-                  placeholder: this.i18n('i18n-ydshspew') /* 请选择组件仓库 */,
-                  _sdkSwrGetFunc: {},
-                },
-              }}
-              decoratorProps={{ 'x-decorator-props': { tooltip: '', labelEllipsis: false } }}
-              __component_name="FormilySelect"
             />
             <FormilyUpload
+              __component_name="FormilyUpload"
+              componentProps={{
+                'x-component-props': {
+                  accept: '.zip,.rar,.7z,.tar,.gz,.bz2,.tgz',
+                  beforeUpload: function () {
+                    return this.beforeUpload.apply(
+                      this,
+                      Array.prototype.slice.call(arguments).concat([])
+                    );
+                  }.bind(this),
+                  maxCount: 1,
+                  onChange: function () {
+                    return this.handleFileChange.apply(
+                      this,
+                      Array.prototype.slice.call(arguments).concat([])
+                    );
+                  }.bind(this),
+                },
+              }}
+              decoratorProps={{ 'x-decorator-props': { asterisk: true, labelEllipsis: true } }}
               fieldProps={{
                 name: 'file',
-                title: this.i18n('i18n-as2xi3jn') /* 组件helm包 */,
                 required: false,
+                title: this.i18n('i18n-as2xi3jn') /* 组件helm包 */,
                 'x-component': 'FormilyUpload',
                 'x-validator': [
                   {
+                    children: '未知',
                     id: 'disabled',
                     type: 'disabled',
-                    children: '未知',
                     validator: function () {
                       return this.validatorFile.apply(
                         this,
@@ -554,101 +579,81 @@ class ComponentsManagementPublish$$Page extends React.Component {
                   },
                 ],
               }}
-              componentProps={{
-                'x-component-props': {
-                  accept: '.zip,.rar,.7z,.tar,.gz,.bz2,.tgz',
-                  maxCount: 1,
-                  onChange: function () {
-                    return this.handleFileChange.apply(
-                      this,
-                      Array.prototype.slice.call(arguments).concat([])
-                    );
-                  }.bind(this),
-                  beforeUpload: function () {
-                    return this.beforeUpload.apply(
-                      this,
-                      Array.prototype.slice.call(arguments).concat([])
-                    );
-                  }.bind(this),
-                },
-              }}
-              decoratorProps={{ 'x-decorator-props': { asterisk: true } }}
-              __component_name="FormilyUpload"
             >
               {!!__$$eval(() => this.state.uploadVisible) && (
                 <Row
-                  wrap={true}
+                  __component_name="Row"
+                  className="upload"
+                  gutter={[0, 0]}
                   style={{
-                    width: '315px',
-                    border: '1px dashed rgba(217, 217, 217)',
+                    borderRadius: '4px',
                     cursor: 'pointer',
+                    display: 'flex',
                     height: '180px',
                     margin: 'auto',
-                    display: 'flex',
                     paddingTop: '56px',
-                    borderRadius: '4px',
+                    width: '375px',
                   }}
-                  gutter={[0, 0]}
-                  __component_name="Row"
+                  wrap={true}
                 >
                   <Col
-                    span={24}
-                    style={{ height: '30px', display: 'flex', justifyContent: 'center' }}
                     __component_name="Col"
+                    span={24}
+                    style={{ display: 'flex', height: '30px', justifyContent: 'center' }}
                   >
                     <AntdIconPlusOutlined
-                      style={{ color: '#bbbbbb', fontSize: '16px', marginBottom: '-1px' }}
                       __component_name="AntdIconPlusOutlined"
+                      style={{ color: '#bbbbbb', fontSize: '16px', marginBottom: '-1px' }}
                     />
                   </Col>
-                  <Col span={24} __component_name="Col">
-                    <Row wrap={true} style={{}} gutter={[0, 8]} __component_name="Row">
+                  <Col __component_name="Col" span={24}>
+                    <Row __component_name="Row" gutter={[0, 8]} style={{}} wrap={true}>
                       <Col
+                        __component_name="Col"
                         span={24}
                         style={{
-                          display: 'flex',
-                          marginTop: '-40px',
                           alignItems: 'center',
+                          display: 'flex',
                           justifyContent: 'center',
+                          marginTop: '-40px',
                         }}
-                        __component_name="Col"
                       >
                         <Typography.Text
-                          style={{ fontSize: '' }}
-                          strong={false}
+                          __component_name="Typography.Text"
                           disabled={false}
                           ellipsis={true}
-                          __component_name="Typography.Text"
+                          strong={false}
+                          style={{ fontSize: '' }}
                         >
                           {this.i18n('i18n-xsqa11zo') /* 点击或将 Helm 包拖拽到这里导入 */}
                         </Typography.Text>
                       </Col>
                       <Col
+                        __component_name="Col"
                         span={24}
                         style={{
-                          display: 'flex',
-                          marginTop: '-20px',
                           alignItems: 'center',
+                          display: 'flex',
                           justifyContent: 'center',
+                          marginTop: '-20px',
                         }}
-                        __component_name="Col"
                       >
                         {!!false && (
                           <Typography.Text
-                            style={{ fontSize: '' }}
-                            strong={false}
+                            __component_name="Typography.Text"
                             disabled={false}
                             ellipsis={true}
-                            __component_name="Typography.Text"
+                            strong={false}
+                            style={{ fontSize: '' }}
                           >
                             {this.i18n('i18n-v8h9dmhm') /* 大小 1M 以内 */}
                           </Typography.Text>
                         )}
                       </Col>
                       <Col
-                        span={24}
-                        style={{ display: 'flex', alignItems: 'center', justifyContent: 'center' }}
                         __component_name="Col"
+                        span={24}
+                        style={{ alignItems: 'center', display: 'flex', justifyContent: 'center' }}
                       />
                     </Row>
                   </Col>
@@ -657,25 +662,25 @@ class ComponentsManagementPublish$$Page extends React.Component {
             </FormilyUpload>
           </FormilyForm>
         </Modal>
-        <Row wrap={true} __component_name="Row">
-          <Col span={24} __component_name="Col">
-            <Row wrap={false} justify="space-between" __component_name="Row">
-              <Col style={{ display: 'flex', alignItems: 'center' }} __component_name="Col">
+        <Row __component_name="Row" wrap={true}>
+          <Col __component_name="Col" span={24}>
+            <Row __component_name="Row" justify="space-between" wrap={false}>
+              <Col __component_name="Col" style={{ alignItems: 'center', display: 'flex' }}>
                 <Typography.Title
+                  __component_name="Typography.Title"
                   bold={true}
-                  level={1}
                   bordered={false}
                   ellipsis={true}
-                  __component_name="Typography.Title"
+                  level={1}
                 >
                   {this.i18n('i18n-u7cfx5g4') /* 我发布的 */}
                 </Typography.Title>
               </Col>
               <Col __component_name="Col">
                 <Select
-                  style={{ width: 200 }}
-                  value={__$$eval(() => this.getCluster())}
-                  options={__$$eval(() => this.state.clusters)}
+                  __component_name="Select"
+                  _sdkSwrGetFunc={{}}
+                  allowClear={false}
                   disabled={false}
                   onChange={function () {
                     return this.handleClusterChange.apply(
@@ -683,40 +688,39 @@ class ComponentsManagementPublish$$Page extends React.Component {
                       Array.prototype.slice.call(arguments).concat([])
                     );
                   }.bind(this)}
-                  allowClear={false}
-                  showSearch={true}
+                  options={__$$eval(() => this.state.clusters)}
                   placeholder={this.i18n('i18n-iaqzm5yl') /* 请选择集群 */}
-                  _sdkSwrGetFunc={{}}
-                  __component_name="Select"
+                  showSearch={true}
+                  style={{ width: 200 }}
+                  value={__$$eval(() => this.getCluster())}
                 />
               </Col>
             </Row>
           </Col>
-          <Col span={24} __component_name="Col">
+          <Col __component_name="Col" span={24}>
             <Card
-              size="default"
-              type="inner"
-              style={{ paddingTop: '4px', paddingBottom: '16px' }}
+              __component_name="Card"
               actions={[]}
-              loading={false}
               bordered={false}
               hoverable={false}
-              __component_name="Card"
+              loading={false}
+              size="default"
+              style={{ paddingBottom: '16px', paddingTop: '4px' }}
+              type="inner"
             >
-              <Row wrap={true} gutter={[0, 0]} __component_name="Row">
-                <Col span={24} __component_name="Col">
-                  <Row wrap={false} justify="space-between" __component_name="Row">
+              <Row __component_name="Row" gutter={[0, 0]} wrap={true}>
+                <Col __component_name="Col" span={24}>
+                  <Row __component_name="Row" justify="space-between" wrap={false}>
                     <Col __component_name="Col">
-                      <Space size={12} align="center" direction="horizontal">
+                      <Space align="center" direction="horizontal" size={12}>
                         <Button
+                          __component_name="Button"
+                          block={false}
+                          danger={false}
+                          disabled={false}
+                          ghost={false}
                           href=""
                           icon={<AntdIconPlusOutlined __component_name="AntdIconPlusOutlined" />}
-                          type="primary"
-                          block={false}
-                          ghost={false}
-                          shape="default"
-                          danger={false}
-                          target="_self"
                           onClick={function () {
                             return this.openModal.apply(
                               this,
@@ -728,33 +732,61 @@ class ComponentsManagementPublish$$Page extends React.Component {
                               ])
                             );
                           }.bind(this)}
-                          disabled={false}
-                          __component_name="Button"
+                          shape="default"
+                          target="_self"
+                          type="primary"
                         >
                           {this.i18n('i18n-4jc9ptx8') /* 组件发布 */}
                         </Button>
                         <Button
+                          __component_name="Button"
+                          block={false}
+                          danger={false}
+                          disabled={false}
+                          ghost={false}
                           icon={
                             <AntdIconReloadOutlined __component_name="AntdIconReloadOutlined" />
                           }
-                          block={false}
-                          ghost={false}
-                          shape="default"
-                          danger={false}
                           onClick={function () {
                             return this.handleRefresh.apply(
                               this,
                               Array.prototype.slice.call(arguments).concat([])
                             );
                           }.bind(this)}
-                          disabled={false}
-                          __component_name="Button"
+                          shape="default"
                         >
                           {this.i18n('i18n-pzwgpt2r') /* 刷新 */}
                         </Button>
                         <Input.Search
-                          style={{ width: '240px' }}
-                          value={__$$eval(() => this.state.searchValue)}
+                          __component_name="Input.Search"
+                          addonBefore={
+                            <Select
+                              __component_name="Select"
+                              _sdkSwrGetFunc={{}}
+                              allowClear={false}
+                              disabled={false}
+                              onChange={function () {
+                                return this.handleSearchKeyChange.apply(
+                                  this,
+                                  Array.prototype.slice.call(arguments).concat([])
+                                );
+                              }.bind(this)}
+                              options={[
+                                {
+                                  label: this.i18n('i18n-cuf6u4di') /* 组件名称 */,
+                                  value: 'chartName',
+                                },
+                                {
+                                  label: this.i18n('i18n-1po87kgw') /* 组件仓库 */,
+                                  value: 'repository',
+                                },
+                              ]}
+                              placeholder="请选择"
+                              showSearch={true}
+                              style={{ textAlign: 'left', width: '90px' }}
+                              value={__$$eval(() => this.state.searchKey)}
+                            />
+                          }
                           onChange={function () {
                             return this.handleSearchValueChange.apply(
                               this,
@@ -767,41 +799,13 @@ class ComponentsManagementPublish$$Page extends React.Component {
                               Array.prototype.slice.call(arguments).concat([])
                             );
                           }.bind(this)}
-                          addonBefore={
-                            <Select
-                              style={{ width: '90px', textAlign: 'left' }}
-                              value={__$$eval(() => this.state.searchKey)}
-                              options={[
-                                {
-                                  label: this.i18n('i18n-cuf6u4di') /* 组件名称 */,
-                                  value: 'chartName',
-                                },
-                                {
-                                  label: this.i18n('i18n-1po87kgw') /* 组件仓库 */,
-                                  value: 'repository',
-                                },
-                              ]}
-                              disabled={false}
-                              onChange={function () {
-                                return this.handleSearchKeyChange.apply(
-                                  this,
-                                  Array.prototype.slice.call(arguments).concat([])
-                                );
-                              }.bind(this)}
-                              allowClear={false}
-                              showSearch={true}
-                              placeholder="请选择"
-                              _sdkSwrGetFunc={{}}
-                              __component_name="Select"
-                            />
-                          }
                           placeholder={this.i18n('i18n-n9a8du2a') /* 请输入 */}
-                          __component_name="Input.Search"
+                          style={{ width: '240px' }}
+                          value={__$$eval(() => this.state.searchValue)}
                         />
                         {!!false && (
                           <Input.Search
-                            ref={this._refsManager.linkRef('input.search-28a8414d')}
-                            style={{ width: '240px' }}
+                            __component_name="Input.Search"
                             onSearch={function () {
                               return this.handleSearchValueChange.apply(
                                 this,
@@ -809,7 +813,8 @@ class ComponentsManagementPublish$$Page extends React.Component {
                               );
                             }.bind(this)}
                             placeholder={this.i18n('i18n-8571905l') /*  请输入组件名称/组件仓库 */}
-                            __component_name="Input.Search"
+                            ref={this._refsManager.linkRef('input.search-28a8414d')}
+                            style={{ width: '240px' }}
                           />
                         )}
                       </Space>
@@ -817,12 +822,15 @@ class ComponentsManagementPublish$$Page extends React.Component {
                     <Col __component_name="Col">
                       <Space align="center" direction="horizontal">
                         <Pagination
-                          total={__$$eval(
-                            () => this.props.useGetComponents?.data?.components?.totalCount || 0
-                          )}
-                          simple={true}
+                          __component_name="Pagination"
                           current={__$$eval(() => this.state.current)}
                           onChange={function () {
+                            return this.handlePaginationChange.apply(
+                              this,
+                              Array.prototype.slice.call(arguments).concat([])
+                            );
+                          }.bind(this)}
+                          onShowSizeChange={function () {
                             return this.handlePaginationChange.apply(
                               this,
                               Array.prototype.slice.call(arguments).concat([])
@@ -835,106 +843,102 @@ class ComponentsManagementPublish$$Page extends React.Component {
                               Array.prototype.slice.call(arguments).concat([])
                             );
                           }.bind(this)}
-                          __component_name="Pagination"
-                          onShowSizeChange={function () {
-                            return this.handlePaginationChange.apply(
-                              this,
-                              Array.prototype.slice.call(arguments).concat([])
-                            );
-                          }.bind(this)}
+                          simple={true}
+                          total={__$$eval(
+                            () => this.props.useGetComponents?.data?.components?.totalCount || 0
+                          )}
                         />
                       </Space>
                     </Col>
                   </Row>
                 </Col>
-                <Col span={24} __component_name="Col">
+                <Col __component_name="Col" span={24}>
                   <Table
-                    size="middle"
-                    rowKey="name"
-                    scroll={{ scrollToFirstRowOnChange: true }}
+                    __component_name="Table"
                     columns={[
                       {
+                        dataIndex: 'name',
+                        ellipsis: { showTitle: true },
                         key: 'name',
-                        title: this.i18n('i18n-cuf6u4di') /* 组件名称 */,
                         render: (text, record, index) =>
                           (__$$context => (
                             <UnifiedLink
+                              __component_name="UnifiedLink"
+                              target="_self"
                               to={__$$eval(
                                 () =>
                                   `/components/management/publish/management-detail/detail/${
                                     record?.name
                                   }?cluster=${__$$context.getCluster()}`
                               )}
-                              target="_self"
-                              __component_name="UnifiedLink"
                             >
                               {__$$eval(() => __$$context.getName(record))}
                             </UnifiedLink>
                           ))(__$$createChildContext(__$$context, { text, record, index })),
-                        ellipsis: { showTitle: true },
-                        dataIndex: 'name',
+                        title: this.i18n('i18n-cuf6u4di') /* 组件名称 */,
                       },
                       {
-                        title: this.i18n('i18n-vpbgp1lj') /* 最新版本 */,
+                        dataIndex: 'version',
                         render: (text, record, index) =>
                           (__$$context => (
                             <Typography.Text
-                              style={{ fontSize: '' }}
-                              strong={false}
+                              __component_name="Typography.Text"
                               disabled={false}
                               ellipsis={true}
-                              __component_name="Typography.Text"
+                              strong={false}
+                              style={{ fontSize: '' }}
                             >
                               {__$$eval(() => record?.latestVersion || '-')}
                             </Typography.Text>
                           ))(__$$createChildContext(__$$context, { text, record, index })),
-                        dataIndex: 'version',
+                        title: this.i18n('i18n-vpbgp1lj') /* 最新版本 */,
                       },
                       {
+                        dataIndex: 'repository',
                         key: 'chartName',
                         title: this.i18n('i18n-1po87kgw') /* 组件仓库 */,
-                        dataIndex: 'repository',
                       },
                       {
+                        dataIndex: 'status',
                         key: 'status',
-                        title: this.i18n('i18n-o48ciymn') /* 当前状态 */,
                         render: (text, record, index) =>
                           (__$$context => (
                             <Status
+                              __component_name="Status"
                               id={__$$eval(() => record?.status)}
                               types={__$$eval(() =>
                                 __$$context.utils.getComponentPublishStatus(__$$context, true)
                               )}
-                              __component_name="Status"
                             />
                           ))(__$$createChildContext(__$$context, { text, record, index })),
-                        dataIndex: 'status',
+                        title: this.i18n('i18n-o48ciymn') /* 当前状态 */,
                       },
                       {
+                        dataIndex: 'updatedAt',
                         key: 'updatetime',
-                        title: this.i18n('i18n-m6kwhtjg') /* 更新时间 */,
                         render: (text, record, index) =>
                           (__$$context => (
                             <Typography.Time
-                              time={__$$eval(() => record.updatedAt)}
+                              __component_name="Typography.Time"
                               format=""
                               relativeTime={false}
-                              __component_name="Typography.Time"
+                              time={__$$eval(() => record.updatedAt)}
                             />
                           ))(__$$createChildContext(__$$context, { text, record, index })),
                         sorter: true,
-                        dataIndex: 'updatedAt',
+                        title: this.i18n('i18n-m6kwhtjg') /* 更新时间 */,
                       },
                       {
-                        title: this.i18n('i18n-ioy0ge9h') /* 操作 */,
+                        dataIndex: 'op',
                         render: (text, record, index) =>
                           (__$$context => (
-                            <Space size={12} align="center" direction="horizontal">
+                            <Space align="center" direction="horizontal" size={12}>
                               <Button
+                                __component_name="Button"
                                 block={false}
-                                ghost={false}
-                                shape="default"
                                 danger={false}
+                                disabled={false}
+                                ghost={false}
                                 onClick={function () {
                                   return this.openModal.apply(
                                     this,
@@ -946,16 +950,16 @@ class ComponentsManagementPublish$$Page extends React.Component {
                                     ])
                                   );
                                 }.bind(__$$context)}
-                                disabled={false}
-                                __component_name="Button"
+                                shape="default"
                               >
                                 {this.i18n('i18n-8ign6rmf') /* 更新 */}
                               </Button>
                               <Button
+                                __component_name="Button"
                                 block={false}
-                                ghost={false}
-                                shape="default"
                                 danger={false}
+                                disabled={false}
+                                ghost={false}
                                 onClick={function () {
                                   return this.openModal.apply(
                                     this,
@@ -967,16 +971,18 @@ class ComponentsManagementPublish$$Page extends React.Component {
                                     ])
                                   );
                                 }.bind(__$$context)}
-                                disabled={false}
-                                __component_name="Button"
+                                shape="default"
                               >
                                 {this.i18n('i18n-lc4oie5j') /* 删除 */}
                               </Button>
                             </Space>
                           ))(__$$createChildContext(__$$context, { text, record, index })),
-                        dataIndex: 'op',
+                        title: this.i18n('i18n-ioy0ge9h') /* 操作 */,
                       },
                     ]}
+                    dataSource={__$$eval(
+                      () => this.props.useGetComponents?.data?.components?.nodes || []
+                    )}
                     loading={__$$eval(
                       () =>
                         this.props.useGetComponents?.isLoading ||
@@ -990,17 +996,12 @@ class ComponentsManagementPublish$$Page extends React.Component {
                         Array.prototype.slice.call(arguments).concat([])
                       );
                     }.bind(this)}
-                    dataSource={__$$eval(
-                      () => this.props.useGetComponents?.data?.components?.nodes || []
-                    )}
-                    pagination={{
-                      showSizeChanger: false,
-                      showQuickJumper: false,
-                      simple: false,
-                      size: 'default',
-                    }}
+                    pagination={false}
+                    rowKey="name"
+                    scroll={{ scrollToFirstRowOnChange: true }}
                     showHeader={true}
-                    __component_name="Table"
+                    size="middle"
+                    style={{ marginTop: '4px' }}
                   />
                 </Col>
               </Row>
@@ -1020,6 +1021,7 @@ const PageWrapper = (props = {}) => {
   history.query = qs.parse(location.search);
   const appHelper = {
     utils,
+    constants: __$$constants,
     location,
     match,
     history,
@@ -1033,7 +1035,6 @@ const PageWrapper = (props = {}) => {
       self={self}
       sdkInitFunc={{
         enabled: undefined,
-        func: 'undefined',
         params: undefined,
       }}
       sdkSwrFuncs={[
@@ -1078,6 +1079,14 @@ function __$$createChildContext(oldContext, ext) {
   const childContext = {
     ...oldContext,
     ...ext,
+    // 重写 state getter，保证 state 的指向不变，这样才能从 context 中拿到最新的 state
+    get state() {
+      return oldContext.state;
+    },
+    // 重写 props getter，保证 props 的指向不变，这样才能从 context 中拿到最新的 props
+    get props() {
+      return oldContext.props;
+    },
   };
   childContext.__proto__ = oldContext;
   return childContext;

@@ -70,20 +70,20 @@ class ComponentsWarehouse$$Page extends React.Component {
     __$$i18n._inject2(this);
 
     this.state = {
+      cluster: undefined,
+      clusterLoading: true,
+      clusters: undefined,
+      current: 1,
+      deleteLoading: false,
+      filters: undefined,
       isOpenModal: false,
       modalType: 'delete',
-      searchValue: undefined,
-      searchKey: 'name',
-      size: 10,
-      current: 1,
-      record: {},
       pagination: undefined,
-      filters: undefined,
+      record: {},
+      searchKey: 'name',
+      searchValue: undefined,
+      size: 10,
       sorter: undefined,
-      deleteLoading: false,
-      cluster: undefined,
-      clusters: undefined,
-      clusterLoading: true,
     };
   }
 
@@ -94,82 +94,6 @@ class ComponentsWarehouse$$Page extends React.Component {
   $$ = refName => {
     return this._refsManager.getAll(refName);
   };
-
-  async loadClusters() {
-    const res =
-      await this.props.appHelper?.utils?.bffSdk?.getCurrentUserClustersForIsDeployedResource({
-        group: 'core.kubebb.k8s.com.cn',
-        version: 'v1alpha1',
-        plural: 'repositories',
-      });
-    const clusters = res?.userCurrent?.clusters
-      ?.filter(item => item.isDeployedResource === true)
-      ?.map(item => ({
-        value: item.name,
-        label: item.fullName,
-      }));
-    this.setState(
-      {
-        clusters,
-        cluster: clusters?.[0]?.value,
-        clusterLoading: false,
-      },
-      this.handleQueryChange
-    );
-  }
-
-  getCluster() {
-    return this.state.cluster;
-  }
-
-  handleClusterChange(v) {
-    this.setState(
-      {
-        cluster: v,
-      },
-      this.handleQueryChange
-    );
-  }
-
-  handleQueryChange() {
-    const { repositoryType, status } = this.state.filters || {};
-    const params = {
-      page: this.state?.current || 1,
-      pageSize: this.state?.pageSize || 10,
-      name: this.state?.searchValue,
-      cluster: this.getCluster(),
-    };
-    if (this.state.sorter?.order) {
-      params.sortField = this.state.sorter?.field;
-      params.sortDirection = this.state.sorter?.order;
-    }
-    if (repositoryType?.length > 0) {
-      params.repositoryTypes = repositoryType;
-    }
-    if (status?.length > 0) {
-      params.statuses = status;
-    } else {
-      params.statuses = undefined;
-    }
-    this.utils?.changeLocationQuery(this, 'useGetRepositories', params);
-    // this.props.useGetRepositories?.fetch && this.props.useGetRepositories?.fetch({
-    //   "page": this.state?.current || 1,
-    //   "pageSize": this.state?.pageSize || 10,
-    //   "name": this.state?.searchValue,
-    // })
-  }
-
-  handleRefresh(event) {
-    this.props.useGetRepositories?.mutate();
-  }
-
-  openDeleteModal(e, { record }) {
-    this.setState({
-      isOpenModal: true,
-      modalType: 'delete',
-      record,
-    });
-  }
 
   closeModal() {
     this.setState({
@@ -207,17 +131,14 @@ class ComponentsWarehouse$$Page extends React.Component {
     }
   }
 
-  handleSearchValueChange(e) {
-    this.setState({
-      searchValue: e.target.value,
-      // current: 1,
-    });
+  getCluster() {
+    return this.state.cluster;
   }
 
-  handleSearch(v) {
+  handleClusterChange(v) {
     this.setState(
       {
-        current: 1,
+        cluster: v,
       },
       this.handleQueryChange
     );
@@ -233,6 +154,54 @@ class ComponentsWarehouse$$Page extends React.Component {
     );
   }
 
+  handleQueryChange() {
+    const { repositoryType, status } = this.state.filters || {};
+    const params = {
+      page: this.state?.current || 1,
+      pageSize: this.state?.pageSize || 10,
+      name: this.state?.searchValue,
+      cluster: this.getCluster(),
+    };
+    if (this.state.sorter?.order) {
+      params.sortField = this.state.sorter?.field;
+      params.sortDirection = this.state.sorter?.order;
+    }
+    if (repositoryType?.length > 0) {
+      params.repositoryTypes = repositoryType;
+    }
+    if (status?.length > 0) {
+      params.statuses = status;
+    } else {
+      params.statuses = undefined;
+    }
+    this.utils?.changeLocationQuery(this, 'useGetRepositories', params);
+    // this.props.useGetRepositories?.fetch && this.props.useGetRepositories?.fetch({
+    //   "page": this.state?.current || 1,
+    //   "pageSize": this.state?.pageSize || 10,
+    //   "name": this.state?.searchValue,
+    // })
+  }
+
+  handleRefresh(event) {
+    this.props.useGetRepositories?.mutate();
+  }
+
+  handleSearch(v) {
+    this.setState(
+      {
+        current: 1,
+      },
+      this.handleQueryChange
+    );
+  }
+
+  handleSearchValueChange(e) {
+    this.setState({
+      searchValue: e.target.value,
+      // current: 1,
+    });
+  }
+
   handleTableChange(pagination, filters, sorter, extra) {
     this.setState(
       {
@@ -242,6 +211,37 @@ class ComponentsWarehouse$$Page extends React.Component {
       },
       this.handleQueryChange
     );
+  }
+
+  async loadClusters() {
+    const res =
+      await this.props.appHelper?.utils?.bffSdk?.getCurrentUserClustersForIsDeployedResource({
+        group: 'core.kubebb.k8s.com.cn',
+        version: 'v1alpha1',
+        plural: 'repositories',
+      });
+    const clusters = res?.userCurrent?.clusters
+      ?.filter(item => item.isDeployedResource === true)
+      ?.map(item => ({
+        value: item.name,
+        label: item.fullName,
+      }));
+    this.setState(
+      {
+        clusters,
+        cluster: clusters?.[0]?.value,
+        clusterLoading: false,
+      },
+      this.handleQueryChange
+    );
+  }
+
+  openDeleteModal(e, { record }) {
+    this.setState({
+      isOpenModal: true,
+      modalType: 'delete',
+      record,
+    });
   }
 
   paginationShowTotal(total, range) {
@@ -257,25 +257,25 @@ class ComponentsWarehouse$$Page extends React.Component {
     const { state } = __$$context;
     return (
       <Page>
-        <Row wrap={true} __component_name="Row">
-          <Col span={24} __component_name="Col">
-            <Row wrap={false} justify="space-between" __component_name="Row">
-              <Col style={{ display: 'flex', alignItems: 'center' }} __component_name="Col">
+        <Row __component_name="Row" wrap={true}>
+          <Col __component_name="Col" span={24}>
+            <Row __component_name="Row" justify="space-between" wrap={false}>
+              <Col __component_name="Col" style={{ alignItems: 'center', display: 'flex' }}>
                 <Typography.Title
+                  __component_name="Typography.Title"
                   bold={true}
-                  level={1}
                   bordered={false}
                   ellipsis={true}
-                  __component_name="Typography.Title"
+                  level={1}
                 >
                   {this.i18n('i18n-s7vniwvk') /* 组件仓库管理 */}
                 </Typography.Title>
               </Col>
               <Col __component_name="Col">
                 <Select
-                  style={{ width: 200 }}
-                  value={__$$eval(() => this.getCluster())}
-                  options={__$$eval(() => this.state.clusters || [])}
+                  __component_name="Select"
+                  _sdkSwrGetFunc={{}}
+                  allowClear={false}
                   disabled={false}
                   onChange={function () {
                     return this.handleClusterChange.apply(
@@ -283,69 +283,69 @@ class ComponentsWarehouse$$Page extends React.Component {
                       Array.prototype.slice.call(arguments).concat([])
                     );
                   }.bind(this)}
-                  allowClear={false}
-                  showSearch={true}
+                  options={__$$eval(() => this.state.clusters || [])}
                   placeholder={this.i18n('i18n-iaqzm5yl') /* 请选择集群 */}
-                  _sdkSwrGetFunc={{}}
-                  __component_name="Select"
+                  showSearch={true}
+                  style={{ width: 200 }}
+                  value={__$$eval(() => this.getCluster())}
                 />
               </Col>
             </Row>
           </Col>
-          <Col span={24} __component_name="Col">
+          <Col __component_name="Col" span={24}>
             <Card
-              ref={this._refsManager.linkRef('card-bf69e441')}
-              size="default"
-              type="inner"
-              style={{ paddingTop: '4px', paddingBottom: '16px' }}
+              __component_name="Card"
               actions={[]}
-              loading={false}
               bordered={false}
               hoverable={false}
-              __component_name="Card"
+              loading={false}
+              ref={this._refsManager.linkRef('card-bf69e441')}
+              size="default"
+              style={{ paddingBottom: '16px', paddingTop: '4px' }}
+              type="inner"
             >
-              <Row wrap={true} gutter={[0, 0]} __component_name="Row">
-                <Col span={24} __component_name="Col">
-                  <Row wrap={false} justify="space-between" __component_name="Row">
+              <Row __component_name="Row" gutter={[0, 0]} wrap={true}>
+                <Col __component_name="Col" span={24}>
+                  <Row __component_name="Row" justify="space-between" wrap={false}>
                     <Col __component_name="Col">
-                      <Space size={12} align="center" direction="horizontal">
+                      <Space align="center" direction="horizontal" size={12}>
                         <Button
+                          __component_name="Button"
+                          block={false}
+                          danger={false}
+                          disabled={false}
+                          ghost={false}
                           href={__$$eval(
                             () => `/components/warehouse/create?cluster=${this.state.cluster}`
                           )}
                           icon={<AntdIconPlusOutlined __component_name="AntdIconPlusOutlined" />}
-                          type="primary"
-                          block={false}
-                          ghost={false}
                           shape="default"
-                          danger={false}
                           target="_self"
-                          disabled={false}
-                          __component_name="Button"
+                          type="primary"
                         >
                           {this.i18n('i18n-1po87kgw') /* 组件仓库 */}
                         </Button>
                         <Button
+                          __component_name="Button"
+                          block={false}
+                          danger={false}
+                          disabled={false}
+                          ghost={false}
                           icon={
                             <AntdIconReloadOutlined __component_name="AntdIconReloadOutlined" />
                           }
-                          block={false}
-                          ghost={false}
-                          shape="default"
-                          danger={false}
                           onClick={function () {
                             return this.handleRefresh.apply(
                               this,
                               Array.prototype.slice.call(arguments).concat([])
                             );
                           }.bind(this)}
-                          disabled={false}
-                          __component_name="Button"
+                          shape="default"
                         >
                           {this.i18n('i18n-pzwgpt2r') /* 刷新 */}
                         </Button>
                         <Input.Search
-                          style={{ width: '240px' }}
+                          __component_name="Input.Search"
                           onChange={function () {
                             return this.handleSearchValueChange.apply(
                               this,
@@ -359,19 +359,22 @@ class ComponentsWarehouse$$Page extends React.Component {
                             );
                           }.bind(this)}
                           placeholder={this.i18n('i18n-q3xp5myo') /* 请输入仓库名称搜索 */}
-                          __component_name="Input.Search"
+                          style={{ width: '240px' }}
                         />
                       </Space>
                     </Col>
                     <Col __component_name="Col">
                       <Space align="center" direction="horizontal">
                         <Pagination
-                          total={__$$eval(
-                            () => this.props.useGetRepositories?.data?.repositories?.totalCount || 0
-                          )}
-                          simple={true}
+                          __component_name="Pagination"
                           current={__$$eval(() => this.state && this.state.current)}
                           onChange={function () {
+                            return this.handlePaginationChange.apply(
+                              this,
+                              Array.prototype.slice.call(arguments).concat([])
+                            );
+                          }.bind(this)}
+                          onShowSizeChange={function () {
                             return this.handlePaginationChange.apply(
                               this,
                               Array.prototype.slice.call(arguments).concat([])
@@ -384,151 +387,146 @@ class ComponentsWarehouse$$Page extends React.Component {
                               Array.prototype.slice.call(arguments).concat([])
                             );
                           }.bind(this)}
-                          __component_name="Pagination"
-                          onShowSizeChange={function () {
-                            return this.handlePaginationChange.apply(
-                              this,
-                              Array.prototype.slice.call(arguments).concat([])
-                            );
-                          }.bind(this)}
+                          simple={true}
+                          total={__$$eval(
+                            () => this.props.useGetRepositories?.data?.repositories?.totalCount || 0
+                          )}
                         />
                       </Space>
                     </Col>
                   </Row>
                 </Col>
-                <Col span={24} __component_name="Col">
+                <Col __component_name="Col" span={24}>
                   <Table
-                    ref={this._refsManager.linkRef('table-ba33c713')}
-                    size="middle"
-                    rowKey="id"
-                    scroll={{ scrollToFirstRowOnChange: true }}
+                    __component_name="Table"
                     columns={[
                       {
+                        dataIndex: 'name',
+                        ellipsis: { showTitle: true },
                         key: 'name',
                         title: this.i18n('i18n-v6908o0r') /* 组件仓库名称 */,
-                        ellipsis: { showTitle: true },
-                        dataIndex: 'name',
                       },
                       {
-                        title: this.i18n('i18n-iqh7qzhi') /* URL */,
+                        dataIndex: 'url',
                         render: (text, record, index) =>
                           (__$$context => (
                             <Typography.Paragraph
                               code={false}
-                              mark={false}
-                              style={{ fontSize: '' }}
-                              delete={false}
-                              strong={false}
                               copyable={false}
+                              delete={false}
                               disabled={false}
                               editable={false}
                               ellipsis={{
                                 rows: 2,
                                 tooltip: {
-                                  title: __$$eval(() => record?.url),
                                   _unsafe_MixedSetter_title_select: 'VariableSetter',
+                                  title: __$$eval(() => record?.url),
                                 },
                               }}
+                              mark={false}
+                              strong={false}
+                              style={{ fontSize: '' }}
                               underline={false}
                             >
                               {__$$eval(() => record?.url)}
                             </Typography.Paragraph>
                           ))(__$$createChildContext(__$$context, { text, record, index })),
-                        dataIndex: 'url',
+                        title: this.i18n('i18n-iqh7qzhi') /* URL */,
                       },
                       {
+                        dataIndex: 'status',
+                        filters: __$$eval(() => this.utils.getComponentWarehouseStatus(this)),
                         key: 'status',
-                        title: this.i18n('i18n-o48ciymn') /* 当前状态 */,
                         render: (text, record, index) =>
                           (__$$context => (
                             <Space
-                              size="small"
+                              __component_name="Space"
                               align="center"
                               direction="horizontal"
-                              __component_name="Space"
+                              size="small"
                             >
                               <Status
+                                __component_name="Status"
                                 id={__$$eval(() => record?.status)}
                                 types={__$$eval(() =>
                                   __$$context.utils.getComponentWarehouseStatus(__$$context, true)
                                 )}
-                                __component_name="Status"
                               />
                               <Tooltip
-                                title={__$$eval(() => record?.reason || '-')}
                                 __component_name="Tooltip"
+                                title={__$$eval(() => record?.reason || '-')}
                               >
                                 <Container
-                                  color="colorTextDescription"
                                   __component_name="Container"
+                                  color="colorTextDescription"
                                 >
                                   {!!__$$eval(() => record?.status?.includes('failed')) && (
                                     <AntdIconExclamationCircleOutlined
-                                      style={{ color: '' }}
                                       __component_name="AntdIconExclamationCircleOutlined"
+                                      style={{ color: '' }}
                                     />
                                   )}
                                 </Container>
                               </Tooltip>
                             </Space>
                           ))(__$$createChildContext(__$$context, { text, record, index })),
-                        filters: __$$eval(() => this.utils.getComponentWarehouseStatus(this)),
-                        dataIndex: 'status',
+                        title: this.i18n('i18n-o48ciymn') /* 当前状态 */,
                       },
                       {
-                        key: 'lastSuccessfulTime',
-                        title: this.i18n('i18n-d9x7wf7j') /* 最新同步时间 */,
-                        render: (text, record, index) =>
-                          (__$$context => (
-                            <Typography.Time
-                              time={__$$eval(() => record?.lastSuccessfulTime)}
-                              format=""
-                              relativeTime={false}
-                              __component_name="Typography.Time"
-                            />
-                          ))(__$$createChildContext(__$$context, { text, record, index })),
-                        sorter: true,
                         dataIndex: 'lastSuccessfulTime',
-                      },
-                      {
-                        key: 'creationTimestamp',
-                        title: this.i18n('i18n-gjr2ewmb') /* 创建时间 */,
+                        key: 'lastSuccessfulTime',
                         render: (text, record, index) =>
                           (__$$context => (
                             <Typography.Time
-                              time={__$$eval(() => record?.creationTimestamp)}
+                              __component_name="Typography.Time"
                               format=""
                               relativeTime={false}
-                              __component_name="Typography.Time"
+                              time={__$$eval(() => record?.lastSuccessfulTime)}
                             />
                           ))(__$$createChildContext(__$$context, { text, record, index })),
                         sorter: true,
-                        dataIndex: 'creationTimestamp',
+                        title: this.i18n('i18n-d9x7wf7j') /* 最新同步时间 */,
                       },
                       {
-                        title: this.i18n('i18n-ioy0ge9h') /* 操作 */,
+                        dataIndex: 'creationTimestamp',
+                        key: 'creationTimestamp',
                         render: (text, record, index) =>
                           (__$$context => (
-                            <Space size={12} align="center" direction="horizontal">
+                            <Typography.Time
+                              __component_name="Typography.Time"
+                              format=""
+                              relativeTime={false}
+                              time={__$$eval(() => record?.creationTimestamp)}
+                            />
+                          ))(__$$createChildContext(__$$context, { text, record, index })),
+                        sorter: true,
+                        title: this.i18n('i18n-gjr2ewmb') /* 创建时间 */,
+                      },
+                      {
+                        dataIndex: 'op',
+                        render: (text, record, index) =>
+                          (__$$context => (
+                            <Space align="center" direction="horizontal" size={12}>
                               <Button
+                                __component_name="Button"
+                                block={false}
+                                danger={false}
+                                disabled={false}
+                                ghost={false}
                                 href={__$$eval(
                                   () =>
                                     `/components/warehouse/${record?.name}?cluster=${__$$context.state.cluster}`
                                 )}
-                                block={false}
-                                ghost={false}
                                 shape="default"
-                                danger={false}
-                                disabled={false}
-                                __component_name="Button"
                               >
                                 {this.i18n('i18n-u4ajovin') /* 编辑 */}
                               </Button>
                               <Button
+                                __component_name="Button"
                                 block={false}
-                                ghost={false}
-                                shape="default"
                                 danger={false}
+                                disabled={false}
+                                ghost={false}
                                 onClick={function () {
                                   return this.openDeleteModal.apply(
                                     this,
@@ -539,16 +537,18 @@ class ComponentsWarehouse$$Page extends React.Component {
                                     ])
                                   );
                                 }.bind(__$$context)}
-                                disabled={false}
-                                __component_name="Button"
+                                shape="default"
                               >
                                 {this.i18n('i18n-lc4oie5j') /* 删除 */}
                               </Button>
                             </Space>
                           ))(__$$createChildContext(__$$context, { text, record, index })),
-                        dataIndex: 'op',
+                        title: this.i18n('i18n-ioy0ge9h') /* 操作 */,
                       },
                     ]}
+                    dataSource={__$$eval(
+                      () => this.props.useGetRepositories?.data?.repositories?.nodes || []
+                    )}
                     loading={__$$eval(
                       () =>
                         this.props.useGetRepositories?.isLoading ||
@@ -562,12 +562,13 @@ class ComponentsWarehouse$$Page extends React.Component {
                         Array.prototype.slice.call(arguments).concat([])
                       );
                     }.bind(this)}
-                    dataSource={__$$eval(
-                      () => this.props.useGetRepositories?.data?.repositories?.nodes || []
-                    )}
                     pagination={false}
+                    ref={this._refsManager.linkRef('table-ba33c713')}
+                    rowKey="id"
+                    scroll={{ scrollToFirstRowOnChange: true }}
                     showHeader={true}
-                    __component_name="Table"
+                    size="middle"
+                    style={{ marginTop: '4px' }}
                   />
                 </Col>
               </Row>
@@ -575,7 +576,17 @@ class ComponentsWarehouse$$Page extends React.Component {
           </Col>
         </Row>
         <Modal
+          __component_name="Modal"
+          centered={false}
+          confirmLoading={__$$eval(() => this.state.deleteLoading)}
+          destroyOnClose={true}
+          forceRender={false}
+          keyboard={true}
           mask={true}
+          maskClosable={false}
+          onCancel={function () {
+            return this.closeModal.apply(this, Array.prototype.slice.call(arguments).concat([]));
+          }.bind(this)}
           onOk={function () {
             return this.confirmDeleteModal.apply(
               this,
@@ -584,59 +595,49 @@ class ComponentsWarehouse$$Page extends React.Component {
           }.bind(this)}
           open={__$$eval(() => this.state.isOpenModal && this.state.modalType === 'delete')}
           title={this.i18n('i18n-enfsxrze') /* 删除组件仓库 */}
-          centered={false}
-          keyboard={true}
-          onCancel={function () {
-            return this.closeModal.apply(this, Array.prototype.slice.call(arguments).concat([]));
-          }.bind(this)}
-          forceRender={false}
-          maskClosable={false}
-          confirmLoading={__$$eval(() => this.state.deleteLoading)}
-          destroyOnClose={true}
-          __component_name="Modal"
         >
           <Alert
-            type="info"
-            style={{}}
+            __component_name="Alert"
             message={
-              <Space size={5} align="center" style={{}} direction="horizontal">
+              <Space align="center" direction="horizontal" size={5} style={{}}>
                 <Typography.Text
-                  style={{ fontSize: '' }}
-                  strong={false}
+                  __component_name="Typography.Text"
                   disabled={false}
                   ellipsis={true}
-                  __component_name="Typography.Text"
+                  strong={false}
+                  style={{ fontSize: '' }}
                 >
                   {this.i18n('i18n-lc4oie5j') /* 删除 */}
                 </Typography.Text>
                 <Typography.Text
-                  style={{ fontSize: '', maxWidth: '180px' }}
-                  strong={true}
+                  __component_name="Typography.Text"
                   disabled={false}
                   ellipsis={{
                     rows: 1,
                     tooltip: {
-                      title: __$$eval(() => this.state.record?.name || '-'),
                       _unsafe_MixedSetter_title_select: 'VariableSetter',
+                      title: __$$eval(() => this.state.record?.name || '-'),
                     },
                   }}
-                  __component_name="Typography.Text"
+                  strong={true}
+                  style={{ fontSize: '', maxWidth: '180px' }}
                 >
                   {__$$eval(() => this.state.record?.name || '-')}
                 </Typography.Text>
                 <Typography.Text
-                  style={{ fontSize: '' }}
-                  strong={false}
+                  __component_name="Typography.Text"
                   disabled={false}
                   ellipsis={true}
-                  __component_name="Typography.Text"
+                  strong={false}
+                  style={{ fontSize: '' }}
                 >
                   {this.i18n('i18n-1y52u16q') /* 组件仓库，其下组件将同步删除，请确认！ */}
                 </Typography.Text>
               </Space>
             }
             showIcon={true}
-            __component_name="Alert"
+            style={{}}
+            type="info"
           />
         </Modal>
       </Page>
@@ -644,7 +645,7 @@ class ComponentsWarehouse$$Page extends React.Component {
   }
 }
 
-const PageWrapper = () => {
+const PageWrapper = (props = {}) => {
   const location = useLocation();
   const history = getUnifiedHistory();
   const match = matchPath({ path: '/components/warehouse' }, location.pathname);
@@ -652,6 +653,7 @@ const PageWrapper = () => {
   history.query = qs.parse(location.search);
   const appHelper = {
     utils,
+    constants: __$$constants,
     location,
     match,
     history,
@@ -665,7 +667,6 @@ const PageWrapper = () => {
       self={self}
       sdkInitFunc={{
         enabled: undefined,
-        func: 'undefined',
         params: undefined,
       }}
       sdkSwrFuncs={[
@@ -682,7 +683,7 @@ const PageWrapper = () => {
         },
       ]}
       render={dataProps => (
-        <ComponentsWarehouse$$Page {...dataProps} self={self} appHelper={appHelper} />
+        <ComponentsWarehouse$$Page {...props} {...dataProps} self={self} appHelper={appHelper} />
       )}
     />
   );
@@ -704,6 +705,14 @@ function __$$createChildContext(oldContext, ext) {
   const childContext = {
     ...oldContext,
     ...ext,
+    // 重写 state getter，保证 state 的指向不变，这样才能从 context 中拿到最新的 state
+    get state() {
+      return oldContext.state;
+    },
+    // 重写 props getter，保证 props 的指向不变，这样才能从 context 中拿到最新的 props
+    get props() {
+      return oldContext.props;
+    },
   };
   childContext.__proto__ = oldContext;
   return childContext;

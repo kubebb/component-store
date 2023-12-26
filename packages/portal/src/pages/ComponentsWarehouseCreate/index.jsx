@@ -71,7 +71,7 @@ class ComponentsWarehouseCreate$$Page extends React.Component {
 
     __$$i18n._inject2(this);
 
-    this.state = { isCreate: true, creating: false, name: undefined, cluster: undefined };
+    this.state = { cluster: undefined, creating: false, isCreate: true, name: undefined };
   }
 
   $ = refName => {
@@ -82,14 +82,12 @@ class ComponentsWarehouseCreate$$Page extends React.Component {
     return this._refsManager.getAll(refName);
   };
 
-  async loadCluster() {
-    const res = await this.props.appHelper?.utils?.bffSdk?.getCluster({
-      name: this.getCluster(),
-    });
-    const cluster = res?.cluster;
-    this.setState({
-      cluster,
-    });
+  beforeUpload() {
+    return false;
+  }
+
+  form(name) {
+    return this.$(name || 'formily_create')?.formRef?.current?.form;
   }
 
   getCluster() {
@@ -152,6 +150,20 @@ class ComponentsWarehouseCreate$$Page extends React.Component {
     });
   }
 
+  async initEdit() {
+    try {
+      const res = await this.props?.appHelper?.utils?.bff?.getRepository({
+        name: this.state.name,
+        cluster: this.getCluster(),
+      });
+      const v = res?.repository || {};
+      this.setState({
+        data: v,
+      });
+      this.initForms(v);
+    } catch (e) {}
+  }
+
   initForms(v) {
     if (this.form() && !this.state.isCreate) {
       this.form().setValues({
@@ -184,169 +196,18 @@ class ComponentsWarehouseCreate$$Page extends React.Component {
     }, 200);
   }
 
-  async initEdit() {
-    try {
-      const res = await this.props?.appHelper?.utils?.bff?.getRepository({
-        name: this.state.name,
-        cluster: this.getCluster(),
-      });
-      const v = res?.repository || {};
-      this.setState({
-        data: v,
-      });
-      this.initForms(v);
-    } catch (e) {}
-  }
-
-  async validatorUrl(value) {
-    const URL_REG_EXP =
-      /^https?:\/\/(([a-zA-Z0-9_-])+(\.)?)*(:\d+)?(\/((\.)?(\?)?=?&?[a-zA-Z0-9_-](\?)?)*)*$/i;
-    if (value && !URL_REG_EXP.test(value)) {
-      return this.i18n('i18n-q9gsf3z5');
-    }
-    if (value && value.endsWith('/')) {
-      return this.i18n('i18n-q9gsf3z5');
-    }
-  }
-
-  async validatorName(value) {
-    try {
-      if (value && this.state.isCreate) {
-        const res = await this.props?.appHelper?.utils?.bff?.getRepository({
-          name: value,
-        });
-        if (res?.repository?.name) {
-          return this.i18n('i18n-52vob0jn');
-        }
-      }
-    } catch (e) {}
-  }
-
-  async validatorNameCharacter(value) {
-    if (value && (value.includes('.-') || value.includes('-.'))) {
-      return this.i18n('i18n-dofmyljq');
-    }
-  }
-
-  async validatorComponentName(value, ...payload) {
-    const values = this.form()?.values;
-    try {
-      if (
-        value &&
-        values?.filter?.value?.some(
-          (item, index) => item.name === value && payload?.[1]?.field?.index !== index
-        )
-      ) {
-        return this.i18n('i18n-ph9t7b7n');
-      }
-    } catch (e) {}
-  }
-
-  validatorDomain(value) {
-    if (value && !this.utils.isIP(value) && !/^([a-zA-Z0-9-]+(\.|\-))+[a-zA-Z]{2,}$/.test(value)) {
-      return this.i18n('i18n-gyegeqvt');
-    }
-  }
-
-  async validatorDomainName(value, ...payload) {
-    const values = this.form()?.values;
-    const curIndex = payload?.[1]?.field?.index;
-    const currItem = values?.imageOverride?.value?.[curIndex];
-    if (this.validatorDomain(value)) {
-      return this.validatorDomain(value);
-    }
-    try {
-      if (
-        value &&
-        values?.imageOverride?.value?.some(
-          (item, index) =>
-            item.registry === currItem?.registry &&
-            item.path === currItem?.path &&
-            curIndex !== index
-        )
-      ) {
-        return this.i18n('i18n-9al8mu54');
-      }
-    } catch (e) {}
-  }
-
-  validatorRepo(value) {
-    if (value && !/^([a-z0-9]{1}[-a-z0-9.]{1,251})[a-z0-9]{1}$/.test(value)) {
-      return this.i18n('i18n-dzffs2mw');
-    }
-  }
-
-  async validatorRepoName(value, ...payload) {
-    const values = this.form()?.values;
-    const curIndex = payload?.[1]?.field?.index;
-    const currItem = values?.imageOverride?.value?.[curIndex];
-    if (this.validatorRepo(value)) {
-      return this.validatorRepo(value);
-    }
-    try {
-      if (
-        value &&
-        values?.imageOverride?.value?.some(
-          (item, index) =>
-            item.registry === currItem?.registry &&
-            item.path === currItem?.path &&
-            curIndex !== index
-        )
-      ) {
-        return this.i18n('i18n-9al8mu54');
-      }
-    } catch (e) {}
-  }
-
-  async validatorDisabled(value, ...payload) {
-    const pathPre = payload?.[1]?.field?.props?.basePath?.entire;
-    if (value === 'ignore_all') {
-      this.form().setFormGraph({
-        [pathPre + '.regexp']: {
-          pattern: 'disabled',
-        },
-        [pathPre + '.versionConstraint']: {
-          pattern: 'disabled',
-        },
-        [pathPre + '.versions']: {
-          pattern: 'disabled',
-        },
-      });
-    } else {
-      this.form().setFormGraph({
-        [pathPre + '.regexp']: {
-          pattern: 'editable',
-        },
-        [pathPre + '.versionConstraint']: {
-          pattern: 'editable',
-        },
-        [pathPre + '.versions']: {
-          pattern: 'editable',
-        },
-      });
-    }
+  async loadCluster() {
+    const res = await this.props.appHelper?.utils?.bffSdk?.getCluster({
+      name: this.getCluster(),
+    });
+    const cluster = res?.cluster;
+    this.setState({
+      cluster,
+    });
   }
 
   onCancel(event) {
     this.history.go(-1);
-  }
-
-  form(name) {
-    return this.$(name || 'formily_create')?.formRef?.current?.form;
-  }
-
-  beforeUpload() {
-    return false;
-  }
-
-  validatorFile(value) {
-    if (!value && !this.state.data?.cadata) {
-      return this.i18n('i18n-aa3ink0n');
-    }
-    // // k
-    // if (value?.file.size > 5*1000*) {
-    //   return '文件不能大于 5M'
-    // }
   }
 
   onSubmit(event) {
@@ -426,6 +287,145 @@ class ComponentsWarehouseCreate$$Page extends React.Component {
     });
   }
 
+  async validatorComponentName(value, ...payload) {
+    const values = this.form()?.values;
+    try {
+      if (
+        value &&
+        values?.filter?.value?.some(
+          (item, index) => item.name === value && payload?.[1]?.field?.index !== index
+        )
+      ) {
+        return this.i18n('i18n-ph9t7b7n');
+      }
+    } catch (e) {}
+  }
+
+  async validatorDisabled(value, ...payload) {
+    const pathPre = payload?.[1]?.field?.props?.basePath?.entire;
+    if (value === 'ignore_all') {
+      this.form().setFormGraph({
+        [pathPre + '.regexp']: {
+          pattern: 'disabled',
+        },
+        [pathPre + '.versionConstraint']: {
+          pattern: 'disabled',
+        },
+        [pathPre + '.versions']: {
+          pattern: 'disabled',
+        },
+      });
+    } else {
+      this.form().setFormGraph({
+        [pathPre + '.regexp']: {
+          pattern: 'editable',
+        },
+        [pathPre + '.versionConstraint']: {
+          pattern: 'editable',
+        },
+        [pathPre + '.versions']: {
+          pattern: 'editable',
+        },
+      });
+    }
+  }
+
+  validatorDomain(value) {
+    if (value && !this.utils.isIP(value) && !/^([a-zA-Z0-9-]+(\.|\-))+[a-zA-Z]{2,}$/.test(value)) {
+      return this.i18n('i18n-gyegeqvt');
+    }
+  }
+
+  async validatorDomainName(value, ...payload) {
+    const values = this.form()?.values;
+    const curIndex = payload?.[1]?.field?.index;
+    const currItem = values?.imageOverride?.value?.[curIndex];
+    if (this.validatorDomain(value)) {
+      return this.validatorDomain(value);
+    }
+    try {
+      if (
+        value &&
+        values?.imageOverride?.value?.some(
+          (item, index) =>
+            item.registry === currItem?.registry &&
+            item.path === currItem?.path &&
+            curIndex !== index
+        )
+      ) {
+        return this.i18n('i18n-9al8mu54');
+      }
+    } catch (e) {}
+  }
+
+  validatorFile(value) {
+    if (!value && !this.state.data?.cadata) {
+      return this.i18n('i18n-aa3ink0n');
+    }
+    // // k
+    // if (value?.file.size > 5*1000*) {
+    //   return '文件不能大于 5M'
+    // }
+  }
+
+  async validatorName(value) {
+    try {
+      if (value && this.state.isCreate) {
+        const res = await this.props?.appHelper?.utils?.bff?.getRepository({
+          name: value,
+        });
+        if (res?.repository?.name) {
+          return this.i18n('i18n-52vob0jn');
+        }
+      }
+    } catch (e) {}
+  }
+
+  async validatorNameCharacter(value) {
+    if (value && (value.includes('.-') || value.includes('-.'))) {
+      return this.i18n('i18n-dofmyljq');
+    }
+  }
+
+  validatorRepo(value) {
+    if (value && !/^([a-z0-9]{1}[-a-z0-9.]{1,251})[a-z0-9]{1}$/.test(value)) {
+      return this.i18n('i18n-dzffs2mw');
+    }
+  }
+
+  async validatorRepoName(value, ...payload) {
+    const values = this.form()?.values;
+    const curIndex = payload?.[1]?.field?.index;
+    const currItem = values?.imageOverride?.value?.[curIndex];
+    if (this.validatorRepo(value)) {
+      return this.validatorRepo(value);
+    }
+    try {
+      if (
+        value &&
+        values?.imageOverride?.value?.some(
+          (item, index) =>
+            item.registry === currItem?.registry &&
+            item.path === currItem?.path &&
+            curIndex !== index
+        )
+      ) {
+        return this.i18n('i18n-9al8mu54');
+      }
+    } catch (e) {}
+  }
+
+  async validatorUrl(value) {
+    const URL_REG_EXP =
+      /^https?:\/\/(([a-zA-Z0-9_-])+(\.)?)*(:\d+)?(\/((\.)?(\?)?=?&?[a-zA-Z0-9_-](\?)?)*)*$/i;
+    if (value && !URL_REG_EXP.test(value)) {
+      return this.i18n('i18n-q9gsf3z5');
+    }
+    if (value && value.endsWith('/')) {
+      return this.i18n('i18n-q9gsf3z5');
+    }
+  }
+
   componentDidMount() {
     this.loadCluster();
     const isCreate = this.props.appHelper?.match?.params?.id === 'create';
@@ -449,85 +449,94 @@ class ComponentsWarehouseCreate$$Page extends React.Component {
     const { state } = __$$context;
     return (
       <Page>
-        <Row wrap={true} __component_name="Row">
-          <Col span={24} __component_name="Col">
-            <Space align="center" direction="horizontal" __component_name="Space">
+        <Row __component_name="Row" wrap={true}>
+          <Col __component_name="Col" span={24}>
+            <Space __component_name="Space" align="center" direction="horizontal">
               <Button.Back
-                name={this.i18n('i18n-86so9ago') /* 返回 */}
-                type="primary"
-                title={this.i18n('i18n-qwjrzcj4') /* 新建组件仓库 */}
                 __component_name="Button.Back"
+                name={this.i18n('i18n-86so9ago') /* 返回 */}
+                title={this.i18n('i18n-qwjrzcj4') /* 新建组件仓库 */}
+                type="primary"
               />
             </Space>
             <Tag
+              __component_name="Tag"
+              closable={false}
               color="rgba(0,0,0,0.65)"
               style={{
-                position: 'relative',
-                marginTop: '-5px',
-                marginLeft: '16px',
-                marginRight: '0px',
+                borderBottomLeftRadius: '2px',
                 borderRadius: '0',
                 borderTopLeftRadius: '2px',
-                borderBottomLeftRadius: '2px',
+                marginLeft: '16px',
+                marginRight: '0px',
+                marginTop: '-5px',
+                position: 'relative',
               }}
-              closable={false}
-              __component_name="Tag"
             >
               {this.i18n('i18n-yfkq2xqq') /* 集群 */}
             </Tag>
             <Tag
+              __component_name="Tag"
+              closable={false}
               color="#ffffff"
               style={{
-                color: 'rgba(0,0,0,0.85)',
-                position: 'relative',
-                marginTop: '-5px',
+                borderBottomRightRadius: '2px',
                 borderRadius: '0',
                 borderTopRightRadius: '2px',
-                borderBottomRightRadius: '2px',
+                color: 'rgba(0,0,0,0.85)',
+                marginTop: '-5px',
+                position: 'relative',
               }}
-              closable={false}
-              __component_name="Tag"
             >
               {__$$eval(() => this.getClusterInfo()?.fullName || '-')}
             </Tag>
           </Col>
-          <Col span={24} __component_name="Col">
+          <Col __component_name="Col" span={24}>
             <Card
-              size="default"
-              type="default"
-              cover=""
-              actions={[]}
-              loading={false}
-              bordered={false}
-              hoverable={false}
               __component_name="Card"
+              actions={[]}
+              bordered={false}
+              cover=""
+              hoverable={false}
+              loading={false}
+              size="default"
+              type="inner"
             >
               <FormilyForm
-                ref={this._refsManager.linkRef('formily_create')}
-                formHelper={{ autoFocus: true }}
+                __component_name="FormilyForm"
                 componentProps={{
                   colon: false,
-                  layout: 'horizontal',
-                  labelCol: 4,
                   labelAlign: 'left',
+                  labelCol: 4,
                   labelWidth: '145px',
+                  layout: 'horizontal',
                   wrapperCol: 20,
                   wrapperWidth: '680px',
                 }}
-                __component_name="FormilyForm"
+                formHelper={{ autoFocus: true }}
+                ref={this._refsManager.linkRef('formily_create')}
               >
                 <FormilyInput
+                  __component_name="FormilyInput"
+                  componentProps={{
+                    'x-component-props': {
+                      placeholder: this.i18n('i18n-psh5pyle') /* 请填写组件仓库名称 */,
+                    },
+                  }}
+                  decoratorProps={{
+                    'x-decorator-props': { asterisk: false, labelEllipsis: true, wrapperCol: 10 },
+                  }}
                   fieldProps={{
                     name: 'name',
-                    title: this.i18n('i18n-x25agmsc') /* 名称 */,
                     required: true,
+                    title: this.i18n('i18n-x25agmsc') /* 名称 */,
                     'x-pattern': __$$eval(() =>
                       this.props.appHelper?.match?.params?.id !== 'create' ? 'disabled' : 'editable'
                     ),
                     'x-validator': [
                       {
+                        children: '未知',
                         id: 'disabled',
-                        type: 'disabled',
                         message:
                           this.i18n(
                             'i18n-dzffs2mw'
@@ -537,15 +546,15 @@ class ComponentsWarehouseCreate$$Page extends React.Component {
                             max: 253,
                           })
                         ),
-                        children: '未知',
                         required: false,
+                        type: 'disabled',
                         whitespace: false,
                       },
                       {
-                        id: 'disabled',
-                        type: 'disabled',
-                        message: this.i18n('i18n-dofmyljq') /* “.”  和 “-” 不能连用 */,
                         children: '未知',
+                        id: 'disabled',
+                        message: this.i18n('i18n-dofmyljq') /* “.”  和 “-” 不能连用 */,
+                        type: 'disabled',
                         validator: function () {
                           return this.validatorNameCharacter.apply(
                             this,
@@ -554,45 +563,43 @@ class ComponentsWarehouseCreate$$Page extends React.Component {
                         }.bind(this),
                       },
                       {
-                        id: 'disabled',
-                        type: 'disabled',
-                        message: this.i18n('i18n-52vob0jn') /* 仓库名称重复 */,
                         children: '未知',
+                        id: 'disabled',
+                        message: this.i18n('i18n-52vob0jn') /* 仓库名称重复 */,
+                        triggerType: 'onBlur',
+                        type: 'disabled',
                         validator: function () {
                           return this.validatorName.apply(
                             this,
                             Array.prototype.slice.call(arguments).concat([])
                           );
                         }.bind(this),
-                        triggerType: 'onBlur',
                       },
                     ],
                   }}
-                  componentProps={{
-                    'x-component-props': {
-                      placeholder: this.i18n('i18n-psh5pyle') /* 请填写组件仓库名称 */,
-                    },
-                  }}
-                  decoratorProps={{
-                    'x-decorator-props': { asterisk: false, wrapperCol: 10, labelEllipsis: true },
-                  }}
-                  __component_name="FormilyInput"
                 />
                 <FormilyInput
-                  ref={this._refsManager.linkRef('formilyinput-24ff12d0')}
+                  __component_name="FormilyInput"
+                  componentProps={{
+                    'x-component-props': {
+                      placeholder:
+                        this.i18n('i18n-1lkuumnu') /* 请填写组件仓库地址，例http://ip(host):port */,
+                    },
+                  }}
+                  decoratorProps={{ 'x-decorator-props': { asterisk: true, labelEllipsis: true } }}
                   fieldProps={{
                     name: 'url',
-                    title: this.i18n('i18n-iqh7qzhi') /* URL */,
                     required: true,
+                    title: this.i18n('i18n-iqh7qzhi') /* URL */,
                     'x-pattern': __$$eval(() =>
                       this.props.appHelper?.match?.params?.id !== 'create' ? 'disabled' : 'editable'
                     ),
                     'x-validator': [
                       {
-                        id: 'disabled',
-                        type: 'disabled',
-                        message: this.i18n('i18n-q9gsf3z5') /* URL 格式不正确 */,
                         children: '未知',
+                        id: 'disabled',
+                        message: this.i18n('i18n-q9gsf3z5') /* URL 格式不正确 */,
+                        type: 'disabled',
                         validator: function () {
                           return this.validatorUrl.apply(
                             this,
@@ -602,38 +609,43 @@ class ComponentsWarehouseCreate$$Page extends React.Component {
                       },
                     ],
                   }}
-                  componentProps={{
-                    'x-component-props': {
-                      placeholder:
-                        this.i18n('i18n-1lkuumnu') /* 请填写组件仓库地址，例http://ip(host):port */,
-                    },
-                  }}
-                  decoratorProps={{ 'x-decorator-props': { asterisk: true, labelEllipsis: true } }}
-                  __component_name="FormilyInput"
+                  ref={this._refsManager.linkRef('formilyinput-24ff12d0')}
                 />
                 {!!false && (
                   <FormilySelect
+                    __component_name="FormilySelect"
+                    componentProps={{
+                      'x-component-props': {
+                        _sdkSwrGetFunc: {},
+                        allowClear: false,
+                        disabled: __$$eval(
+                          () => this.props.appHelper?.match?.params?.id !== 'create'
+                        ),
+                        placeholder: this.i18n('i18n-n0h4rmtn') /* 请选择组件仓库类型 */,
+                      },
+                    }}
+                    decoratorProps={{ 'x-decorator-props': { asterisk: false } }}
                     fieldProps={{
+                      default: '',
                       enum: [
                         {
-                          id: 'disabled',
-                          type: 'disabled',
-                          label: 'Git',
-                          value: 'Git',
                           children: '',
+                          id: 'disabled',
+                          label: 'Git',
+                          type: 'disabled',
+                          value: 'Git',
                         },
                         {
-                          id: 'disabled',
-                          type: 'disabled',
-                          label: 'Chart Museum',
-                          value: 'ChartMuseum',
                           children: '',
+                          id: 'disabled',
+                          label: 'Chart Museum',
+                          type: 'disabled',
+                          value: 'ChartMuseum',
                         },
                       ],
                       name: 'repositoryType',
-                      title: this.i18n('i18n-gyax19ni') /* 类型 */,
-                      default: '',
                       required: true,
+                      title: this.i18n('i18n-gyax19ni') /* 类型 */,
                       'x-pattern': __$$eval(() =>
                         this.props.appHelper?.match?.params?.id !== 'create'
                           ? 'disabled'
@@ -641,57 +653,66 @@ class ComponentsWarehouseCreate$$Page extends React.Component {
                       ),
                       'x-validator': [],
                     }}
-                    componentProps={{
-                      'x-component-props': {
-                        disabled: __$$eval(
-                          () => this.props.appHelper?.match?.params?.id !== 'create'
-                        ),
-                        allowClear: false,
-                        placeholder: this.i18n('i18n-n0h4rmtn') /* 请选择组件仓库类型 */,
-                        _sdkSwrGetFunc: {},
-                      },
-                    }}
-                    decoratorProps={{ 'x-decorator-props': { asterisk: false } }}
-                    __component_name="FormilySelect"
                   />
                 )}
                 <FormilyCheckbox
-                  ref={this._refsManager.linkRef('formilycheckbox-cc84e65a')}
-                  style={{}}
+                  __component_name="FormilyCheckbox"
+                  componentProps={{ 'x-component-props': { _sdkSwrGetFunc: {} } }}
                   fieldProps={{
                     enum: [{ label: this.i18n('i18n-pe8t9yro') /* https 验证 */, value: 'true' }],
                     name: 'insecure',
                     title: this.i18n('i18n-utwwqntm') /* 安全信息 */,
                     'x-validator': [],
                   }}
-                  componentProps={{ 'x-component-props': { _sdkSwrGetFunc: {} } }}
-                  __component_name="FormilyCheckbox"
+                  ref={this._refsManager.linkRef('formilycheckbox-cc84e65a')}
+                  style={{}}
                 />
                 <FormilyUpload
-                  ref={this._refsManager.linkRef('formilyupload-666ef891')}
-                  style={{}}
+                  __component_name="FormilyUpload"
+                  componentProps={{
+                    'x-component-props': {
+                      accept: '.der,.cer,.pem,.crt,.key,.p7b,.p7c,.pfx',
+                      beforeUpload: function () {
+                        return this.beforeUpload.apply(
+                          this,
+                          Array.prototype.slice.call(arguments).concat([])
+                        );
+                      }.bind(this),
+                      maxCount: 1,
+                      uploadListInline: true,
+                    },
+                  }}
+                  decoratorProps={{
+                    'x-decorator-props': {
+                      asterisk: true,
+                      colon: false,
+                      labelAlign: 'left',
+                      labelWidth: '145px',
+                    },
+                  }}
                   fieldProps={{
+                    _unsafe_MixedSetter_title_select: 'SlotSetter',
                     name: 'cadata',
                     title: (
                       <Typography.Text
-                        type="colorTextSecondary"
-                        style={{ top: '2px', fontSize: '', position: 'relative' }}
-                        strong={false}
+                        __component_name="Typography.Text"
                         disabled={false}
                         ellipsis={true}
-                        __component_name="Typography.Text"
+                        strong={false}
+                        style={{ fontSize: '', position: 'relative', top: '2px' }}
+                        type="colorTextSecondary"
                       >
                         {this.i18n('i18n-r8c2xx03') /* 根证书 */}
                       </Typography.Text>
                     ),
+                    'x-component': 'FormilyUpload',
                     'x-display':
                       "{{$form.values?.insecure?.includes('true') ? 'visible': 'hidden'}}",
-                    'x-component': 'FormilyUpload',
                     'x-validator': [
                       {
+                        children: '未知',
                         id: 'disabled',
                         type: 'disabled',
-                        children: '未知',
                         validator: function () {
                           return this.validatorFile.apply(
                             this,
@@ -700,199 +721,172 @@ class ComponentsWarehouseCreate$$Page extends React.Component {
                         }.bind(this),
                       },
                     ],
-                    _unsafe_MixedSetter_title_select: 'SlotSetter',
                   }}
+                  ref={this._refsManager.linkRef('formilyupload-666ef891')}
+                  style={{}}
+                >
+                  <Button
+                    __component_name="Button"
+                    block={false}
+                    danger={false}
+                    disabled={false}
+                    ghost={true}
+                    icon={<AntdIconUploadOutlined __component_name="AntdIconUploadOutlined" />}
+                    ref={this._refsManager.linkRef('button-15001b03')}
+                    shape="default"
+                    style={{}}
+                    type="primary"
+                  >
+                    {this.i18n('i18n-b8lgc3ot') /* 上传 */}
+                  </Button>
+                </FormilyUpload>
+                <FormilyUpload
+                  __component_name="FormilyUpload"
                   componentProps={{
                     'x-component-props': {
                       accept: '.der,.cer,.pem,.crt,.key,.p7b,.p7c,.pfx',
-                      maxCount: 1,
                       beforeUpload: function () {
                         return this.beforeUpload.apply(
                           this,
                           Array.prototype.slice.call(arguments).concat([])
                         );
                       }.bind(this),
+                      maxCount: 1,
                       uploadListInline: true,
                     },
                   }}
                   decoratorProps={{
                     'x-decorator-props': {
+                      asterisk: false,
                       colon: false,
-                      asterisk: true,
                       labelAlign: 'left',
                       labelWidth: '145px',
                     },
                   }}
-                  __component_name="FormilyUpload"
-                >
-                  <Button
-                    ref={this._refsManager.linkRef('button-15001b03')}
-                    icon={<AntdIconUploadOutlined __component_name="AntdIconUploadOutlined" />}
-                    type="primary"
-                    block={false}
-                    ghost={true}
-                    shape="default"
-                    style={{}}
-                    danger={false}
-                    disabled={false}
-                    __component_name="Button"
-                  >
-                    {this.i18n('i18n-b8lgc3ot') /* 上传 */}
-                  </Button>
-                </FormilyUpload>
-                <FormilyUpload
-                  ref={this._refsManager.linkRef('formilyupload-666ef891')}
-                  style={{}}
                   fieldProps={{
+                    _unsafe_MixedSetter_title_select: 'SlotSetter',
                     name: 'certdata',
                     title: (
                       <Typography.Text
-                        type="colorTextSecondary"
-                        style={{ top: '2px', fontSize: '', position: 'relative' }}
-                        strong={false}
+                        __component_name="Typography.Text"
                         disabled={false}
                         ellipsis={true}
-                        __component_name="Typography.Text"
+                        strong={false}
+                        style={{ fontSize: '', position: 'relative', top: '2px' }}
+                        type="colorTextSecondary"
                       >
                         {this.i18n('i18n-dx6dp5fl') /* 客户端证书 */}
                       </Typography.Text>
                     ),
+                    'x-component': 'FormilyUpload',
                     'x-display':
                       "{{$form.values?.insecure?.includes('true') ? 'visible': 'hidden'}}",
-                    'x-component': 'FormilyUpload',
                     'x-validator': [],
-                    _unsafe_MixedSetter_title_select: 'SlotSetter',
                   }}
-                  componentProps={{
-                    'x-component-props': {
-                      accept: '.der,.cer,.pem,.crt,.key,.p7b,.p7c,.pfx',
-                      maxCount: 1,
-                      beforeUpload: function () {
-                        return this.beforeUpload.apply(
-                          this,
-                          Array.prototype.slice.call(arguments).concat([])
-                        );
-                      }.bind(this),
-                      uploadListInline: true,
-                    },
-                  }}
-                  decoratorProps={{
-                    'x-decorator-props': {
-                      colon: false,
-                      asterisk: false,
-                      labelAlign: 'left',
-                      labelWidth: '145px',
-                    },
-                  }}
-                  __component_name="FormilyUpload"
+                  ref={this._refsManager.linkRef('formilyupload-666ef891')}
+                  style={{}}
                 >
                   <Button
-                    ref={this._refsManager.linkRef('button-15001b03')}
-                    icon={<AntdIconUploadOutlined __component_name="AntdIconUploadOutlined" />}
-                    type="primary"
+                    __component_name="Button"
                     block={false}
-                    ghost={true}
-                    shape="default"
-                    style={{}}
                     danger={false}
                     disabled={false}
-                    __component_name="Button"
+                    ghost={true}
+                    icon={<AntdIconUploadOutlined __component_name="AntdIconUploadOutlined" />}
+                    ref={this._refsManager.linkRef('button-15001b03')}
+                    shape="default"
+                    style={{}}
+                    type="primary"
                   >
                     {this.i18n('i18n-b8lgc3ot') /* 上传 */}
                   </Button>
                 </FormilyUpload>
                 <FormilyUpload
-                  ref={this._refsManager.linkRef('formilyupload-666ef891')}
-                  style={{}}
-                  fieldProps={{
-                    name: 'keydata',
-                    title: (
-                      <Typography.Text
-                        type="colorTextSecondary"
-                        style={{ top: '2px', fontSize: '', position: 'relative' }}
-                        strong={false}
-                        disabled={false}
-                        ellipsis={true}
-                        __component_name="Typography.Text"
-                      >
-                        {this.i18n('i18n-4g9ld3fm') /* 客户端私钥 */}
-                      </Typography.Text>
-                    ),
-                    'x-display':
-                      "{{$form.values?.insecure?.includes('true') ? 'visible': 'hidden'}}",
-                    'x-component': 'FormilyUpload',
-                    'x-validator': [],
-                    _unsafe_MixedSetter_title_select: 'SlotSetter',
-                  }}
+                  __component_name="FormilyUpload"
                   componentProps={{
                     'x-component-props': {
                       accept: '.der,.cer,.pem,.crt,.key,.p7b,.p7c,.pfx',
-                      maxCount: 1,
                       beforeUpload: function () {
                         return this.beforeUpload.apply(
                           this,
                           Array.prototype.slice.call(arguments).concat([])
                         );
                       }.bind(this),
+                      maxCount: 1,
                       uploadListInline: true,
                     },
                   }}
                   decoratorProps={{
                     'x-decorator-props': {
-                      colon: false,
                       asterisk: false,
+                      colon: false,
                       labelAlign: 'left',
                       labelWidth: '145px',
                     },
                   }}
-                  __component_name="FormilyUpload"
+                  fieldProps={{
+                    _unsafe_MixedSetter_title_select: 'SlotSetter',
+                    name: 'keydata',
+                    title: (
+                      <Typography.Text
+                        __component_name="Typography.Text"
+                        disabled={false}
+                        ellipsis={true}
+                        strong={false}
+                        style={{ fontSize: '', position: 'relative', top: '2px' }}
+                        type="colorTextSecondary"
+                      >
+                        {this.i18n('i18n-4g9ld3fm') /* 客户端私钥 */}
+                      </Typography.Text>
+                    ),
+                    'x-component': 'FormilyUpload',
+                    'x-display':
+                      "{{$form.values?.insecure?.includes('true') ? 'visible': 'hidden'}}",
+                    'x-validator': [],
+                  }}
+                  ref={this._refsManager.linkRef('formilyupload-666ef891')}
+                  style={{}}
                 >
                   <Button
-                    ref={this._refsManager.linkRef('button-15001b03')}
-                    icon={<AntdIconUploadOutlined __component_name="AntdIconUploadOutlined" />}
-                    type="primary"
+                    __component_name="Button"
                     block={false}
-                    ghost={true}
-                    shape="default"
-                    style={{}}
                     danger={false}
                     disabled={false}
-                    __component_name="Button"
+                    ghost={true}
+                    icon={<AntdIconUploadOutlined __component_name="AntdIconUploadOutlined" />}
+                    ref={this._refsManager.linkRef('button-15001b03')}
+                    shape="default"
+                    style={{}}
+                    type="primary"
                   >
                     {this.i18n('i18n-b8lgc3ot') /* 上传 */}
                   </Button>
                 </FormilyUpload>
                 <FormilyFormItem
-                  ref={this._refsManager.linkRef('formilyformitem-87c69db9')}
-                  style={{}}
+                  __component_name="FormilyFormItem"
+                  componentProps={{ 'x-component-props': {} }}
                   fieldProps={{
                     name: 'info',
                     title: this.i18n('i18n-cau0sbxf') /*     */,
                     'x-component': 'FormilyFormItem',
                     'x-validator': [],
                   }}
-                  componentProps={{ 'x-component-props': {} }}
-                  __component_name="FormilyFormItem"
+                  ref={this._refsManager.linkRef('formilyformitem-87c69db9')}
+                  style={{}}
                 >
                   <FormilyCheckbox
+                    __component_name="FormilyCheckbox"
+                    componentProps={{ 'x-component-props': { _sdkSwrGetFunc: {} } }}
                     fieldProps={{
                       enum: [{ label: this.i18n('i18n-iqgm02qd') /* 安全认证 */, value: 'true' }],
                       name: 'auth',
                       title: '',
                       'x-validator': [],
                     }}
-                    componentProps={{ 'x-component-props': { _sdkSwrGetFunc: {} } }}
-                    __component_name="FormilyCheckbox"
                   />
                   {!!false && (
                     <FormilyInput
-                      ref={this._refsManager.linkRef('formilyinput-87f9c4b3')}
-                      fieldProps={{
-                        name: 'username',
-                        title: this.i18n('i18n-h2dtugcf') /* 用户名 */,
-                        required: true,
-                        'x-validator': [],
-                      }}
+                      __component_name="FormilyInput"
                       componentProps={{
                         'x-component-props': {
                           placeholder: this.i18n('i18n-ct1um5i8') /* 请填写认证用户名 */,
@@ -905,18 +899,18 @@ class ComponentsWarehouseCreate$$Page extends React.Component {
                           labelWidth: '80px',
                         },
                       }}
-                      __component_name="FormilyInput"
+                      fieldProps={{
+                        name: 'username',
+                        required: true,
+                        title: this.i18n('i18n-h2dtugcf') /* 用户名 */,
+                        'x-validator': [],
+                      }}
+                      ref={this._refsManager.linkRef('formilyinput-87f9c4b3')}
                     />
                   )}
                   {!!false && (
                     <FormilyPassword
-                      ref={this._refsManager.linkRef('formilypassword-87a8b44b')}
-                      fieldProps={{
-                        name: 'Password',
-                        title: this.i18n('i18n-yufusyzl') /* 密码 */,
-                        required: true,
-                        'x-validator': [],
-                      }}
+                      __component_name="FormilyPassword"
                       componentProps={{
                         'x-component-props': {
                           placeholder: this.i18n('i18n-8hbax8oq') /* 请填写密码 */,
@@ -930,80 +924,58 @@ class ComponentsWarehouseCreate$$Page extends React.Component {
                           wrapperAlign: 'left',
                         },
                       }}
-                      __component_name="FormilyPassword"
+                      fieldProps={{
+                        name: 'Password',
+                        required: true,
+                        title: this.i18n('i18n-yufusyzl') /* 密码 */,
+                        'x-validator': [],
+                      }}
+                      ref={this._refsManager.linkRef('formilypassword-87a8b44b')}
                     />
                   )}
                 </FormilyFormItem>
                 <FormilyInput
-                  ref={this._refsManager.linkRef('formilyinput-245edefa')}
-                  style={{}}
-                  fieldProps={{
-                    enum: [],
-                    name: 'username',
-                    title: (
-                      <Typography.Text
-                        type="colorTextSecondary"
-                        style={{ top: '2px', fontSize: '', position: 'relative' }}
-                        strong={false}
-                        disabled={false}
-                        ellipsis={true}
-                        __component_name="Typography.Text"
-                      >
-                        {this.i18n('i18n-h2dtugcf') /* 用户名 */}
-                      </Typography.Text>
-                    ),
-                    required: true,
-                    'x-display':
-                      "{{$form.values.info?.auth?.includes('true') ? 'visible': 'hidden'}}",
-                    'x-validator': [
-                      {
-                        id: 'disabled',
-                        type: 'disabled',
-                        message: this.i18n('i18n-ct1um5i8') /* 请填写认证用户名 */,
-                        children: '未知',
-                        required: true,
-                      },
-                    ],
-                    _unsafe_MixedSetter_title_select: 'SlotSetter',
-                  }}
+                  __component_name="FormilyInput"
                   componentProps={{
                     'x-component-props': {
                       placeholder: this.i18n('i18n-ct1um5i8') /* 请填写认证用户名 */,
                     },
                   }}
                   decoratorProps={{ 'x-decorator-props': { asterisk: true } }}
-                  __component_name="FormilyInput"
-                />
-                <FormilyPassword
                   fieldProps={{
+                    _unsafe_MixedSetter_title_select: 'SlotSetter',
                     enum: [],
-                    name: 'password',
+                    name: 'username',
+                    required: true,
                     title: (
                       <Typography.Text
-                        type="colorTextSecondary"
-                        style={{ top: '2px', fontSize: '', position: 'relative' }}
-                        strong={false}
+                        __component_name="Typography.Text"
                         disabled={false}
                         ellipsis={true}
-                        __component_name="Typography.Text"
+                        strong={false}
+                        style={{ fontSize: '', position: 'relative', top: '2px' }}
+                        type="colorTextSecondary"
                       >
-                        {this.i18n('i18n-yufusyzl') /* 密码 */}
+                        {this.i18n('i18n-h2dtugcf') /* 用户名 */}
                       </Typography.Text>
                     ),
-                    required: true,
                     'x-display':
                       "{{$form.values.info?.auth?.includes('true') ? 'visible': 'hidden'}}",
                     'x-validator': [
                       {
-                        id: 'disabled',
-                        type: 'disabled',
-                        message: this.i18n('i18n-8hbax8oq') /* 请填写密码 */,
                         children: '未知',
+                        id: 'disabled',
+                        message: this.i18n('i18n-ct1um5i8') /* 请填写认证用户名 */,
                         required: true,
+                        type: 'disabled',
                       },
                     ],
-                    _unsafe_MixedSetter_title_select: 'SlotSetter',
                   }}
+                  ref={this._refsManager.linkRef('formilyinput-245edefa')}
+                  style={{}}
+                />
+                <FormilyPassword
+                  __component_name="FormilyPassword"
                   componentProps={{
                     'x-component-props': {
                       placeholder: this.i18n('i18n-8hbax8oq') /* 请填写密码 */,
@@ -1011,222 +983,254 @@ class ComponentsWarehouseCreate$$Page extends React.Component {
                   }}
                   decoratorProps={{
                     'x-decorator-props': {
-                      colon: false,
                       asterisk: true,
+                      colon: false,
                       labelAlign: 'left',
                       labelWidth: '145px',
                       wrapperAlign: 'left',
                     },
                   }}
-                  __component_name="FormilyPassword"
+                  fieldProps={{
+                    _unsafe_MixedSetter_title_select: 'SlotSetter',
+                    enum: [],
+                    name: 'password',
+                    required: true,
+                    title: (
+                      <Typography.Text
+                        __component_name="Typography.Text"
+                        disabled={false}
+                        ellipsis={true}
+                        strong={false}
+                        style={{ fontSize: '', position: 'relative', top: '2px' }}
+                        type="colorTextSecondary"
+                      >
+                        {this.i18n('i18n-yufusyzl') /* 密码 */}
+                      </Typography.Text>
+                    ),
+                    'x-display':
+                      "{{$form.values.info?.auth?.includes('true') ? 'visible': 'hidden'}}",
+                    'x-validator': [
+                      {
+                        children: '未知',
+                        id: 'disabled',
+                        message: this.i18n('i18n-8hbax8oq') /* 请填写密码 */,
+                        required: true,
+                        type: 'disabled',
+                      },
+                    ],
+                  }}
                 />
                 <Divider
-                  mode="expanded"
-                  dashed={true}
+                  __component_name="Divider"
+                  children=""
                   content={[
                     [
                       <Row
-                        wrap={true}
-                        style={{}}
-                        gutter={[0, 16]}
                         __component_name="Row"
+                        gutter={[0, 16]}
+                        style={{}}
+                        wrap={true}
                         key="node_oclkjgkdel1"
                       >
-                        <Col span={24} __component_name="Col">
+                        <Col __component_name="Col" span={24}>
                           <FormilyFormItem
-                            style={{}}
+                            __component_name="FormilyFormItem"
+                            decoratorProps={{ 'x-decorator-props': { labelEllipsis: false } }}
                             fieldProps={{
+                              _unsafe_MixedSetter_title_select: 'SlotSetter',
+                              description: '',
                               name: 'pullStategy',
                               title: (
                                 <Space
-                                  size={3}
+                                  __component_name="Space"
                                   align="center"
                                   direction="horizontal"
-                                  __component_name="Space"
+                                  size={3}
                                 >
                                   <Typography.Text
-                                    style={{ fontSize: '' }}
-                                    strong={false}
+                                    __component_name="Typography.Text"
                                     disabled={false}
                                     ellipsis={true}
-                                    __component_name="Typography.Text"
+                                    strong={false}
+                                    style={{ fontSize: '' }}
                                   >
                                     {this.i18n('i18n-o7t5qsx5') /* 仓库同步设置 */}
                                   </Typography.Text>
                                   <Tooltip
+                                    __component_name="Tooltip"
                                     title={
                                       this.i18n(
                                         'i18n-blmem1n4'
                                       ) /* 对组件仓库中的组件进行定时数据更新 */
                                     }
-                                    __component_name="Tooltip"
                                   >
                                     <Container
-                                      color="colorTextDescription"
                                       __component_name="Container"
+                                      color="colorTextDescription"
                                     >
                                       <AntdIconQuestionCircleOutlined
-                                        style={{ top: '2px', color: '', position: 'relative' }}
                                         __component_name="AntdIconQuestionCircleOutlined"
+                                        style={{ color: '', position: 'relative', top: '2px' }}
                                       />
                                     </Container>
                                   </Tooltip>
                                 </Space>
                               ),
-                              description: '',
                               'x-component': 'FormilyFormItem',
                               'x-validator': [],
-                              _unsafe_MixedSetter_title_select: 'SlotSetter',
                             }}
-                            decoratorProps={{ 'x-decorator-props': { labelEllipsis: false } }}
-                            __component_name="FormilyFormItem"
+                            style={{}}
                           >
                             <Space
-                              size={40}
+                              __component_name="Space"
                               align="center"
                               direction="horizontal"
-                              __component_name="Space"
+                              size={40}
                             >
                               <FormilyNumberPicker
-                                style={{ width: '150px', marginBottom: '0px' }}
+                                __component_name="FormilyNumberPicker"
+                                componentProps={{
+                                  'x-component-props': {
+                                    addonBefore: this.i18n('i18n-2rvtjegc') /* 时间间隔 */,
+                                    min: 1,
+                                    placeholder: this.i18n('i18n-n9a8du2a') /* 请输入 */,
+                                  },
+                                }}
+                                decoratorProps={{
+                                  'x-decorator-props': {
+                                    _unsafe_MixedSetter_addonAfter_select: 'SlotSetter',
+                                    _unsafe_MixedSetter_addonBefore_select: 'SlotSetter',
+                                    addonAfter: (
+                                      <Typography.Text
+                                        __component_name="Typography.Text"
+                                        disabled={false}
+                                        ellipsis={true}
+                                        strong={false}
+                                        style={{ fontSize: '' }}
+                                      >
+                                        {this.i18n('i18n-8hmhhcp4') /* S */}
+                                      </Typography.Text>
+                                    ),
+                                    addonBefore: '',
+                                    wrapperWidth: '',
+                                  },
+                                }}
                                 fieldProps={{
                                   name: 'intervalSeconds',
                                   title: '',
                                   'x-validator': [],
                                 }}
+                                style={{ marginBottom: '0px', width: '150px' }}
+                              />
+                              <FormilyNumberPicker
+                                __component_name="FormilyNumberPicker"
                                 componentProps={{
                                   'x-component-props': {
+                                    addonBefore: this.i18n('i18n-vf2r2t3g') /* 超时时间 */,
                                     min: 1,
-                                    addonBefore: this.i18n('i18n-2rvtjegc') /* 时间间隔 */,
                                     placeholder: this.i18n('i18n-n9a8du2a') /* 请输入 */,
                                   },
                                 }}
                                 decoratorProps={{
                                   'x-decorator-props': {
+                                    _unsafe_MixedSetter_addonAfter_select: 'SlotSetter',
+                                    _unsafe_MixedSetter_addonBefore_select: 'SlotSetter',
                                     addonAfter: (
                                       <Typography.Text
-                                        style={{ fontSize: '' }}
-                                        strong={false}
+                                        __component_name="Typography.Text"
                                         disabled={false}
                                         ellipsis={true}
-                                        __component_name="Typography.Text"
+                                        strong={false}
+                                        style={{ fontSize: '' }}
                                       >
                                         {this.i18n('i18n-8hmhhcp4') /* S */}
                                       </Typography.Text>
                                     ),
                                     addonBefore: '',
                                     wrapperWidth: '',
-                                    _unsafe_MixedSetter_addonAfter_select: 'SlotSetter',
-                                    _unsafe_MixedSetter_addonBefore_select: 'SlotSetter',
                                   },
                                 }}
-                                __component_name="FormilyNumberPicker"
-                              />
-                              <FormilyNumberPicker
-                                style={{ width: '150px' }}
                                 fieldProps={{
                                   name: 'timeoutSeconds',
                                   title: '',
                                   'x-validator': [],
                                 }}
-                                componentProps={{
-                                  'x-component-props': {
-                                    min: 1,
-                                    addonBefore: this.i18n('i18n-vf2r2t3g') /* 超时时间 */,
-                                    placeholder: this.i18n('i18n-n9a8du2a') /* 请输入 */,
-                                  },
-                                }}
-                                decoratorProps={{
-                                  'x-decorator-props': {
-                                    addonAfter: (
-                                      <Typography.Text
-                                        style={{ fontSize: '' }}
-                                        strong={false}
-                                        disabled={false}
-                                        ellipsis={true}
-                                        __component_name="Typography.Text"
-                                      >
-                                        {this.i18n('i18n-8hmhhcp4') /* S */}
-                                      </Typography.Text>
-                                    ),
-                                    addonBefore: '',
-                                    wrapperWidth: '',
-                                    _unsafe_MixedSetter_addonAfter_select: 'SlotSetter',
-                                    _unsafe_MixedSetter_addonBefore_select: 'SlotSetter',
-                                  },
-                                }}
-                                __component_name="FormilyNumberPicker"
+                                style={{ width: '150px' }}
                               />
                               <FormilyNumberPicker
-                                style={{ width: '150px' }}
-                                fieldProps={{ name: 'retry', title: '', 'x-validator': [] }}
+                                __component_name="FormilyNumberPicker"
                                 componentProps={{
                                   'x-component-props': {
-                                    min: 1,
-                                    precision: 0,
                                     addonBefore: this.i18n('i18n-6p75zmij') /* 重试次数 */,
+                                    min: 1,
                                     placeholder: this.i18n('i18n-n9a8du2a') /* 请输入 */,
+                                    precision: 0,
                                   },
                                 }}
                                 decoratorProps={{
                                   'x-decorator-props': {
+                                    _unsafe_MixedSetter_addonAfter_select: 'SlotSetter',
+                                    _unsafe_MixedSetter_addonBefore_select: 'SlotSetter',
                                     addonAfter: (
                                       <Typography.Text
-                                        style={{ fontSize: '' }}
-                                        strong={false}
+                                        __component_name="Typography.Text"
                                         disabled={false}
                                         ellipsis={true}
-                                        __component_name="Typography.Text"
+                                        strong={false}
+                                        style={{ fontSize: '' }}
                                       >
                                         {this.i18n('i18n-k3pyvdbr') /* 次 */}
                                       </Typography.Text>
                                     ),
                                     addonBefore: '',
-                                    wrapperWidth: '',
                                     labelEllipsis: true,
-                                    _unsafe_MixedSetter_addonAfter_select: 'SlotSetter',
-                                    _unsafe_MixedSetter_addonBefore_select: 'SlotSetter',
+                                    wrapperWidth: '',
                                   },
                                 }}
-                                __component_name="FormilyNumberPicker"
+                                fieldProps={{ name: 'retry', title: '', 'x-validator': [] }}
+                                style={{ width: '150px' }}
                               />
                             </Space>
                           </FormilyFormItem>
                           <FormilyFormItem
-                            style={{}}
+                            __component_name="FormilyFormItem"
+                            decoratorProps={{
+                              'x-decorator-props': { labelEllipsis: false, wrapperWidth: '850px' },
+                            }}
                             fieldProps={{
+                              _unsafe_MixedSetter_title_select: 'SlotSetter',
                               name: 'filter',
                               title: (
                                 <Space
-                                  size={3}
+                                  __component_name="Space"
                                   align="center"
                                   direction="horizontal"
-                                  __component_name="Space"
+                                  size={3}
                                 >
                                   <Typography.Text
-                                    style={{ fontSize: '' }}
-                                    strong={false}
+                                    __component_name="Typography.Text"
                                     disabled={false}
                                     ellipsis={true}
-                                    __component_name="Typography.Text"
+                                    strong={false}
+                                    style={{ fontSize: '' }}
                                   >
                                     {this.i18n('i18n-5bcb4vh8') /* 仓库组件过滤 */}
                                   </Typography.Text>
                                   <Tooltip
+                                    __component_name="Tooltip"
                                     title={
                                       this.i18n(
                                         'i18n-y1e6lwsu'
                                       ) /* 未进行过滤设置的组件将保留其全部版本 */
                                     }
-                                    __component_name="Tooltip"
                                   >
                                     <Container
-                                      color="colorTextDescription"
                                       __component_name="Container"
+                                      color="colorTextDescription"
                                     >
                                       <AntdIconQuestionCircleOutlined
-                                        style={{ top: '2px', color: '', position: 'relative' }}
                                         __component_name="AntdIconQuestionCircleOutlined"
+                                        style={{ color: '', position: 'relative', top: '2px' }}
                                       />
                                     </Container>
                                   </Tooltip>
@@ -1234,31 +1238,33 @@ class ComponentsWarehouseCreate$$Page extends React.Component {
                               ),
                               'x-component': 'FormilyFormItem',
                               'x-validator': [],
-                              _unsafe_MixedSetter_title_select: 'SlotSetter',
                             }}
-                            decoratorProps={{
-                              'x-decorator-props': { wrapperWidth: '850px', labelEllipsis: false },
-                            }}
-                            __component_name="FormilyFormItem"
+                            style={{}}
                           >
                             <FormilyArrayTable
-                              fieldProps={{ name: 'value', type: 'array', 'x-validator': [] }}
                               __component_name="FormilyArrayTable"
                               decoratorProps={{ 'x-decorator-props': { labelEllipsis: true } }}
+                              fieldProps={{ name: 'value', type: 'array', 'x-validator': [] }}
                             >
                               <FormilyArrayTable.Column
-                                title={this.i18n('i18n-cuf6u4di') /* 组件名称 */}
                                 __component_name="FormilyArrayTable.Column"
+                                title={this.i18n('i18n-cuf6u4di') /* 组件名称 */}
                               >
                                 <FormilyInput
-                                  style={{}}
+                                  __component_name="FormilyInput"
+                                  componentProps={{
+                                    'x-component-props': {
+                                      placeholder:
+                                        this.i18n('i18n-zz8l4ytx') /* 请填写完整的组件名称 */,
+                                    },
+                                  }}
                                   fieldProps={{
                                     name: 'name',
                                     required: true,
                                     'x-validator': [
                                       {
+                                        children: '未知',
                                         id: 'disabled',
-                                        type: 'disabled',
                                         message:
                                           this.i18n(
                                             'i18n-hzu1j2jl'
@@ -1268,111 +1274,121 @@ class ComponentsWarehouseCreate$$Page extends React.Component {
                                             max: 63,
                                           })
                                         ),
-                                        children: '未知',
                                         required: false,
+                                        type: 'disabled',
                                       },
                                       {
-                                        id: 'disabled',
-                                        type: 'disabled',
-                                        message: '',
+                                        _unsafe_MixedSetter_message_select: 'StringSetter',
                                         children: '未知',
+                                        id: 'disabled',
+                                        message: '',
+                                        type: 'disabled',
                                         validator: function () {
                                           return this.validatorComponentName.apply(
                                             this,
                                             Array.prototype.slice.call(arguments).concat([])
                                           );
                                         }.bind(this),
-                                        _unsafe_MixedSetter_message_select: 'StringSetter',
                                       },
                                     ],
                                   }}
-                                  componentProps={{
-                                    'x-component-props': {
-                                      placeholder:
-                                        this.i18n('i18n-zz8l4ytx') /* 请填写完整的组件名称 */,
-                                    },
-                                  }}
-                                  __component_name="FormilyInput"
+                                  style={{}}
                                 />
                               </FormilyArrayTable.Column>
                               <FormilyArrayTable.Column
-                                title={this.i18n('i18n-xw5z4b0a') /* 废弃版本 */}
                                 __component_name="FormilyArrayTable.Column"
+                                title={this.i18n('i18n-xw5z4b0a') /* 废弃版本 */}
                               >
                                 <FormilySelect
+                                  __component_name="FormilySelect"
+                                  componentProps={{
+                                    'x-component-props': {
+                                      _sdkSwrGetFunc: {},
+                                      allowClear: false,
+                                      disabled: false,
+                                      placeholder: this.i18n('i18n-fald39iq') /* 请选择 */,
+                                    },
+                                  }}
                                   fieldProps={{
+                                    default: 'true',
                                     enum: [
                                       {
-                                        id: 'disabled',
-                                        type: 'disabled',
-                                        label: this.i18n('i18n-r1zean6b') /* 保留 */,
-                                        value: 'true',
                                         children: '',
+                                        id: 'disabled',
+                                        label: this.i18n('i18n-r1zean6b') /* 保留 */,
+                                        type: 'disabled',
+                                        value: 'true',
                                       },
                                       {
-                                        id: 'disabled',
-                                        type: 'disabled',
-                                        label: this.i18n('i18n-54cgv8pm') /* 过滤 */,
-                                        value: 'false',
                                         children: '',
+                                        id: 'disabled',
+                                        label: this.i18n('i18n-54cgv8pm') /* 过滤 */,
+                                        type: 'disabled',
+                                        value: 'false',
                                       },
                                     ],
                                     name: 'keepDeprecated',
-                                    default: 'true',
                                     'x-validator': [],
                                   }}
-                                  componentProps={{
-                                    'x-component-props': {
-                                      disabled: false,
-                                      allowClear: false,
-                                      placeholder: this.i18n('i18n-fald39iq') /* 请选择 */,
-                                      _sdkSwrGetFunc: {},
-                                    },
-                                  }}
-                                  __component_name="FormilySelect"
                                 />
                               </FormilyArrayTable.Column>
                               <FormilyArrayTable.Column
-                                title={this.i18n('i18n-ufn05c8r') /* 正常版本 */}
                                 __component_name="FormilyArrayTable.Column"
+                                title={this.i18n('i18n-ufn05c8r') /* 正常版本 */}
                               >
                                 <Space
+                                  __component_name="Space"
                                   align="center"
                                   direction="horizontal"
-                                  __component_name="Space"
                                 >
                                   <FormilySelect
+                                    __component_name="FormilySelect"
+                                    componentProps={{
+                                      'x-component-props': {
+                                        _sdkSwrGetFunc: {},
+                                        allowClear: false,
+                                        disabled: false,
+                                        placeholder: this.i18n('i18n-fald39iq') /* 请选择 */,
+                                      },
+                                    }}
+                                    decoratorProps={{
+                                      'x-decorator-props': {
+                                        asterisk: false,
+                                        colon: false,
+                                        tooltip: '',
+                                      },
+                                    }}
                                     fieldProps={{
+                                      default: 'ignore_all',
                                       enum: [
                                         {
+                                          children: '',
                                           id: 'disabled',
-                                          type: 'disabled',
                                           label: this.i18n('i18n-r4pp6mwv') /* 全部过滤 */,
+                                          type: 'disabled',
                                           value: 'ignore_all',
-                                          children: '',
                                         },
                                         {
+                                          children: '',
                                           id: 'disabled',
-                                          type: 'disabled',
                                           label: this.i18n('i18n-or6btdf3') /* 精确过滤 */,
+                                          type: 'disabled',
                                           value: 'ignore_exact',
-                                          children: '',
                                         },
                                         {
-                                          id: 'disabled',
-                                          type: 'disabled',
-                                          label: this.i18n('i18n-ndhridkq') /* 精确保留 */,
-                                          value: 'keep_exact',
                                           children: '',
+                                          id: 'disabled',
+                                          label: this.i18n('i18n-ndhridkq') /* 精确保留 */,
+                                          type: 'disabled',
+                                          value: 'keep_exact',
                                         },
                                       ],
                                       name: 'operation',
-                                      default: 'ignore_all',
                                       'x-validator': [
                                         {
+                                          children: '未知',
                                           id: 'disabled',
                                           type: 'disabled',
-                                          children: '未知',
                                           validator: function () {
                                             return this.validatorDisabled.apply(
                                               this,
@@ -1382,108 +1398,97 @@ class ComponentsWarehouseCreate$$Page extends React.Component {
                                         },
                                       ],
                                     }}
-                                    componentProps={{
-                                      'x-component-props': {
-                                        disabled: false,
-                                        allowClear: false,
-                                        placeholder: this.i18n('i18n-fald39iq') /* 请选择 */,
-                                        _sdkSwrGetFunc: {},
-                                      },
-                                    }}
-                                    decoratorProps={{
-                                      'x-decorator-props': {
-                                        colon: false,
-                                        tooltip: '',
-                                        asterisk: false,
-                                      },
-                                    }}
-                                    __component_name="FormilySelect"
                                   />
                                   <FormilyInput
-                                    style={{}}
-                                    fieldProps={{
-                                      name: 'versions',
-                                      'x-pattern': 'disabled',
-                                      'x-validator': [],
-                                    }}
+                                    __component_name="FormilyInput"
                                     componentProps={{
                                       'x-component-props': {
                                         placeholder:
                                           this.i18n('i18n-e4qgvfg7') /* 请完整填写版本 */,
                                       },
                                     }}
-                                    __component_name="FormilyInput"
-                                  />
-                                  <FormilyInput
-                                    style={{}}
                                     fieldProps={{
-                                      name: 'regexp',
+                                      name: 'versions',
                                       'x-pattern': 'disabled',
                                       'x-validator': [],
                                     }}
+                                    style={{}}
+                                  />
+                                  <FormilyInput
+                                    __component_name="FormilyInput"
                                     componentProps={{
                                       'x-component-props': {
                                         placeholder:
                                           this.i18n('i18n-7b4geri9') /* 请填写版本正则表达式 */,
                                       },
                                     }}
-                                    __component_name="FormilyInput"
-                                  />
-                                  <FormilyInput
-                                    style={{}}
                                     fieldProps={{
-                                      name: 'versionConstraint',
+                                      name: 'regexp',
                                       'x-pattern': 'disabled',
                                       'x-validator': [],
                                     }}
+                                    style={{}}
+                                  />
+                                  <FormilyInput
+                                    __component_name="FormilyInput"
                                     componentProps={{
                                       'x-component-props': {
                                         placeholder:
                                           this.i18n('i18n-hve94tyf') /* 请填写版本约束条件 */,
                                       },
                                     }}
-                                    __component_name="FormilyInput"
+                                    fieldProps={{
+                                      name: 'versionConstraint',
+                                      'x-pattern': 'disabled',
+                                      'x-validator': [],
+                                    }}
+                                    style={{}}
                                   />
                                 </Space>
                               </FormilyArrayTable.Column>
                               <FormilyArrayTable.Operation
+                                __component_name="FormilyArrayTable.Operation"
                                 title={this.i18n('i18n-ioy0ge9h') /* 操作 */}
                                 width={50}
-                                __component_name="FormilyArrayTable.Operation"
                               />
                               <FormilyArrayTable.Addition
-                                title={this.i18n('i18n-1vi37ku6') /* 添加 */}
                                 __component_name="FormilyArrayTable.Addition"
+                                title={this.i18n('i18n-1vi37ku6') /* 添加 */}
                               />
                             </FormilyArrayTable>
                           </FormilyFormItem>
                         </Col>
                       </Row>,
-                      <Row wrap={true} style={{}} __component_name="Row" key="node_oclkjh34mr1">
-                        <Col span={24} __component_name="Col">
+                      <Row __component_name="Row" style={{}} wrap={true} key="node_oclkjh34mr1">
+                        <Col __component_name="Col" span={24}>
                           <FormilyFormItem
-                            style={{}}
+                            __component_name="FormilyFormItem"
+                            decoratorProps={{
+                              'x-decorator-props': {
+                                labelEllipsis: true,
+                                style: { marginTop: '10px' },
+                                wrapperWidth: '850px',
+                              },
+                            }}
                             fieldProps={{
                               name: 'imageOverride',
                               title: this.i18n('i18n-guv8z978') /* 镜像仓库替换 */,
                               'x-component': 'FormilyFormItem',
                               'x-validator': [],
                             }}
-                            decoratorProps={{
-                              'x-decorator-props': {
-                                style: { marginTop: '10px' },
-                                wrapperWidth: '850px',
-                                labelEllipsis: true,
-                              },
-                            }}
-                            __component_name="FormilyFormItem"
+                            style={{}}
                           >
                             <FormilyArrayCards
+                              __component_name="FormilyArrayCards"
+                              decoratorProps={{
+                                'x-decorator-props': {
+                                  labelEllipsis: true,
+                                  style: {},
+                                  wrapperWidth: '',
+                                },
+                              }}
                               fieldProps={{
-                                name: 'value',
-                                type: 'array',
                                 items: {
-                                  type: 'object',
                                   properties: {
                                     Index: {
                                       type: 'void',
@@ -1496,52 +1501,56 @@ class ComponentsWarehouseCreate$$Page extends React.Component {
                                       'x-decorator': 'FormItem',
                                     },
                                   },
+                                  type: 'object',
                                 },
+                                name: 'value',
                                 properties: {
                                   add: {
-                                    type: 'void',
                                     title: this.i18n('i18n-1vi37ku6') /* 添加 */,
+                                    type: 'void',
                                     'x-component': 'FormilyArrayCards.Addition',
                                   },
                                 },
+                                type: 'array',
                                 'x-validator': [],
                               }}
-                              decoratorProps={{
-                                'x-decorator-props': {
-                                  style: {},
-                                  wrapperWidth: '',
-                                  labelEllipsis: true,
-                                },
-                              }}
-                              __component_name="FormilyArrayCards"
                             >
                               <Space
-                                size={30}
+                                __component_name="Space"
                                 align="center"
+                                direction="horizontal"
+                                size={30}
                                 style={{
-                                  display: 'flex',
                                   alignItems: 'baseline',
+                                  display: 'flex',
                                   marginRight: '0px',
                                 }}
-                                direction="horizontal"
-                                __component_name="Space"
                               >
                                 <Space
-                                  align="center"
-                                  style={{ display: 'flex', alignItems: 'baseline' }}
-                                  direction="horizontal"
                                   __component_name="Space"
+                                  align="center"
+                                  direction="horizontal"
+                                  style={{ alignItems: 'baseline', display: 'flex' }}
                                 >
                                   <FormilyInput
+                                    __component_name="FormilyInput"
+                                    componentProps={{
+                                      'x-component-props': {
+                                        placeholder: this.i18n('i18n-msztcfd3') /* 请输入原域名 */,
+                                      },
+                                    }}
+                                    decoratorProps={{
+                                      'x-decorator-props': { labelEllipsis: true },
+                                    }}
                                     fieldProps={{
                                       name: 'registry',
-                                      title: '',
                                       required: true,
+                                      title: '',
                                       'x-validator': [
                                         {
+                                          children: '未知',
                                           id: 'disabled',
                                           type: 'disabled',
-                                          children: '未知',
                                           validator: function () {
                                             return this.validatorDomainName.apply(
                                               this,
@@ -1551,45 +1560,18 @@ class ComponentsWarehouseCreate$$Page extends React.Component {
                                         },
                                       ],
                                     }}
-                                    componentProps={{
-                                      'x-component-props': {
-                                        placeholder: this.i18n('i18n-msztcfd3') /* 请输入原域名 */,
-                                      },
-                                    }}
-                                    __component_name="FormilyInput"
-                                    decoratorProps={{
-                                      'x-decorator-props': { labelEllipsis: true },
-                                    }}
                                   />
                                   <Typography.Text
-                                    style={{ fontSize: '', verticalAlign: 'bas' }}
-                                    strong={false}
+                                    __component_name="Typography.Text"
                                     disabled={false}
                                     ellipsis={true}
-                                    __component_name="Typography.Text"
+                                    strong={false}
+                                    style={{ fontSize: '', verticalAlign: 'bas' }}
                                   >
                                     /
                                   </Typography.Text>
                                   <FormilyInput
-                                    fieldProps={{
-                                      name: 'path',
-                                      title: '',
-                                      required: true,
-                                      'x-validator': [
-                                        {
-                                          id: 'disabled',
-                                          type: 'disabled',
-                                          message: '',
-                                          children: '未知',
-                                          validator: function () {
-                                            return this.validatorRepoName.apply(
-                                              this,
-                                              Array.prototype.slice.call(arguments).concat([])
-                                            );
-                                          }.bind(this),
-                                        },
-                                      ],
-                                    }}
+                                    __component_name="FormilyInput"
                                     componentProps={{
                                       'x-component-props': {
                                         placeholder:
@@ -1599,33 +1581,60 @@ class ComponentsWarehouseCreate$$Page extends React.Component {
                                     decoratorProps={{
                                       'x-decorator-props': { labelEllipsis: true },
                                     }}
-                                    __component_name="FormilyInput"
+                                    fieldProps={{
+                                      name: 'path',
+                                      required: true,
+                                      title: '',
+                                      'x-validator': [
+                                        {
+                                          children: '未知',
+                                          id: 'disabled',
+                                          message: '',
+                                          type: 'disabled',
+                                          validator: function () {
+                                            return this.validatorRepoName.apply(
+                                              this,
+                                              Array.prototype.slice.call(arguments).concat([])
+                                            );
+                                          }.bind(this),
+                                        },
+                                      ],
+                                    }}
                                   />
                                 </Space>
                                 <Typography.Text
-                                  style={{ fontSize: '', verticalAlign: 'bas' }}
-                                  strong={false}
+                                  __component_name="Typography.Text"
                                   disabled={false}
                                   ellipsis={true}
-                                  __component_name="Typography.Text"
+                                  strong={false}
+                                  style={{ fontSize: '', verticalAlign: 'bas' }}
                                 >
                                   {this.i18n('i18n-xeckog8e') /* 替换为 */}
                                 </Typography.Text>
                                 <Space
-                                  align="center"
-                                  style={{ display: 'flex', alignItems: 'baseline' }}
-                                  direction="horizontal"
                                   __component_name="Space"
+                                  align="center"
+                                  direction="horizontal"
+                                  style={{ alignItems: 'baseline', display: 'flex' }}
                                 >
                                   <FormilyInput
+                                    __component_name="FormilyInput"
+                                    componentProps={{
+                                      'x-component-props': {
+                                        placeholder: this.i18n('i18n-hoamre8k') /* 请输入新域名 */,
+                                      },
+                                    }}
+                                    decoratorProps={{
+                                      'x-decorator-props': { labelEllipsis: true },
+                                    }}
                                     fieldProps={{
                                       name: 'newRegistry',
-                                      title: '',
                                       required: true,
+                                      title: '',
                                       'x-validator': [
                                         {
-                                          id: 'disabled',
                                           children: '未知',
+                                          id: 'disabled',
                                           type: 'disabled',
                                           validator: function () {
                                             return this.validatorDomain.apply(
@@ -1636,34 +1645,35 @@ class ComponentsWarehouseCreate$$Page extends React.Component {
                                         },
                                       ],
                                     }}
-                                    componentProps={{
-                                      'x-component-props': {
-                                        placeholder: this.i18n('i18n-hoamre8k') /* 请输入新域名 */,
-                                      },
-                                    }}
-                                    __component_name="FormilyInput"
-                                    decoratorProps={{
-                                      'x-decorator-props': { labelEllipsis: true },
-                                    }}
                                   />
                                   <Typography.Text
-                                    style={{ fontSize: '', verticalAlign: 'bas' }}
-                                    strong={false}
+                                    __component_name="Typography.Text"
                                     disabled={false}
                                     ellipsis={true}
-                                    __component_name="Typography.Text"
+                                    strong={false}
+                                    style={{ fontSize: '', verticalAlign: 'bas' }}
                                   >
                                     /
                                   </Typography.Text>
                                   <FormilyInput
+                                    __component_name="FormilyInput"
+                                    componentProps={{
+                                      'x-component-props': {
+                                        placeholder:
+                                          this.i18n('i18n-jwjqcqiq') /* 请输入新仓库组 */,
+                                      },
+                                    }}
+                                    decoratorProps={{
+                                      'x-decorator-props': { labelEllipsis: true },
+                                    }}
                                     fieldProps={{
                                       name: 'newPath',
-                                      title: '',
                                       required: true,
+                                      title: '',
                                       'x-validator': [
                                         {
-                                          id: 'disabled',
                                           children: '未知',
+                                          id: 'disabled',
                                           type: 'disabled',
                                           validator: function () {
                                             return this.validatorRepo.apply(
@@ -1674,16 +1684,6 @@ class ComponentsWarehouseCreate$$Page extends React.Component {
                                         },
                                       ],
                                     }}
-                                    componentProps={{
-                                      'x-component-props': {
-                                        placeholder:
-                                          this.i18n('i18n-jwjqcqiq') /* 请输入新仓库组 */,
-                                      },
-                                    }}
-                                    __component_name="FormilyInput"
-                                    decoratorProps={{
-                                      'x-decorator-props': { labelEllipsis: true },
-                                    }}
                                   />
                                 </Space>
                               </Space>
@@ -1691,85 +1691,85 @@ class ComponentsWarehouseCreate$$Page extends React.Component {
                           </FormilyFormItem>
                           {!!false && (
                             <FormilySwitch
+                              __component_name="FormilySwitch"
+                              componentProps={{
+                                'x-component-props': { disabled: false, loading: false },
+                              }}
+                              decoratorProps={{ 'x-decorator-props': { labelEllipsis: true } }}
                               fieldProps={{
-                                name: 'pc',
-                                title: this.i18n('i18n-thxp526w') /* 组件评测 */,
                                 description:
                                   this.i18n(
                                     'i18n-hm90oqjw'
                                   ) /* 开启后，进入组件市场，对仓库内组件发起评测。将从安全性、可靠性、可用性三个方面对组件给出评测结果及建议，供您参考 */,
+                                name: 'pc',
+                                title: this.i18n('i18n-thxp526w') /* 组件评测 */,
                                 'x-validator': [],
                               }}
-                              componentProps={{
-                                'x-component-props': { loading: false, disabled: false },
-                              }}
-                              decoratorProps={{ 'x-decorator-props': { labelEllipsis: true } }}
-                              __component_name="FormilySwitch"
                             />
                           )}
                         </Col>
                       </Row>,
                     ],
                   ]}
-                  children=""
+                  dashed={true}
                   defaultOpen={__$$eval(() => this.props.appHelper?.match?.params?.id !== 'create')}
+                  mode="expanded"
                   orientation="left"
-                  __component_name="Divider"
                   orientationMargin={0}
                 >
                   <Typography.Text
-                    type="colorPrimary"
-                    style={{ top: '2px', fontSize: '', position: 'relative' }}
-                    strong={false}
+                    __component_name="Typography.Text"
                     disabled={false}
                     ellipsis={true}
-                    __component_name="Typography.Text"
+                    strong={false}
+                    style={{ fontSize: '', position: 'relative', top: '2px' }}
+                    type="colorPrimary"
                   >
                     {this.i18n('i18n-4wrnn3o8') /* 高级配置 */}
                   </Typography.Text>
                 </Divider>
                 <Divider
-                  mode="line"
-                  style={{ width: 'calc(100% + 48px)', marginLeft: '-24px' }}
+                  __component_name="Divider"
                   dashed={false}
                   defaultOpen={false}
-                  __component_name="Divider"
+                  mode="line"
+                  style={{ marginLeft: '-24px', width: 'calc(100% + 48px)' }}
                 />
                 <FormilyFormItem
+                  __component_name="FormilyFormItem"
+                  decoratorProps={{ 'x-decorator-props': { labelEllipsis: true } }}
                   fieldProps={{
+                    _unsafe_MixedSetter_title_select: 'SlotSetter',
                     name: 'FormilyFormItem1',
                     title: '',
                     'x-component': 'FormilyFormItem',
                     'x-validator': [],
-                    _unsafe_MixedSetter_title_select: 'SlotSetter',
                   }}
-                  __component_name="FormilyFormItem"
-                  decoratorProps={{ 'x-decorator-props': { labelEllipsis: true } }}
                 >
-                  <Space align="center" direction="horizontal" __component_name="Space">
+                  <Space __component_name="Space" align="center" direction="horizontal">
                     <Button
+                      __component_name="Button"
                       block={false}
-                      ghost={false}
-                      shape="default"
-                      style={{ marginLeft: '145px' }}
                       danger={false}
+                      disabled={false}
+                      ghost={false}
                       onClick={function () {
                         return this.onCancel.apply(
                           this,
                           Array.prototype.slice.call(arguments).concat([])
                         );
                       }.bind(this)}
-                      disabled={false}
-                      __component_name="Button"
+                      shape="default"
+                      style={{ marginLeft: '145px' }}
                     >
                       {this.i18n('i18n-46k1aoak') /* 取消 */}
                     </Button>
                     <Button
-                      type="primary"
+                      __component_name="Button"
                       block={false}
-                      ghost={false}
-                      shape="default"
                       danger={false}
+                      disabled={false}
+                      ghost={false}
                       loading={__$$eval(() => this.state.creating)}
                       onClick={function () {
                         return this.onSubmit.apply(
@@ -1777,8 +1777,8 @@ class ComponentsWarehouseCreate$$Page extends React.Component {
                           Array.prototype.slice.call(arguments).concat([])
                         );
                       }.bind(this)}
-                      disabled={false}
-                      __component_name="Button"
+                      shape="default"
+                      type="primary"
                     >
                       {this.i18n('i18n-mgpcpuj5') /* 确定 */}
                     </Button>
@@ -1793,7 +1793,7 @@ class ComponentsWarehouseCreate$$Page extends React.Component {
   }
 }
 
-const PageWrapper = () => {
+const PageWrapper = (props = {}) => {
   const location = useLocation();
   const history = getUnifiedHistory();
   const match = matchPath({ path: '/components/warehouse/:id' }, location.pathname);
@@ -1801,6 +1801,7 @@ const PageWrapper = () => {
   history.query = qs.parse(location.search);
   const appHelper = {
     utils,
+    constants: __$$constants,
     location,
     match,
     history,
@@ -1814,12 +1815,16 @@ const PageWrapper = () => {
       self={self}
       sdkInitFunc={{
         enabled: undefined,
-        func: 'undefined',
         params: undefined,
       }}
       sdkSwrFuncs={[]}
       render={dataProps => (
-        <ComponentsWarehouseCreate$$Page {...dataProps} self={self} appHelper={appHelper} />
+        <ComponentsWarehouseCreate$$Page
+          {...props}
+          {...dataProps}
+          self={self}
+          appHelper={appHelper}
+        />
       )}
     />
   );
@@ -1841,6 +1846,14 @@ function __$$createChildContext(oldContext, ext) {
   const childContext = {
     ...oldContext,
     ...ext,
+    // 重写 state getter，保证 state 的指向不变，这样才能从 context 中拿到最新的 state
+    get state() {
+      return oldContext.state;
+    },
+    // 重写 props getter，保证 props 的指向不变，这样才能从 context 中拿到最新的 props
+    get props() {
+      return oldContext.props;
+    },
   };
   childContext.__proto__ = oldContext;
   return childContext;
