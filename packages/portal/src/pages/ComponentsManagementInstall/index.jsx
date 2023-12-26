@@ -70,18 +70,18 @@ class ComponentsManagementInstall$$Page extends React.Component {
     __$$i18n._inject2(this);
 
     this.state = {
-      size: 10,
-      record: {},
-      sorter: undefined,
       current: 1,
+      deleteLoading: false,
       filters: undefined,
       isNewer: undefined,
-      modalType: 'delete',
-      searchKey: 'chartName',
-      pagination: undefined,
       isOpenModal: false,
+      modalType: 'delete',
+      pagination: undefined,
+      record: {},
+      searchKey: 'chartName',
       searchValue: undefined,
-      deleteLoading: false,
+      size: 10,
+      sorter: undefined,
     };
   }
 
@@ -89,90 +89,10 @@ class ComponentsManagementInstall$$Page extends React.Component {
 
   $$ = () => [];
 
-  getName(item) {
-    item = {
-      ...(item || {}),
-      ...(item?.component || {}),
-    };
-    if (item.displayName) {
-      return `${item.displayName}(${item.chartName || '-'})`;
-    }
-    return item.chartName || '-';
-  }
-
-  filterNew() {
-    this.setState(
-      {
-        isNewer: !this.state.isNewer,
-      },
-      this.handleQueryChange
-    );
-  }
-
   closeModal() {
     this.setState({
       isOpenModal: false,
     });
-  }
-
-  handleSearch(v) {
-    this.setState(
-      {
-        current: 1,
-      },
-      this.handleQueryChange
-    );
-  }
-
-  handleRefresh(event) {
-    this.props.useGetComponentplansPaged?.mutate();
-  }
-
-  openDeleteModal(e, { record, type = 'delete' }) {
-    this.setState({
-      isOpenModal: true,
-      modalType: 'delete',
-      record,
-    });
-  }
-
-  handleQueryChange() {
-    const { status, version } = this.state.filters || {};
-    const params = {
-      page: this.state?.current || 1,
-      pageSize: this.state?.pageSize || 10,
-      chartName: undefined,
-      repository: undefined,
-      [this.state.searchKey]: this.state?.searchValue,
-      cluster: this.utils.getAuthData()?.cluster,
-      namespace: this.utils.getAuthData()?.project,
-    };
-    if (this.state.sorter?.order) {
-      params.sortField = this.state.sorter?.field;
-      params.sortDirection = this.state.sorter?.order;
-    }
-    if (!!version?.includes('isNewer')) {
-      params.isNewer = true;
-    } else {
-      params.isNewer = undefined;
-    }
-    if (status?.length > 0) {
-      params.status = status;
-    } else {
-      params.status = undefined;
-    }
-    this.utils?.changeLocationQuery(this, 'useGetComponentplansPaged', params);
-  }
-
-  handleTableChange(pagination, filters, sorter, extra) {
-    this.setState(
-      {
-        pagination,
-        filters,
-        sorter,
-      },
-      this.handleQueryChange
-    );
   }
 
   async confirmDeleteModal(e, payload) {
@@ -206,8 +126,75 @@ class ComponentsManagementInstall$$Page extends React.Component {
     }
   }
 
-  paginationShowTotal(total, range) {
-    return `${this.i18n('i18n-wajqflwo')} ${total} ${this.i18n('i18n-7vre8aeh')}`;
+  filterNew() {
+    this.setState(
+      {
+        isNewer: !this.state.isNewer,
+      },
+      this.handleQueryChange
+    );
+  }
+
+  getName(item) {
+    item = {
+      ...(item || {}),
+      ...(item?.component || {}),
+    };
+    if (item.displayName) {
+      return `${item.displayName}(${item.chartName || '-'})`;
+    }
+    return item.chartName || '-';
+  }
+
+  handlePaginationChange(c, s) {
+    this.setState(
+      {
+        size: s,
+        current: c,
+      },
+      this.handleQueryChange
+    );
+  }
+
+  handleQueryChange() {
+    const { status, version } = this.state.filters || {};
+    const params = {
+      page: this.state?.current || 1,
+      pageSize: this.state?.pageSize || 10,
+      chartName: undefined,
+      repository: undefined,
+      [this.state.searchKey]: this.state?.searchValue,
+      cluster: this.utils.getAuthData()?.cluster,
+      namespace: this.utils.getAuthData()?.project,
+    };
+    if (this.state.sorter?.order) {
+      params.sortField = this.state.sorter?.field;
+      params.sortDirection = this.state.sorter?.order;
+    }
+    if (!!version?.includes('isNewer')) {
+      params.isNewer = true;
+    } else {
+      params.isNewer = undefined;
+    }
+    if (status?.length > 0) {
+      params.status = status;
+    } else {
+      params.status = undefined;
+    }
+    this.utils?.changeLocationQuery(this, 'useGetComponentplansPaged', params);
+  }
+
+  handleRefresh(event) {
+    this.props.useGetComponentplansPaged?.mutate();
+  }
+
+  handleSearch(v) {
+    this.setState(
+      {
+        current: 1,
+      },
+      this.handleQueryChange
+    );
   }
 
   handleSearchKeyChange(v) {
@@ -221,20 +208,33 @@ class ComponentsManagementInstall$$Page extends React.Component {
     );
   }
 
-  handlePaginationChange(c, s) {
+  handleSearchValueChange(e) {
+    this.setState({
+      searchValue: e.target.value,
+    });
+  }
+
+  handleTableChange(pagination, filters, sorter, extra) {
     this.setState(
       {
-        size: s,
-        current: c,
+        pagination,
+        filters,
+        sorter,
       },
       this.handleQueryChange
     );
   }
 
-  handleSearchValueChange(e) {
+  openDeleteModal(e, { record, type = 'delete' }) {
     this.setState({
-      searchValue: e.target.value,
+      isOpenModal: true,
+      modalType: 'delete',
+      record,
     });
+  }
+
+  paginationShowTotal(total, range) {
+    return `${this.i18n('i18n-wajqflwo')} ${total} ${this.i18n('i18n-7vre8aeh')}`;
   }
 
   componentDidMount() {}
@@ -245,7 +245,17 @@ class ComponentsManagementInstall$$Page extends React.Component {
     return (
       <Page>
         <Modal
+          __component_name="Modal"
+          centered={false}
+          confirmLoading={__$$eval(() => this.state.deleteLoading)}
+          destroyOnClose={true}
+          forceRender={false}
+          keyboard={true}
           mask={true}
+          maskClosable={false}
+          onCancel={function () {
+            return this.closeModal.apply(this, Array.prototype.slice.call(arguments).concat([]));
+          }.bind(this)}
           onOk={function () {
             return this.confirmDeleteModal.apply(
               this,
@@ -256,65 +266,54 @@ class ComponentsManagementInstall$$Page extends React.Component {
           style={{}}
           title={this.i18n('i18n-bflyklsf') /* 卸载组件 */}
           width="550px"
-          centered={false}
-          keyboard={true}
-          onCancel={function () {
-            return this.closeModal.apply(this, Array.prototype.slice.call(arguments).concat([]));
-          }.bind(this)}
-          forceRender={false}
-          maskClosable={false}
-          confirmLoading={__$$eval(() => this.state.deleteLoading)}
-          destroyOnClose={true}
-          __component_name="Modal"
         >
           <Alert
-            type="warning"
-            style={{ width: '500px' }}
+            __component_name="Alert"
             message={
-              <Row wrap={true} gutter={[0, 0]} __component_name="Row">
-                <Col span={24} __component_name="Col">
+              <Row __component_name="Row" gutter={[0, 0]} wrap={true}>
+                <Col __component_name="Col" span={24}>
                   <Typography.Text
-                    style={{ fontSize: '' }}
-                    strong={false}
+                    __component_name="Typography.Text"
                     disabled={false}
                     ellipsis={true}
-                    __component_name="Typography.Text"
+                    strong={false}
+                    style={{ fontSize: '' }}
                   >
                     {this.i18n('i18n-gctiukaj') /* 卸载组件会同步删除其所有历史版本信息。 */}
                   </Typography.Text>
                 </Col>
-                <Col span={24} __component_name="Col">
-                  <Space size={5} align="center" direction="horizontal">
+                <Col __component_name="Col" span={24}>
+                  <Space align="center" direction="horizontal" size={5}>
                     <Typography.Text
-                      style={{ fontSize: '' }}
-                      strong={false}
+                      __component_name="Typography.Text"
                       disabled={false}
                       ellipsis={true}
-                      __component_name="Typography.Text"
+                      strong={false}
+                      style={{ fontSize: '' }}
                     >
                       {this.i18n('i18n-z9a1zfy4') /* 确定卸载 */}
                     </Typography.Text>
                     <Typography.Text
-                      style={{ fontSize: '', maxWidth: '350px' }}
-                      strong={true}
+                      __component_name="Typography.Text"
                       disabled={false}
                       ellipsis={{
                         rows: 1,
                         tooltip: {
-                          title: __$$eval(() => this.state?.record?.releaseName || '-'),
                           _unsafe_MixedSetter_title_select: 'VariableSetter',
+                          title: __$$eval(() => this.state?.record?.releaseName || '-'),
                         },
                       }}
-                      __component_name="Typography.Text"
+                      strong={true}
+                      style={{ fontSize: '', maxWidth: '350px' }}
                     >
                       {__$$eval(() => this.state?.record?.releaseName || '-')}
                     </Typography.Text>
                     <Typography.Text
-                      style={{ fontSize: '' }}
-                      strong={false}
+                      __component_name="Typography.Text"
                       disabled={false}
                       ellipsis={true}
-                      __component_name="Typography.Text"
+                      strong={false}
+                      style={{ fontSize: '' }}
                     >
                       {this.i18n('i18n-af854mop') /* 组件？ */}
                     </Typography.Text>
@@ -323,73 +322,101 @@ class ComponentsManagementInstall$$Page extends React.Component {
               </Row>
             }
             showIcon={true}
-            __component_name="Alert"
+            style={{ width: '500px' }}
+            type="warning"
           />
         </Modal>
-        <Row wrap={true} __component_name="Row">
-          <Col span={24} __component_name="Col">
+        <Row __component_name="Row" wrap={true}>
+          <Col __component_name="Col" span={24}>
             <Typography.Title
+              __component_name="Typography.Title"
               bold={true}
-              level={1}
               bordered={false}
               ellipsis={true}
-              __component_name="Typography.Title"
+              level={1}
             >
               {this.i18n('i18n-256hns5m') /* 我安装的 */}
             </Typography.Title>
           </Col>
-          <Col span={24} __component_name="Col">
+          <Col __component_name="Col" span={24}>
             <Card
-              size="default"
-              type="inner"
-              style={{ paddingTop: '4px', paddingBottom: '16px' }}
+              __component_name="Card"
               actions={[]}
-              loading={false}
               bordered={false}
               hoverable={false}
-              __component_name="Card"
+              loading={false}
+              size="default"
+              style={{ paddingBottom: '16px', paddingTop: '4px' }}
+              type="inner"
             >
-              <Row wrap={true} gutter={[0, 0]} __component_name="Row">
-                <Col span={24} __component_name="Col">
-                  <Row wrap={false} justify="space-between" __component_name="Row">
+              <Row __component_name="Row" gutter={[0, 0]} wrap={true}>
+                <Col __component_name="Col" span={24}>
+                  <Row __component_name="Row" justify="space-between" wrap={false}>
                     <Col __component_name="Col">
-                      <Space size={12} align="center" direction="horizontal">
+                      <Space align="center" direction="horizontal" size={12}>
                         <Button
+                          __component_name="Button"
+                          block={false}
+                          danger={false}
+                          disabled={false}
+                          ghost={false}
                           href="/components/market"
                           icon={<AntdIconPlusOutlined __component_name="AntdIconPlusOutlined" />}
-                          type="primary"
-                          block={false}
-                          ghost={false}
                           shape="default"
-                          danger={false}
                           target="_self"
-                          disabled={false}
-                          __component_name="Button"
+                          type="primary"
                         >
                           {this.i18n('i18n-ayt8tml3') /* 安装组件 */}
                         </Button>
                         <Button
+                          __component_name="Button"
+                          block={false}
+                          danger={false}
+                          disabled={false}
+                          ghost={false}
                           icon={
                             <AntdIconReloadOutlined __component_name="AntdIconReloadOutlined" />
                           }
-                          block={false}
-                          ghost={false}
-                          shape="default"
-                          danger={false}
                           onClick={function () {
                             return this.handleRefresh.apply(
                               this,
                               Array.prototype.slice.call(arguments).concat([])
                             );
                           }.bind(this)}
-                          disabled={false}
-                          __component_name="Button"
+                          shape="default"
                         >
                           {this.i18n('i18n-pzwgpt2r') /* 刷新 */}
                         </Button>
                         <Input.Search
-                          style={{ width: '240px' }}
-                          value={__$$eval(() => this.state.searchValue)}
+                          __component_name="Input.Search"
+                          addonBefore={
+                            <Select
+                              __component_name="Select"
+                              _sdkSwrGetFunc={{}}
+                              allowClear={false}
+                              disabled={false}
+                              onChange={function () {
+                                return this.handleSearchKeyChange.apply(
+                                  this,
+                                  Array.prototype.slice.call(arguments).concat([])
+                                );
+                              }.bind(this)}
+                              options={[
+                                {
+                                  label: this.i18n('i18n-cuf6u4di') /* 组件名称 */,
+                                  value: 'chartName',
+                                },
+                                {
+                                  label: this.i18n('i18n-1po87kgw') /* 组件仓库 */,
+                                  value: 'repository',
+                                },
+                              ]}
+                              placeholder="请选择"
+                              showSearch={true}
+                              style={{ width: '90px' }}
+                              value={__$$eval(() => this.state.searchKey)}
+                            />
+                          }
                           onChange={function () {
                             return this.handleSearchValueChange.apply(
                               this,
@@ -402,50 +429,24 @@ class ComponentsManagementInstall$$Page extends React.Component {
                               Array.prototype.slice.call(arguments).concat([])
                             );
                           }.bind(this)}
-                          addonBefore={
-                            <Select
-                              style={{ width: '90px' }}
-                              value={__$$eval(() => this.state.searchKey)}
-                              options={[
-                                {
-                                  label: this.i18n('i18n-cuf6u4di') /* 组件名称 */,
-                                  value: 'chartName',
-                                },
-                                {
-                                  label: this.i18n('i18n-1po87kgw') /* 组件仓库 */,
-                                  value: 'repository',
-                                },
-                              ]}
-                              disabled={false}
-                              onChange={function () {
-                                return this.handleSearchKeyChange.apply(
-                                  this,
-                                  Array.prototype.slice.call(arguments).concat([])
-                                );
-                              }.bind(this)}
-                              allowClear={false}
-                              showSearch={true}
-                              placeholder="请选择"
-                              _sdkSwrGetFunc={{}}
-                              __component_name="Select"
-                            />
-                          }
                           placeholder={this.i18n('i18n-n9a8du2a') /* 请输入 */}
-                          __component_name="Input.Search"
+                          style={{ width: '240px' }}
+                          value={__$$eval(() => this.state.searchValue)}
                         />
                       </Space>
                     </Col>
                     <Col __component_name="Col">
                       <Space align="center" direction="horizontal">
                         <Pagination
-                          total={__$$eval(
-                            () =>
-                              this.props.useGetComponentplansPaged?.data?.componentplansPaged
-                                ?.totalCount || 0
-                          )}
-                          simple={true}
+                          __component_name="Pagination"
                           current={__$$eval(() => this.state.current)}
                           onChange={function () {
+                            return this.handlePaginationChange.apply(
+                              this,
+                              Array.prototype.slice.call(arguments).concat([])
+                            );
+                          }.bind(this)}
+                          onShowSizeChange={function () {
                             return this.handlePaginationChange.apply(
                               this,
                               Array.prototype.slice.call(arguments).concat([])
@@ -458,111 +459,109 @@ class ComponentsManagementInstall$$Page extends React.Component {
                               Array.prototype.slice.call(arguments).concat([])
                             );
                           }.bind(this)}
-                          __component_name="Pagination"
-                          onShowSizeChange={function () {
-                            return this.handlePaginationChange.apply(
-                              this,
-                              Array.prototype.slice.call(arguments).concat([])
-                            );
-                          }.bind(this)}
+                          simple={true}
+                          total={__$$eval(
+                            () =>
+                              this.props.useGetComponentplansPaged?.data?.componentplansPaged
+                                ?.totalCount || 0
+                          )}
                         />
                       </Space>
                     </Col>
                   </Row>
                 </Col>
-                <Col span={24} __component_name="Col">
+                <Col __component_name="Col" span={24}>
                   <Table
-                    size="middle"
-                    rowKey="releaseName"
-                    scroll={{ scrollToFirstRowOnChange: true }}
+                    __component_name="Table"
                     columns={[
                       {
+                        dataIndex: 'releaseName',
+                        ellipsis: { showTitle: true },
                         key: 'releaseName',
-                        title: this.i18n('i18n-wwsgwkdl') /* 部署名称 */,
                         render: (text, record, index) =>
                           (__$$context => (
                             <UnifiedLink
+                              __component_name="UnifiedLink"
+                              target="_self"
                               to={__$$eval(
                                 () => `/components/management/install/detail/${record.name}`
                               )}
-                              target="_self"
-                              __component_name="UnifiedLink"
                             >
                               {__$$eval(() => record.releaseName || '-')}
                             </UnifiedLink>
                           ))(__$$createChildContext(__$$context, { text, record, index })),
-                        ellipsis: { showTitle: true },
-                        dataIndex: 'releaseName',
+                        title: this.i18n('i18n-wwsgwkdl') /* 部署名称 */,
                       },
                       {
+                        dataIndex: 'name',
                         key: 'name',
-                        title: this.i18n('i18n-cuf6u4di') /* 组件名称 */,
                         render: (text, record, index) =>
                           (__$$context => (
                             <Typography.Text
-                              style={{ fontSize: '' }}
-                              strong={false}
+                              __component_name="Typography.Text"
                               disabled={false}
                               ellipsis={true}
-                              __component_name="Typography.Text"
+                              strong={false}
+                              style={{ fontSize: '' }}
                             >
                               {__$$eval(() => __$$context.getName(__$$context?.record?.component))}
                             </Typography.Text>
                           ))(__$$createChildContext(__$$context, { text, record, index })),
-                        dataIndex: 'name',
+                        title: this.i18n('i18n-cuf6u4di') /* 组件名称 */,
                       },
                       {
-                        key: 'version',
-                        title: this.i18n('i18n-7e7t3bw9') /* 版本 */,
-                        render: (text, record, index) =>
-                          (__$$context => (
-                            <Space align="center" direction="horizontal" __component_name="Space">
-                              <Typography.Text
-                                style={{ fontSize: '' }}
-                                strong={false}
-                                disabled={false}
-                                ellipsis={true}
-                                __component_name="Typography.Text"
-                              >
-                                {__$$eval(() => record.version || '-')}
-                              </Typography.Text>
-                              {!!__$$eval(() => record?.component?.isNewer) && (
-                                <Tag color="success" closable={false} __component_name="Tag">
-                                  New
-                                </Tag>
-                              )}
-                            </Space>
-                          ))(__$$createChildContext(__$$context, { text, record, index })),
+                        _unsafe_MixedSetter_title_select: 'I18nSetter',
+                        dataIndex: 'version',
                         filters: __$$eval(() => [
                           {
                             value: 'isNewer',
                             text: 'NEW',
                           },
                         ]),
-                        dataIndex: 'version',
-                        _unsafe_MixedSetter_title_select: 'I18nSetter',
-                      },
-                      {
-                        key: 'status',
-                        title: this.i18n('i18n-kmaug6a7') /* 状态 */,
+                        key: 'version',
                         render: (text, record, index) =>
                           (__$$context => (
-                            <Space align="center" direction="horizontal" __component_name="Space">
+                            <Space __component_name="Space" align="center" direction="horizontal">
+                              <Typography.Text
+                                __component_name="Typography.Text"
+                                disabled={false}
+                                ellipsis={true}
+                                strong={false}
+                                style={{ fontSize: '' }}
+                              >
+                                {__$$eval(() => record.version || '-')}
+                              </Typography.Text>
+                              {!!__$$eval(() => record?.component?.isNewer) && (
+                                <Tag __component_name="Tag" closable={false} color="success">
+                                  New
+                                </Tag>
+                              )}
+                            </Space>
+                          ))(__$$createChildContext(__$$context, { text, record, index })),
+                        title: this.i18n('i18n-7e7t3bw9') /* 版本 */,
+                      },
+                      {
+                        dataIndex: 'status',
+                        filters: __$$eval(() => this.utils.getComponentInstallStatus(this)),
+                        key: 'status',
+                        render: (text, record, index) =>
+                          (__$$context => (
+                            <Space __component_name="Space" align="center" direction="horizontal">
                               <Status
+                                __component_name="Status"
                                 id={__$$eval(() => record.status)}
                                 types={__$$eval(() =>
                                   __$$context.utils.getComponentInstallStatus(__$$context, true)
                                 )}
-                                __component_name="Status"
                               />
                               {!!__$$eval(() => record.reason) && (
                                 <Tooltip
-                                  title={__$$eval(() => record?.reason || '-')}
                                   __component_name="Tooltip"
+                                  title={__$$eval(() => record?.reason || '-')}
                                 >
                                   <Container
-                                    color="colorTextDescription"
                                     __component_name="Container"
+                                    color="colorTextDescription"
                                   >
                                     <AntdIconExclamationCircleFilled __component_name="AntdIconExclamationCircleFilled" />
                                   </Container>
@@ -570,20 +569,19 @@ class ComponentsManagementInstall$$Page extends React.Component {
                               )}
                             </Space>
                           ))(__$$createChildContext(__$$context, { text, record, index })),
-                        filters: __$$eval(() => this.utils.getComponentInstallStatus(this)),
-                        dataIndex: 'status',
+                        title: this.i18n('i18n-kmaug6a7') /* 状态 */,
                       },
                       {
+                        dataIndex: 'type',
                         key: 'type',
-                        title: this.i18n('i18n-5u3ohmy6') /* 更新方式 */,
                         render: (text, record, index) =>
                           (__$$context => (
                             <Typography.Text
-                              style={{ fontSize: '' }}
-                              strong={false}
+                              __component_name="Typography.Text"
                               disabled={false}
                               ellipsis={true}
-                              __component_name="Typography.Text"
+                              strong={false}
+                              style={{ fontSize: '' }}
                             >
                               {__$$eval(
                                 () =>
@@ -598,48 +596,52 @@ class ComponentsManagementInstall$$Page extends React.Component {
                               )}
                             </Typography.Text>
                           ))(__$$createChildContext(__$$context, { text, record, index })),
-                        dataIndex: 'type',
+                        title: this.i18n('i18n-5u3ohmy6') /* 更新方式 */,
                       },
                       {
-                        title: this.i18n('i18n-7lw9akor') /* 所属组件仓库 */,
+                        dataIndex: 'repository',
                         render: (text, record, index) =>
                           (__$$context => (
                             <Typography.Text
-                              style={{ fontSize: '' }}
-                              strong={false}
+                              __component_name="Typography.Text"
                               disabled={false}
                               ellipsis={true}
-                              __component_name="Typography.Text"
+                              strong={false}
+                              style={{ fontSize: '' }}
                             >
                               {__$$eval(() => __$$context?.record?.component?.repository || '-')}
                             </Typography.Text>
                           ))(__$$createChildContext(__$$context, { text, record, index })),
-                        dataIndex: 'repository',
+                        title: this.i18n('i18n-7lw9akor') /* 所属组件仓库 */,
                       },
                       {
+                        dataIndex: 'creationTimestamp',
                         key: 'updatetime',
-                        title: this.i18n('i18n-m6kwhtjg') /* 更新时间 */,
                         render: (text, record, index) =>
                           (__$$context => (
                             <Typography.Time
-                              time={__$$eval(() => record?.creationTimestamp)}
+                              __component_name="Typography.Time"
                               format=""
                               relativeTime={false}
-                              __component_name="Typography.Time"
+                              time={__$$eval(() => record?.creationTimestamp)}
                             />
                           ))(__$$createChildContext(__$$context, { text, record, index })),
                         sorter: true,
-                        dataIndex: 'creationTimestamp',
+                        title: this.i18n('i18n-m6kwhtjg') /* 更新时间 */,
                       },
                       {
-                        title: this.i18n('i18n-ioy0ge9h') /* 操作 */,
-                        width: 200,
+                        dataIndex: 'op',
                         render: (text, record, index) =>
                           (__$$context => (
-                            <Space size={12} align="center" direction="horizontal">
-                              <Space align="center" direction="horizontal" __component_name="Space">
+                            <Space align="center" direction="horizontal" size={12}>
+                              <Space __component_name="Space" align="center" direction="horizontal">
                                 {!!__$$eval(() => record.status !== 'Installing') && (
                                   <Button
+                                    __component_name="Button"
+                                    block={false}
+                                    danger={false}
+                                    disabled={false}
+                                    ghost={false}
                                     href={__$$eval(
                                       () =>
                                         `/components/management/install/management-action/update/${
@@ -648,12 +650,7 @@ class ComponentsManagementInstall$$Page extends React.Component {
                                           __$$context.utils.getAuthData()?.cluster
                                         }&name=${record?.name}`
                                     )}
-                                    block={false}
-                                    ghost={false}
                                     shape="default"
-                                    danger={false}
-                                    disabled={false}
-                                    __component_name="Button"
                                   >
                                     {__$$eval(() =>
                                       record?.status === 'InstallSuccess'
@@ -663,10 +660,11 @@ class ComponentsManagementInstall$$Page extends React.Component {
                                   </Button>
                                 )}
                                 <Button
+                                  __component_name="Button"
                                   block={false}
-                                  ghost={false}
-                                  shape="default"
                                   danger={false}
+                                  disabled={false}
+                                  ghost={false}
                                   onClick={function () {
                                     return this.openDeleteModal.apply(
                                       this,
@@ -677,17 +675,21 @@ class ComponentsManagementInstall$$Page extends React.Component {
                                       ])
                                     );
                                   }.bind(__$$context)}
-                                  disabled={false}
-                                  __component_name="Button"
+                                  shape="default"
                                 >
                                   {this.i18n('i18n-dj53cnrp') /* 卸载 */}
                                 </Button>
                               </Space>
                             </Space>
                           ))(__$$createChildContext(__$$context, { text, record, index })),
-                        dataIndex: 'op',
+                        title: this.i18n('i18n-ioy0ge9h') /* 操作 */,
+                        width: 200,
                       },
                     ]}
+                    dataSource={__$$eval(
+                      () =>
+                        this.props.useGetComponentplansPaged?.data?.componentplansPaged?.nodes || []
+                    )}
                     loading={__$$eval(
                       () =>
                         this.props.useGetComponentplansPaged?.isLoading ||
@@ -700,13 +702,12 @@ class ComponentsManagementInstall$$Page extends React.Component {
                         Array.prototype.slice.call(arguments).concat([])
                       );
                     }.bind(this)}
-                    dataSource={__$$eval(
-                      () =>
-                        this.props.useGetComponentplansPaged?.data?.componentplansPaged?.nodes || []
-                    )}
                     pagination={false}
+                    rowKey="releaseName"
+                    scroll={{ scrollToFirstRowOnChange: true }}
                     showHeader={true}
-                    __component_name="Table"
+                    size="middle"
+                    style={{ marginTop: '4px' }}
                   />
                 </Col>
               </Row>
@@ -718,7 +719,7 @@ class ComponentsManagementInstall$$Page extends React.Component {
   }
 }
 
-const PageWrapper = () => {
+const PageWrapper = (props = {}) => {
   const location = useLocation();
   const history = getUnifiedHistory();
   const match = matchPath({ path: '/components/management/install' }, location.pathname);
@@ -726,6 +727,7 @@ const PageWrapper = () => {
   history.query = qs.parse(location.search);
   const appHelper = {
     utils,
+    constants: __$$constants,
     location,
     match,
     history,
@@ -739,7 +741,6 @@ const PageWrapper = () => {
       self={self}
       sdkInitFunc={{
         enabled: undefined,
-        func: 'undefined',
         params: undefined,
       }}
       sdkSwrFuncs={[
@@ -757,7 +758,12 @@ const PageWrapper = () => {
         },
       ]}
       render={dataProps => (
-        <ComponentsManagementInstall$$Page {...dataProps} self={self} appHelper={appHelper} />
+        <ComponentsManagementInstall$$Page
+          {...props}
+          {...dataProps}
+          self={self}
+          appHelper={appHelper}
+        />
       )}
     />
   );
@@ -779,6 +785,14 @@ function __$$createChildContext(oldContext, ext) {
   const childContext = {
     ...oldContext,
     ...ext,
+    // 重写 state getter，保证 state 的指向不变，这样才能从 context 中拿到最新的 state
+    get state() {
+      return oldContext.state;
+    },
+    // 重写 props getter，保证 props 的指向不变，这样才能从 context 中拿到最新的 props
+    get props() {
+      return oldContext.props;
+    },
   };
   childContext.__proto__ = oldContext;
   return childContext;
