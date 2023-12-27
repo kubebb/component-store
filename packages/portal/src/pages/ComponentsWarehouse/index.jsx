@@ -598,43 +598,44 @@ class ComponentsWarehouse$$Page extends React.Component {
         >
           <Alert
             __component_name="Alert"
-            message={
-              <Space align="center" direction="horizontal" size={5} style={{}}>
-                <Typography.Text
-                  __component_name="Typography.Text"
-                  disabled={false}
-                  ellipsis={true}
-                  strong={false}
-                  style={{ fontSize: '' }}
-                >
-                  {this.i18n('i18n-lc4oie5j') /* 删除 */}
-                </Typography.Text>
-                <Typography.Text
-                  __component_name="Typography.Text"
-                  disabled={false}
-                  ellipsis={{
-                    rows: 1,
-                    tooltip: {
-                      _unsafe_MixedSetter_title_select: 'VariableSetter',
-                      title: __$$eval(() => this.state.record?.name || '-'),
-                    },
-                  }}
-                  strong={true}
-                  style={{ fontSize: '', maxWidth: '180px' }}
-                >
-                  {__$$eval(() => this.state.record?.name || '-')}
-                </Typography.Text>
-                <Typography.Text
-                  __component_name="Typography.Text"
-                  disabled={false}
-                  ellipsis={true}
-                  strong={false}
-                  style={{ fontSize: '' }}
-                >
-                  {this.i18n('i18n-1y52u16q') /* 组件仓库，其下组件将同步删除，请确认！ */}
-                </Typography.Text>
-              </Space>
-            }
+            message={[
+              <Typography.Text
+                __component_name="Typography.Text"
+                disabled={false}
+                ellipsis={true}
+                strong={false}
+                style={{ fontSize: '' }}
+                key="node_oclkj671un15"
+              >
+                {this.i18n('i18n-lc4oie5j') /* 删除 */}
+              </Typography.Text>,
+              <Typography.Text
+                __component_name="Typography.Text"
+                disabled={false}
+                ellipsis={{
+                  rows: 1,
+                  tooltip: {
+                    _unsafe_MixedSetter_title_select: 'VariableSetter',
+                    title: __$$eval(() => this.state.record?.name || '-'),
+                  },
+                }}
+                strong={true}
+                style={{ fontSize: '', maxWidth: '180px', paddingLeft: '4px', paddingRight: '4px' }}
+                key="node_oclkj671un16"
+              >
+                {__$$eval(() => this.state.record?.name || '-')}
+              </Typography.Text>,
+              <Typography.Text
+                __component_name="Typography.Text"
+                disabled={false}
+                ellipsis={false}
+                strong={false}
+                style={{ fontSize: '' }}
+                key="node_oclkj671un17"
+              >
+                {this.i18n('i18n-1y52u16q') /* 组件仓库，其下组件将同步删除，请确认！ */}
+              </Typography.Text>,
+            ]}
             showIcon={true}
             style={{}}
             type="info"

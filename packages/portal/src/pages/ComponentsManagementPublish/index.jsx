@@ -380,60 +380,48 @@ class ComponentsManagementPublish$$Page extends React.Component {
         >
           <Alert
             __component_name="Alert"
-            message={
-              <Space align="center" direction="horizontal" size={0}>
-                <Row __component_name="Row" gutter={[0, 0]} wrap={true}>
-                  <Col __component_name="Col" span={24}>
-                    <Typography.Text
-                      __component_name="Typography.Text"
-                      disabled={false}
-                      ellipsis={true}
-                      strong={false}
-                      style={{ fontSize: '' }}
-                    >
-                      {
-                        this.i18n(
-                          'i18n-x8jvcd94'
-                        ) /* 删除组件即删除其所有版本信息，删除后将不在<组件市场>展示。确定删除组件 */
-                      }
-                    </Typography.Text>
-                  </Col>
-                  <Col __component_name="Col" span={24}>
-                    <Space
-                      __component_name="Space"
-                      align="center"
-                      direction="horizontal"
-                      size="small"
-                    >
-                      <Typography.Text
-                        __component_name="Typography.Text"
-                        disabled={false}
-                        ellipsis={{
-                          rows: 1,
-                          tooltip: {
-                            _unsafe_MixedSetter_title_select: 'VariableSetter',
-                            title: __$$eval(() => this.getName(this.state?.record)),
-                          },
-                        }}
-                        strong={true}
-                        style={{ fontSize: '', maxWidth: '400px' }}
-                      >
-                        {__$$eval(() => this.getName(this.state?.record))}
-                      </Typography.Text>
-                      <Typography.Text
-                        __component_name="Typography.Text"
-                        disabled={false}
-                        ellipsis={true}
-                        strong={false}
-                        style={{ fontSize: '' }}
-                      >
-                        {this.i18n('i18n-ha9unjy9') /* 吗？ */}
-                      </Typography.Text>
-                    </Space>
-                  </Col>
-                </Row>
-              </Space>
-            }
+            message={[
+              <Typography.Text
+                __component_name="Typography.Text"
+                disabled={false}
+                ellipsis={false}
+                strong={false}
+                style={{ fontSize: '' }}
+                key="node_oclkj671un17"
+              >
+                {
+                  this.i18n(
+                    'i18n-x8jvcd94'
+                  ) /* 删除组件即删除其所有版本信息，删除后将不在<组件市场>展示。确定删除组件 */
+                }
+              </Typography.Text>,
+              <Typography.Text
+                __component_name="Typography.Text"
+                disabled={false}
+                ellipsis={{
+                  rows: 1,
+                  tooltip: {
+                    _unsafe_MixedSetter_title_select: 'VariableSetter',
+                    title: __$$eval(() => this.getName(this.state?.record)),
+                  },
+                }}
+                strong={true}
+                style={{ fontSize: '', maxWidth: '400px', paddingLeft: '4px', paddingRight: '4px' }}
+                key="node_oclkj671un16"
+              >
+                {__$$eval(() => this.getName(this.state?.record))}
+              </Typography.Text>,
+              <Typography.Text
+                __component_name="Typography.Text"
+                disabled={false}
+                ellipsis={false}
+                strong={false}
+                style={{ fontSize: '' }}
+                key="node_oclluit3dd1"
+              >
+                {this.i18n('i18n-ha9unjy9') /* 吗？ */}
+              </Typography.Text>,
+            ]}
             showIcon={true}
             type="info"
           />
