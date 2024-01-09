@@ -32,6 +32,10 @@ export interface Repository {
      * AuthSecret if the chart repository requires auth authentication, set the username and password to secret, with the fields user and password respectively.
      */
     authSecret?: string;
+    /**
+     * EnableRating enable component rating
+     */
+    enableRating?: boolean;
     filter?: {
       /**
        * If True, the current version will be retained even if it is deprecated.

@@ -1,0 +1,62 @@
+
+# 查询组件评测部署状态
+query getRatingDeploymentStatus($namespace: String, $cluster: String) {
+  ratingDeploymentStatus(namespace: $namespace, cluster: $cluster)
+}
+
+# 查询组件评测列表
+query getRatingList($namespace: String, $cluster: String) {
+  ratings(namespace: $namespace, cluster: $cluster) {
+    name
+    creationTimestamp
+    componentName
+    repository
+  }
+}
+
+# 查询组件评测
+query getRating($name: String, $namespace: String, $version: String!, $cluster: String) {
+  rating(name: $name, namespace: $namespace, version: $version, cluster: $cluster) {
+    name
+    creationTimestamp
+    repository
+    componentName
+    prompt {
+      conditions {
+        lastTransitionTime
+        message
+        reason
+        status
+        type
+      }
+      evaluations {
+        reliability {
+          conditions {
+            lastTransitionTime
+            message
+            reason
+            status
+            type
+          }
+          prompt
+          data
+        }
+      }
+      pipelineRuns {
+        reliability {
+          pipelineName
+          pipelinerunName
+        }
+      }
+    }
+    rbac {
+      name
+      binaryData
+    }
+  }
+}
+
+# 创建
+mutation createRating($createRatingsInput: CreateRatingsInput!, $cluster: String){
+  ratingCreate(createRatingsInput: $createRatingsInput, cluster: $cluster)
+}

@@ -1,0 +1,17 @@
+
+# 查询列表
+query getPipelineList($namespace: String!, $cluster: String) {
+  pipelines(namespace: $namespace, cluster: $cluster) {
+    name
+    creationTimestamp
+    params {
+      name
+      description
+      type
+      default
+      arrayVal
+      stringVal
+      objectVal
+    }
+  }
+}
