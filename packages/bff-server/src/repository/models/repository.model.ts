@@ -19,6 +19,9 @@ export class Repository {
   /** URL */
   url: string;
 
+  /** 评测开关 */
+  enableRating: boolean;
+
   /** 当前状态 */
   status: RepositoryStatus;
 

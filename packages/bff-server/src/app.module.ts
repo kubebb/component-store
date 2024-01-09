@@ -22,6 +22,9 @@ import { ComponentsModule } from './components/components.module';
 import serverConfig from './config/server.config';
 import { ConfigmapModule } from './configmap/configmap.module';
 import { KubernetesModule } from './kubernetes/kubernetes.module';
+import { PipelineModule } from './pipeline/pipeline.module';
+import { PromptModule } from './prompt/prompt.module';
+import { RatingsModule } from './rating/ratings.module';
 import { RepositoryModule } from './repository/repository.module';
 import { SecretModule } from './secret/secret.module';
 import { SubscriptionModule } from './subscription/subscription.module';
@@ -90,6 +93,9 @@ import { SubscriptionModule } from './subscription/subscription.module';
     SubscriptionModule,
     ComponentplanModule,
     ConfigmapModule,
+    RatingsModule,
+    PipelineModule,
+    PromptModule,
   ],
   controllers: [AppController],
   providers: [

@@ -7,6 +7,7 @@ query getRepositories($page: Float = 1, $pageSize: Float = 20, $name: String, $r
       status
       reason
       url
+      enableRating
       creationTimestamp
       lastSuccessfulTime
     }
@@ -22,6 +23,7 @@ query getRepositoriesAll {
     repositoryType
     status
     url
+    enableRating
     creationTimestamp
     lastSuccessfulTime
   }
@@ -35,6 +37,7 @@ query getRepository($name: String!, $cluster: String) {
     status
     reason
     url
+    enableRating
     creationTimestamp
     lastSuccessfulTime
     insecure
@@ -69,6 +72,7 @@ mutation createRepository($repository: CreateRepositoryInput!, $cluster: String)
     repositoryType
     status
     url
+    enableRating
     creationTimestamp
     lastSuccessfulTime
     insecure
@@ -103,6 +107,7 @@ mutation updateRepository($name: String!, $repository: UpdateRepositoryInput!, $
     repositoryType
     status
     url
+    enableRating
     creationTimestamp
     lastSuccessfulTime
     insecure

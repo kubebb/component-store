@@ -21,6 +21,9 @@ const CRD_LIST = [
   'repositories.core.kubebb.k8s.com.cn',
   'subscriptions.core.kubebb.k8s.com.cn',
   'componentplans.core.kubebb.k8s.com.cn',
+  'ratings.core.kubebb.k8s.com.cn',
+  'pipelines.tekton.dev',
+  'prompts.arcadia.kubeagi.k8s.com.cn',
 ];
 
 const ClusterCrdTemplate = fs.readFileSync(join(LIB_CRD_DIR, 'user.ts')).toString();
@@ -35,6 +38,10 @@ export const genCrd = async (kubeConfig: k8s.KubeConfig) => {
   const crdSpecList = crdList.items
     .map(crd => {
       const { kind, listKind, plural, singular } = crd.spec.names;
+      let versionIndex = crd.spec.versions.length - 1;
+      if (kind === 'Pipeline') {
+        versionIndex = 0;
+      }
       return {
         name: crd.metadata.name,
         kind,
@@ -44,8 +51,8 @@ export const genCrd = async (kubeConfig: k8s.KubeConfig) => {
         scope: crd.spec.scope,
         group: crd.spec.group,
         // @Todo: 这里到底应该用哪个版本存疑？storedVersions？
-        version: crd.spec.versions[crd.spec.versions.length - 1].name,
-        schema: crd.spec.versions[crd.spec.versions.length - 1].schema?.openAPIV3Schema,
+        version: crd.spec.versions[versionIndex].name,
+        schema: crd.spec.versions[versionIndex].schema?.openAPIV3Schema,
       };
     })
     .filter(crd => CRD_LIST.includes(crd.name));

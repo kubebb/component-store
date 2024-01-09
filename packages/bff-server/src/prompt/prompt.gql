@@ -1,0 +1,17 @@
+# 查询详情
+query getPrompt($name: String!, $namespace: String!, $cluster: String) {
+  prompt(name: $name, namespace: $namespace, cluster: $cluster) {
+    name
+    creationTimestamp
+    prompt {
+      data
+      conditions {
+        lastTransitionTime
+        message
+        reason
+        status
+        type
+      }
+    }
+  }
+}
