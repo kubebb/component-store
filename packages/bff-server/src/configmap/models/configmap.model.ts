@@ -7,5 +7,10 @@ export class Configmap {
   name: string;
 
   /** data */
-  data: AnyObj;
+  @Field(() => JSON)
+  data?: AnyObj;
+
+  /** binaryData */
+  @Field(() => JSON)
+  binaryData?: AnyObj;
 }

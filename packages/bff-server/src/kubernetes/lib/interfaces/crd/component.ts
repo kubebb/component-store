@@ -122,7 +122,7 @@ export interface Component {
     /**
      * versions contains all version of one component.
      */
-    versions: {
+    versions?: {
       annotations?: {
         [k: string]: string;
       };
