@@ -91,6 +91,7 @@ export class RepositoryService {
       insecure: repository?.spec?.insecure,
       authSecret: repository?.spec?.authSecret,
       labels: repository.metadata?.labels,
+      enableRating: repository.spec?.enableRating ?? false,
     };
   }
 
@@ -177,7 +178,16 @@ export class RepositoryService {
     repository: CreateRepositoryInput,
     cluster?: string
   ): Promise<Repository> {
-    const { name, url, repositoryType, insecure, pullStategy, imageOverride, filter } = repository;
+    const {
+      name,
+      url,
+      repositoryType,
+      insecure,
+      pullStategy,
+      imageOverride,
+      filter,
+      enableRating,
+    } = repository;
     const specFilter = filter?.map(f => {
       let op: 'ignore' | 'keep';
       let cond: AnyObj;
@@ -207,6 +217,7 @@ export class RepositoryService {
       },
       spec: {
         url,
+        enableRating,
         repositoryType,
         insecure,
         authSecret: secretName,
@@ -224,7 +235,7 @@ export class RepositoryService {
     repository: UpdateRepositoryInput,
     cluster?: string
   ): Promise<Repository> {
-    const { insecure, pullStategy, imageOverride, filter } = repository;
+    const { insecure, pullStategy, imageOverride, filter, enableRating } = repository;
     const { specFilter, specImgOver } = this.parseSpec({ filter, imageOverride });
     const { url, repositoryType, authSecret } = await this.getRepository(auth, name, cluster);
     const secretName = await this.applySecret(auth, authSecret, repository, cluster);
@@ -232,6 +243,7 @@ export class RepositoryService {
     const { body } = await k8s.repository.patchMerge(name, this.kubebbNS, {
       spec: {
         url,
+        enableRating,
         repositoryType,
         insecure,
         authSecret: secretName,
