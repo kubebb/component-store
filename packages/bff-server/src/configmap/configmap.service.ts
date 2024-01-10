@@ -11,6 +11,7 @@ export class ConfigmapService {
     return {
       name: cm.metadata.name,
       data: cm.data,
+      binaryData: cm.binaryData,
     };
   }
 

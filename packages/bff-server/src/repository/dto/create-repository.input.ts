@@ -67,6 +67,9 @@ export class CreateRepositoryInput {
   /** URL */
   url: string;
 
+  /** 评测开关 */
+  enableRating?: boolean;
+
   /** https验证 */
   insecure?: boolean;
 

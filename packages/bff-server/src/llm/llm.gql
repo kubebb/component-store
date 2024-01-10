@@ -1,0 +1,17 @@
+# 查询llm详情
+query getLlm($name: String!, $namespace: String, $cluster: String) {
+  llm(name: $name, namespace: $namespace, cluster: $cluster) {
+    name
+    creationTimestamp
+    status {
+      conditions {
+        lastSuccessfulTime
+        lastTransitionTime
+        message
+        reason
+        status
+        type
+      }
+    }
+  }
+}

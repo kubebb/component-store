@@ -225,6 +225,17 @@ input ComponentplanImageInput {
   tag: String
 }
 
+type Configmap {
+  """binaryData"""
+  binaryData: JSON
+
+  """data"""
+  data: JSON
+
+  """name"""
+  name: ID!
+}
+
 """上传组件"""
 input CreateComponentInput {
   """组件helm包"""
@@ -260,12 +271,29 @@ input CreateComponentplanInput {
   version: String!
 }
 
+input CreateRatingsInput {
+  """组件名称"""
+  componentName: String!
+
+  """项目"""
+  namespace: String
+
+  """URL"""
+  url: String!
+
+  """版本"""
+  version: String!
+}
+
 input CreateRepositoryInput {
   """ca.pem（根证书）"""
   cadata: Upload
 
   """client.pem（客户端证书）"""
   certdata: Upload
+
+  """评测开关"""
+  enableRating: Boolean
 
   """组件过滤"""
   filter: [RepositoryFilterInput!]
@@ -367,6 +395,15 @@ scalar JSON
 
 scalar JSONObject
 
+type Llm {
+  """创建时间"""
+  creationTimestamp: String!
+  name: ID!
+
+  """status"""
+  status: llmStatusModelField
+}
+
 type Mutation {
   """删除组件"""
   componentDelete(
@@ -423,6 +460,13 @@ type Mutation {
     componentplan: UpdateComponentplanInput!
     name: String!
     namespace: String!
+  ): Boolean!
+
+  """创建组件评测"""
+  ratingCreate(
+    """集群下的资源，不传则为默认集群"""
+    cluster: String
+    createRatingsInput: CreateRatingsInput!
   ): Boolean!
 
   """创建仓库"""
@@ -509,6 +553,28 @@ type PaginatedSubscription {
   page: Int!
   pageSize: Int!
   totalCount: Int!
+}
+
+type Pipeline {
+  """创建时间"""
+  creationTimestamp: String!
+
+  """pipeline名称"""
+  name: ID!
+
+  """params *"""
+  params: [pipelineParamsModel!]!
+}
+
+type Prompt {
+  """创建时间"""
+  creationTimestamp: String!
+
+  """组件名称"""
+  name: ID!
+
+  """prompt报告"""
+  prompt: promptModelField
 }
 
 type Query {
@@ -618,6 +684,64 @@ type Query {
   """组件列表"""
   componentsAll: [Component!]!
 
+  """llm详情"""
+  llm(
+    """集群下的资源，不传则为默认集群"""
+    cluster: String
+    name: String!
+    namespace: String
+  ): Llm!
+
+  """列表（分页）"""
+  pipelines(
+    """集群下的资源，不传则为默认集群"""
+    cluster: String
+    namespace: String!
+  ): [Pipeline!]!
+
+  """详情"""
+  prompt(
+    """集群下的资源，不传则为默认集群"""
+    cluster: String
+    name: String!
+    namespace: String!
+  ): Prompt!
+
+  """组件评测详情"""
+  rating(
+    """集群"""
+    cluster: String
+
+    """组件名称"""
+    name: String
+
+    """项目"""
+    namespace: String
+
+    """页码"""
+    page: Float = 1
+
+    """每页数量"""
+    pageSize: Float = 20
+
+    """版本"""
+    version: String!
+  ): Rating!
+
+  """组件评测部署状态"""
+  ratingDeploymentStatus(
+    """集群下的资源，不传则为默认集群"""
+    cluster: String
+    namespace: String
+  ): Boolean!
+
+  """安装组件列表"""
+  ratings(
+    """集群下的资源，不传则为默认集群"""
+    cluster: String
+    namespace: String
+  ): [Rating!]!
+
   """组件仓库列表（分页）"""
   repositories(
     """集群（不传则为默认集群）"""
@@ -697,9 +821,33 @@ type Query {
   ): PaginatedSubscription!
 }
 
+"""组件评测"""
+type Rating {
+  """组件名称"""
+  componentName: String!
+
+  """创建时间"""
+  creationTimestamp: String!
+
+  """名称"""
+  name: ID
+
+  """prompt"""
+  prompt: ratingModelPromptField
+
+  """RBAC"""
+  rbac: Configmap
+
+  """仓库名称"""
+  repository: String!
+}
+
 type Repository {
   """更新时间"""
   creationTimestamp: String!
+
+  """评测开关"""
+  enableRating: Boolean!
 
   """组件过滤"""
   filter: [RepositoryFilter!]
@@ -955,6 +1103,9 @@ input UpdateRepositoryInput {
   """client.pem（客户端证书）"""
   certdata: Upload
 
+  """评测开关"""
+  enableRating: Boolean
+
   """组件过滤"""
   filter: [RepositoryFilterInput!]
 
@@ -982,3 +1133,76 @@ input UpdateRepositoryInput {
 
 """The `Upload` scalar type represents a file upload."""
 scalar Upload
+
+type conditionsField {
+  lastTransitionTime: String
+  message: String
+  reason: String!
+  status: String!
+  type: String!
+}
+
+type evaluationsField {
+  reliability: evaluationsReliabilityField
+}
+
+type evaluationsReliabilityField {
+  conditions: [ratingConditionsField!]
+  data: String
+  prompt: String
+}
+
+type llmConditionsField {
+  lastSuccessfulTime: String
+  lastTransitionTime: String!
+  message: String
+  reason: String!
+  status: String!
+  type: String!
+}
+
+type llmStatusModelField {
+  conditions: [llmConditionsField!]
+}
+
+type objectValModelField {
+  key: String
+}
+
+type pipelineParamsModel {
+  arrayVal: [String!]
+  default: String
+  description: String!
+  name: String!
+  objectVal: JSON
+  stringVal: String
+  type: String!
+}
+
+type pipelineRunsField {
+  reliability: pipelineRunsReliabilityField
+}
+
+type pipelineRunsReliabilityField {
+  pipelineName: String!
+  pipelinerunName: String!
+}
+
+type promptModelField {
+  conditions: [conditionsField!]
+  data: String!
+}
+
+type ratingConditionsField {
+  lastTransitionTime: String
+  message: String
+  reason: String!
+  status: String!
+  type: String!
+}
+
+type ratingModelPromptField {
+  conditions: [ratingConditionsField!]
+  evaluations: evaluationsField
+  pipelineRuns: pipelineRunsField
+}
