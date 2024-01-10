@@ -2,6 +2,7 @@ import { Auth } from '@/common/decorators/auth.decorator';
 import { decodeBase64 } from '@/common/utils';
 import serverConfig from '@/config/server.config';
 import { ConfigmapService } from '@/configmap/configmap.service';
+import { LlmService } from '@/llm/llm.service';
 import { PromptService } from '@/prompt/prompt.service';
 import { JwtAuth } from '@/types';
 import { Inject } from '@nestjs/common';
@@ -17,11 +18,34 @@ export class RatingsResolver {
   constructor(
     private readonly ratingsService: RatingsService,
     private readonly promptService: PromptService,
+    private readonly llmService: LlmService,
     private readonly configmapService: ConfigmapService,
     @Inject(serverConfig.KEY)
     private config: ConfigType<typeof serverConfig>
   ) {}
   private kubebbNS = this.config.kubebb.namespace;
+
+  @Query(() => Boolean, { description: '组件评测部署状态' })
+  async ratingDeploymentStatus(
+    @Auth() auth: JwtAuth,
+    @Args('namespace', { nullable: true }) namespace: string,
+    @Args('cluster', {
+      nullable: true,
+      description: '集群下的资源，不传则为默认集群',
+    })
+    cluster: string
+  ): Promise<boolean> {
+    const { data } = await this.configmapService.getConfigmap(
+      auth,
+      'system-llm',
+      namespace || this.kubebbNS,
+      cluster
+    );
+    const { status } = await this.llmService.get(auth, data?.name, data?.namespace, cluster);
+    return status?.conditions?.some(
+      v => v.type === 'Ready' && v.reason === 'Available' && v.status === 'True'
+    );
+  }
 
   @Query(() => [Rating], { description: '安装组件列表' })
   async ratings(
@@ -92,6 +116,13 @@ export class RatingsResolver {
     })
     cluster: string
   ): Promise<boolean> {
-    return this.ratingsService.create(auth, createRatingsInput, cluster);
+    const namespace = createRatingsInput.namespace || this.kubebbNS;
+    const { data } = await this.configmapService.getConfigmap(
+      auth,
+      'system-llm',
+      namespace,
+      cluster
+    );
+    return this.ratingsService.create(auth, data, createRatingsInput, cluster);
   }
 }

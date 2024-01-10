@@ -13,7 +13,4 @@ export class CreateRatingsInput {
 
   /** 项目 */
   namespace?: string;
-
-  /** llm */
-  llm?: string;
 }

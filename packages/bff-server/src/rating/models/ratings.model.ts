@@ -1,5 +1,4 @@
 import { Configmap } from '@/configmap/models/configmap.model';
-import { conditionsField } from '@/prompt/models/prompt.model';
 import { Field, ID, ObjectType } from '@nestjs/graphql';
 
 @ObjectType()
@@ -17,44 +16,41 @@ class valueModelField {
 }
 
 @ObjectType()
-class paramsModelField {
-  name: string;
-  value: valueModelField;
-}
-@ObjectType()
-export class pipelineModelField {
-  pipelineName: string;
-  dimension: string;
-  params?: paramsModelField[];
-}
-
-@ObjectType()
-export class evaluationsReliabilityField {
-  conditions?: conditionsField[];
+class evaluationsReliabilityField {
+  conditions?: ratingConditionsField[];
   prompt?: string;
   data?: string;
   [k: string]: any;
 }
 
 @ObjectType()
-export class evaluationsField {
+class evaluationsField {
   reliability?: evaluationsReliabilityField;
 }
 
 @ObjectType()
-export class pipelineRunsReliabilityField {
+class pipelineRunsReliabilityField {
   pipelineName: string;
   pipelinerunName: string;
   [k: string]: any;
 }
 @ObjectType()
-export class pipelineRunsField {
+class pipelineRunsField {
   reliability?: pipelineRunsReliabilityField;
 }
 
 @ObjectType()
-export class ratingModelPromptField {
-  conditions?: conditionsField[];
+class ratingConditionsField {
+  lastTransitionTime?: string;
+  message?: string;
+  reason: string;
+  status: string;
+  type: string;
+}
+
+@ObjectType()
+class ratingModelPromptField {
+  conditions?: ratingConditionsField[];
   evaluations?: evaluationsField;
   pipelineRuns?: pipelineRunsField;
 }

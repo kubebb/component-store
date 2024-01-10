@@ -1,4 +1,9 @@
 
+# 查询组件评测部署状态
+query getRatingDeploymentStatus($namespace: String, $cluster: String) {
+  ratingDeploymentStatus(namespace: $namespace, cluster: $cluster)
+}
+
 # 查询组件评测列表
 query getRatingList($namespace: String, $cluster: String) {
   ratings(namespace: $namespace, cluster: $cluster) {

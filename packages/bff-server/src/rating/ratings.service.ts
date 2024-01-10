@@ -2,15 +2,16 @@ import { genNanoid } from '@/common/utils';
 import { ComponentsService } from '@/components/components.service';
 import { Component } from '@/components/models/component.model';
 import serverConfig from '@/config/server.config';
+import { ConfigmapService } from '@/configmap/configmap.service';
 import { KubernetesService } from '@/kubernetes/kubernetes.service';
 import { Pipeline } from '@/pipeline/models/pipeline.model';
 import { PipelineService } from '@/pipeline/pipeline.service';
 import { RatingsArgs } from '@/rating/dto/ratings.args';
-import { CRD, JwtAuth } from '@/types';
+import { AnyObj, CRD, JwtAuth } from '@/types';
 import { Inject, Injectable } from '@nestjs/common';
 import { ConfigType } from '@nestjs/config';
 import { CreateRatingsInput } from './dto/create-ratings.input';
-import { pipelineModelField, Rating } from './models/ratings.model';
+import { Rating } from './models/ratings.model';
 
 @Injectable()
 export class RatingsService {
@@ -18,6 +19,7 @@ export class RatingsService {
     private readonly k8sService: KubernetesService,
     private readonly pipelineService: PipelineService,
     private readonly componentsService: ComponentsService,
+    private readonly configmapService: ConfigmapService,
     @Inject(serverConfig.KEY)
     private config: ConfigType<typeof serverConfig>
   ) {}
@@ -52,18 +54,19 @@ export class RatingsService {
 
   async create(
     auth: JwtAuth,
+    llm: AnyObj,
     createRatingsInput: CreateRatingsInput,
     cluster?: string
   ): Promise<boolean> {
     const k8s = await this.k8sService.getClient(auth, { cluster });
-    const { componentName, version, url, namespace = this.kubebbNS, llm } = createRatingsInput;
+    const { componentName, version, url, namespace = this.kubebbNS } = createRatingsInput;
     const pipelines: Pipeline[] = await this.pipelineService.list(auth, namespace, cluster);
     const { repository }: Component = await this.componentsService.getComponent(
       auth,
       componentName,
       cluster
     );
-    const pipelineParams: pipelineModelField[] = pipelines?.map(pipeline => ({
+    const pipelineParams = pipelines?.map(pipeline => ({
       pipelineName: pipeline?.name,
       dimension: pipeline?.name?.split('-')?.pop(),
       params: pipeline?.params?.map(({ name, type }) => {
@@ -93,8 +96,8 @@ export class RatingsService {
         evaluator: {
           llm: {
             kind: 'LLM',
-            name: llm || 'zhipuai',
-            namespace,
+            name: llm?.name,
+            namespace: llm?.namespace,
           },
         },
         pipelineParams,

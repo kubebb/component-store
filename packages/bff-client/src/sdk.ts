@@ -258,8 +258,6 @@ export type CreateComponentplanInput = {
 export type CreateRatingsInput = {
   /** 组件名称 */
   componentName: Scalars['String']['input'];
-  /** llm */
-  llm?: InputMaybe<Scalars['String']['input']>;
   /** 项目 */
   namespace?: InputMaybe<Scalars['String']['input']>;
   /** URL */
@@ -347,6 +345,15 @@ export enum InstallMethod {
   /** 手动 */
   Manual = 'manual',
 }
+
+export type Llm = {
+  __typename?: 'Llm';
+  /** 创建时间 */
+  creationTimestamp: Scalars['String']['output'];
+  name: Scalars['ID']['output'];
+  /** status */
+  status?: Maybe<LlmStatusModelField>;
+};
 
 export type Mutation = {
   __typename?: 'Mutation';
@@ -536,12 +543,16 @@ export type Query = {
   components: PaginatedComponent;
   /** 组件列表 */
   componentsAll: Array<Component>;
+  /** llm详情 */
+  llm: Llm;
   /** 列表（分页） */
   pipelines: Array<Pipeline>;
   /** 详情 */
   prompt: Prompt;
   /** 组件评测详情 */
   rating: Rating;
+  /** 组件评测部署状态 */
+  ratingDeploymentStatus: Scalars['Boolean']['output'];
   /** 安装组件列表 */
   ratings: Array<Rating>;
   /** 组件仓库列表（分页） */
@@ -603,6 +614,12 @@ export type QueryComponentsArgs = {
   source?: InputMaybe<Scalars['String']['input']>;
 };
 
+export type QueryLlmArgs = {
+  cluster?: InputMaybe<Scalars['String']['input']>;
+  name: Scalars['String']['input'];
+  namespace?: InputMaybe<Scalars['String']['input']>;
+};
+
 export type QueryPipelinesArgs = {
   cluster?: InputMaybe<Scalars['String']['input']>;
   namespace: Scalars['String']['input'];
@@ -621,6 +638,11 @@ export type QueryRatingArgs = {
   page?: InputMaybe<Scalars['Float']['input']>;
   pageSize?: InputMaybe<Scalars['Float']['input']>;
   version: Scalars['String']['input'];
+};
+
+export type QueryRatingDeploymentStatusArgs = {
+  cluster?: InputMaybe<Scalars['String']['input']>;
+  namespace?: InputMaybe<Scalars['String']['input']>;
 };
 
 export type QueryRatingsArgs = {
@@ -926,20 +948,29 @@ export type EvaluationsField = {
 
 export type EvaluationsReliabilityField = {
   __typename?: 'evaluationsReliabilityField';
-  conditions?: Maybe<Array<ConditionsField>>;
+  conditions?: Maybe<Array<RatingConditionsField>>;
   data?: Maybe<Scalars['String']['output']>;
   prompt?: Maybe<Scalars['String']['output']>;
+};
+
+export type LlmConditionsField = {
+  __typename?: 'llmConditionsField';
+  lastSuccessfulTime?: Maybe<Scalars['String']['output']>;
+  lastTransitionTime: Scalars['String']['output'];
+  message?: Maybe<Scalars['String']['output']>;
+  reason: Scalars['String']['output'];
+  status: Scalars['String']['output'];
+  type: Scalars['String']['output'];
+};
+
+export type LlmStatusModelField = {
+  __typename?: 'llmStatusModelField';
+  conditions?: Maybe<Array<LlmConditionsField>>;
 };
 
 export type ObjectValModelField = {
   __typename?: 'objectValModelField';
   key?: Maybe<Scalars['String']['output']>;
-};
-
-export type ParamsModelField = {
-  __typename?: 'paramsModelField';
-  name: Scalars['String']['output'];
-  value: ValueModelField;
 };
 
 export type PipelineParamsModel = {
@@ -970,19 +1001,20 @@ export type PromptModelField = {
   data: Scalars['String']['output'];
 };
 
-export type RatingModelPromptField = {
-  __typename?: 'ratingModelPromptField';
-  conditions?: Maybe<Array<ConditionsField>>;
-  evaluations?: Maybe<EvaluationsField>;
-  pipelineRuns?: Maybe<PipelineRunsField>;
+export type RatingConditionsField = {
+  __typename?: 'ratingConditionsField';
+  lastTransitionTime?: Maybe<Scalars['String']['output']>;
+  message?: Maybe<Scalars['String']['output']>;
+  reason: Scalars['String']['output'];
+  status: Scalars['String']['output'];
+  type: Scalars['String']['output'];
 };
 
-export type ValueModelField = {
-  __typename?: 'valueModelField';
-  arrayVal?: Maybe<Array<Scalars['String']['output']>>;
-  objectVal?: Maybe<ObjectValModelField>;
-  stringVal?: Maybe<Scalars['String']['output']>;
-  type: Scalars['String']['output'];
+export type RatingModelPromptField = {
+  __typename?: 'ratingModelPromptField';
+  conditions?: Maybe<Array<RatingConditionsField>>;
+  evaluations?: Maybe<EvaluationsField>;
+  pipelineRuns?: Maybe<PipelineRunsField>;
 };
 
 export type GetComponentplansPagedQueryVariables = Exact<{
@@ -1342,6 +1374,33 @@ export type GetComponentChartReadmeQuery = {
   };
 };
 
+export type GetLlmQueryVariables = Exact<{
+  name: Scalars['String']['input'];
+  namespace?: InputMaybe<Scalars['String']['input']>;
+  cluster?: InputMaybe<Scalars['String']['input']>;
+}>;
+
+export type GetLlmQuery = {
+  __typename?: 'Query';
+  llm: {
+    __typename?: 'Llm';
+    name: string;
+    creationTimestamp: string;
+    status?: {
+      __typename?: 'llmStatusModelField';
+      conditions?: Array<{
+        __typename?: 'llmConditionsField';
+        lastSuccessfulTime?: string | null;
+        lastTransitionTime: string;
+        message?: string | null;
+        reason: string;
+        status: string;
+        type: string;
+      }> | null;
+    } | null;
+  };
+};
+
 export type GetPipelineListQueryVariables = Exact<{
   namespace: Scalars['String']['input'];
   cluster?: InputMaybe<Scalars['String']['input']>;
@@ -1393,6 +1452,16 @@ export type GetPromptQuery = {
   };
 };
 
+export type GetRatingDeploymentStatusQueryVariables = Exact<{
+  namespace?: InputMaybe<Scalars['String']['input']>;
+  cluster?: InputMaybe<Scalars['String']['input']>;
+}>;
+
+export type GetRatingDeploymentStatusQuery = {
+  __typename?: 'Query';
+  ratingDeploymentStatus: boolean;
+};
+
 export type GetRatingListQueryVariables = Exact<{
   namespace?: InputMaybe<Scalars['String']['input']>;
   cluster?: InputMaybe<Scalars['String']['input']>;
@@ -1427,7 +1496,7 @@ export type GetRatingQuery = {
     prompt?: {
       __typename?: 'ratingModelPromptField';
       conditions?: Array<{
-        __typename?: 'conditionsField';
+        __typename?: 'ratingConditionsField';
         lastTransitionTime?: string | null;
         message?: string | null;
         reason: string;
@@ -1441,7 +1510,7 @@ export type GetRatingQuery = {
           prompt?: string | null;
           data?: string | null;
           conditions?: Array<{
-            __typename?: 'conditionsField';
+            __typename?: 'ratingConditionsField';
             lastTransitionTime?: string | null;
             message?: string | null;
             reason: string;
@@ -2053,6 +2122,24 @@ export const GetComponentChartReadmeDocument = gql`
     }
   }
 `;
+export const GetLlmDocument = gql`
+  query getLlm($name: String!, $namespace: String, $cluster: String) {
+    llm(name: $name, namespace: $namespace, cluster: $cluster) {
+      name
+      creationTimestamp
+      status {
+        conditions {
+          lastSuccessfulTime
+          lastTransitionTime
+          message
+          reason
+          status
+          type
+        }
+      }
+    }
+  }
+`;
 export const GetPipelineListDocument = gql`
   query getPipelineList($namespace: String!, $cluster: String) {
     pipelines(namespace: $namespace, cluster: $cluster) {
@@ -2086,6 +2173,11 @@ export const GetPromptDocument = gql`
         }
       }
     }
+  }
+`;
+export const GetRatingDeploymentStatusDocument = gql`
+  query getRatingDeploymentStatus($namespace: String, $cluster: String) {
+    ratingDeploymentStatus(namespace: $namespace, cluster: $cluster)
   }
 `;
 export const GetRatingListDocument = gql`
@@ -2610,6 +2702,20 @@ export function getSdk(client: GraphQLClient, withWrapper: SdkFunctionWrapper = 
         'query'
       );
     },
+    getLlm(
+      variables: GetLlmQueryVariables,
+      requestHeaders?: GraphQLClientRequestHeaders
+    ): Promise<GetLlmQuery> {
+      return withWrapper(
+        wrappedRequestHeaders =>
+          client.request<GetLlmQuery>(GetLlmDocument, variables, {
+            ...requestHeaders,
+            ...wrappedRequestHeaders,
+          }),
+        'getLlm',
+        'query'
+      );
+    },
     getPipelineList(
       variables: GetPipelineListQueryVariables,
       requestHeaders?: GraphQLClientRequestHeaders
@@ -2635,6 +2741,21 @@ export function getSdk(client: GraphQLClient, withWrapper: SdkFunctionWrapper = 
             ...wrappedRequestHeaders,
           }),
         'getPrompt',
+        'query'
+      );
+    },
+    getRatingDeploymentStatus(
+      variables?: GetRatingDeploymentStatusQueryVariables,
+      requestHeaders?: GraphQLClientRequestHeaders
+    ): Promise<GetRatingDeploymentStatusQuery> {
+      return withWrapper(
+        wrappedRequestHeaders =>
+          client.request<GetRatingDeploymentStatusQuery>(
+            GetRatingDeploymentStatusDocument,
+            variables,
+            { ...requestHeaders, ...wrappedRequestHeaders }
+          ),
+        'getRatingDeploymentStatus',
         'query'
       );
     },
@@ -3009,6 +3130,16 @@ export function getSdkWithHooks(
         config
       );
     },
+    useGetLlm(
+      variables: GetLlmQueryVariables,
+      config?: SWRConfigInterface<GetLlmQuery, ClientError>
+    ) {
+      return useSWR<GetLlmQuery, ClientError>(
+        genKey<GetLlmQueryVariables>('GetLlm', variables),
+        () => sdk.getLlm(variables),
+        config
+      );
+    },
     useGetPipelineList(
       variables: GetPipelineListQueryVariables,
       config?: SWRConfigInterface<GetPipelineListQuery, ClientError>
@@ -3026,6 +3157,16 @@ export function getSdkWithHooks(
       return useSWR<GetPromptQuery, ClientError>(
         genKey<GetPromptQueryVariables>('GetPrompt', variables),
         () => sdk.getPrompt(variables),
+        config
+      );
+    },
+    useGetRatingDeploymentStatus(
+      variables?: GetRatingDeploymentStatusQueryVariables,
+      config?: SWRConfigInterface<GetRatingDeploymentStatusQuery, ClientError>
+    ) {
+      return useSWR<GetRatingDeploymentStatusQuery, ClientError>(
+        genKey<GetRatingDeploymentStatusQueryVariables>('GetRatingDeploymentStatus', variables),
+        () => sdk.getRatingDeploymentStatus(variables),
         config
       );
     },

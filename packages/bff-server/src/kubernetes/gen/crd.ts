@@ -24,6 +24,7 @@ const CRD_LIST = [
   'ratings.core.kubebb.k8s.com.cn',
   'pipelines.tekton.dev',
   'prompts.arcadia.kubeagi.k8s.com.cn',
+  'llms.arcadia.kubeagi.k8s.com.cn',
 ];
 
 const ClusterCrdTemplate = fs.readFileSync(join(LIB_CRD_DIR, 'user.ts')).toString();

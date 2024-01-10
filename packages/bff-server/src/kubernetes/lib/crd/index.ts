@@ -2,6 +2,7 @@ export { Application } from './application';
 export { Cluster } from './cluster';
 export { Component } from './component';
 export { ComponentPlan } from './componentplan';
+export { LLM } from './l-l-m';
 export { Menu } from './menu';
 export { Pipeline } from './pipeline';
 export { Prompt } from './prompt';
