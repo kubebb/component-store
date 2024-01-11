@@ -23,7 +23,7 @@ export class LlmService {
   }
   async get(auth: JwtAuth, name: string, namespace: string, cluster?: string): Promise<Llm> {
     const k8s = await this.k8sService.getClient(auth, { cluster });
-    const { body } = await k8s.lLM.read(name, namespace || this.kubebbNS);
+    const { body } = await k8s.llm.read(name, namespace || this.kubebbNS);
     return this.format(body);
   }
 }

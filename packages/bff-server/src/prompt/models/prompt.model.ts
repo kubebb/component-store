@@ -1,7 +1,7 @@
 import { Field, ID, ObjectType } from '@nestjs/graphql';
 
 @ObjectType()
-class conditionsField {
+class ConditionsField {
   lastTransitionTime?: string;
   message?: string;
   reason: string;
@@ -10,8 +10,8 @@ class conditionsField {
 }
 
 @ObjectType()
-class promptModelField {
-  conditions?: conditionsField[];
+class PromptModelField {
+  conditions?: ConditionsField[];
   data: string;
   [k: string]: any;
 }
@@ -23,5 +23,5 @@ export class Prompt {
   /** 创建时间 */
   creationTimestamp: string;
   /** prompt报告 */
-  prompt?: promptModelField;
+  prompt?: PromptModelField;
 }

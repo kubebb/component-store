@@ -26,7 +26,7 @@ import {
   STRATEGIC_MERGE_PATCH_CONTENT_TYPE,
 } from '../utils/constants';
 
-export const L_L_M_CRD_SPEC = {
+export const LLM_CRD_SPEC = {
   kind: 'LLM',
   listKind: 'LLMList',
   plural: 'llms',
@@ -36,7 +36,7 @@ export const L_L_M_CRD_SPEC = {
   version: 'v1alpha1',
 };
 
-const { kind, group, version, plural } = L_L_M_CRD_SPEC;
+const { kind, group, version, plural } = LLM_CRD_SPEC;
 const DEFAULT_BODY = {
   kind,
   apiVersion: `${group}/${version}`,

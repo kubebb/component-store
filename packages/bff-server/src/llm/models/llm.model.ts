@@ -1,7 +1,7 @@
 import { Field, ID, ObjectType } from '@nestjs/graphql';
 
 @ObjectType()
-class llmConditionsField {
+class LlmConditionsField {
   lastSuccessfulTime?: string;
   lastTransitionTime: string;
   message?: string;
@@ -11,8 +11,8 @@ class llmConditionsField {
 }
 
 @ObjectType()
-class llmStatusModelField {
-  conditions?: llmConditionsField[];
+class LlmStatusModelField {
+  conditions?: LlmConditionsField[];
   [k: string]: any;
 }
 
@@ -23,5 +23,5 @@ export class Llm {
   /** 创建时间 */
   creationTimestamp: string;
   /** status */
-  status?: llmStatusModelField;
+  status?: LlmStatusModelField;
 }

@@ -165,7 +165,7 @@ export class KubernetesService {
       cluster: new lib.Cluster(customObjectsApi),
       componentplan: new lib.ComponentPlan(customObjectsApi),
       component: new lib.Component(customObjectsApi),
-      lLM: new lib.LLM(customObjectsApi),
+      llm: new lib.LLM(customObjectsApi),
       menu: new lib.Menu(customObjectsApi),
       pipeline: new lib.Pipeline(customObjectsApi),
       prompt: new lib.Prompt(customObjectsApi),

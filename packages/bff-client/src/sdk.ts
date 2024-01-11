@@ -218,6 +218,15 @@ export type ComponentplanImageInput = {
   tag?: InputMaybe<Scalars['String']['input']>;
 };
 
+export type ConditionsField = {
+  __typename?: 'ConditionsField';
+  lastTransitionTime?: Maybe<Scalars['String']['output']>;
+  message?: Maybe<Scalars['String']['output']>;
+  reason: Scalars['String']['output'];
+  status: Scalars['String']['output'];
+  type: Scalars['String']['output'];
+};
+
 export type Configmap = {
   __typename?: 'Configmap';
   /** binaryData */
@@ -322,6 +331,18 @@ export type DownloadComponentInput = {
   version: Scalars['String']['input'];
 };
 
+export type EvaluationsField = {
+  __typename?: 'EvaluationsField';
+  reliability?: Maybe<EvaluationsReliabilityField>;
+};
+
+export type EvaluationsReliabilityField = {
+  __typename?: 'EvaluationsReliabilityField';
+  conditions?: Maybe<Array<RatingConditionsField>>;
+  data?: Maybe<Scalars['String']['output']>;
+  prompt?: Maybe<Scalars['String']['output']>;
+};
+
 /** 组件状态 */
 export enum ExportComponentplanStatus {
   /** 安装失败 */
@@ -353,6 +374,21 @@ export type Llm = {
   name: Scalars['ID']['output'];
   /** status */
   status?: Maybe<LlmStatusModelField>;
+};
+
+export type LlmConditionsField = {
+  __typename?: 'LlmConditionsField';
+  lastSuccessfulTime?: Maybe<Scalars['String']['output']>;
+  lastTransitionTime: Scalars['String']['output'];
+  message?: Maybe<Scalars['String']['output']>;
+  reason: Scalars['String']['output'];
+  status: Scalars['String']['output'];
+  type: Scalars['String']['output'];
+};
+
+export type LlmStatusModelField = {
+  __typename?: 'LlmStatusModelField';
+  conditions?: Maybe<Array<LlmConditionsField>>;
 };
 
 export type Mutation = {
@@ -465,6 +501,11 @@ export type MutationSubscriptionRemoveArgs = {
   namespace: Scalars['String']['input'];
 };
 
+export type ObjectValModelField = {
+  __typename?: 'ObjectValModelField';
+  key?: Maybe<Scalars['String']['output']>;
+};
+
 /** 分页 */
 export type PaginatedComponent = {
   __typename?: 'PaginatedComponent';
@@ -519,6 +560,28 @@ export type Pipeline = {
   params: Array<PipelineParamsModel>;
 };
 
+export type PipelineParamsModel = {
+  __typename?: 'PipelineParamsModel';
+  arrayVal?: Maybe<Array<Scalars['String']['output']>>;
+  default?: Maybe<Scalars['String']['output']>;
+  description: Scalars['String']['output'];
+  name: Scalars['String']['output'];
+  objectVal?: Maybe<Scalars['JSON']['output']>;
+  stringVal?: Maybe<Scalars['String']['output']>;
+  type: Scalars['String']['output'];
+};
+
+export type PipelineRunsField = {
+  __typename?: 'PipelineRunsField';
+  reliability?: Maybe<PipelineRunsReliabilityField>;
+};
+
+export type PipelineRunsReliabilityField = {
+  __typename?: 'PipelineRunsReliabilityField';
+  pipelineName: Scalars['String']['output'];
+  pipelinerunName: Scalars['String']['output'];
+};
+
 export type Prompt = {
   __typename?: 'Prompt';
   /** 创建时间 */
@@ -527,6 +590,12 @@ export type Prompt = {
   name: Scalars['ID']['output'];
   /** prompt报告 */
   prompt?: Maybe<PromptModelField>;
+};
+
+export type PromptModelField = {
+  __typename?: 'PromptModelField';
+  conditions?: Maybe<Array<ConditionsField>>;
+  data: Scalars['String']['output'];
 };
 
 export type Query = {
@@ -700,6 +769,22 @@ export type Rating = {
   rbac?: Maybe<Configmap>;
   /** 仓库名称 */
   repository: Scalars['String']['output'];
+};
+
+export type RatingConditionsField = {
+  __typename?: 'RatingConditionsField';
+  lastTransitionTime?: Maybe<Scalars['String']['output']>;
+  message?: Maybe<Scalars['String']['output']>;
+  reason: Scalars['String']['output'];
+  status: Scalars['String']['output'];
+  type: Scalars['String']['output'];
+};
+
+export type RatingModelPromptField = {
+  __typename?: 'RatingModelPromptField';
+  conditions?: Maybe<Array<RatingConditionsField>>;
+  evaluations?: Maybe<EvaluationsField>;
+  pipelineRuns?: Maybe<PipelineRunsField>;
 };
 
 export type Repository = {
@@ -930,91 +1015,6 @@ export type UpdateRepositoryInput = {
   repositoryType?: InputMaybe<Scalars['String']['input']>;
   /** 用户名(base64) */
   username?: InputMaybe<Scalars['String']['input']>;
-};
-
-export type ConditionsField = {
-  __typename?: 'conditionsField';
-  lastTransitionTime?: Maybe<Scalars['String']['output']>;
-  message?: Maybe<Scalars['String']['output']>;
-  reason: Scalars['String']['output'];
-  status: Scalars['String']['output'];
-  type: Scalars['String']['output'];
-};
-
-export type EvaluationsField = {
-  __typename?: 'evaluationsField';
-  reliability?: Maybe<EvaluationsReliabilityField>;
-};
-
-export type EvaluationsReliabilityField = {
-  __typename?: 'evaluationsReliabilityField';
-  conditions?: Maybe<Array<RatingConditionsField>>;
-  data?: Maybe<Scalars['String']['output']>;
-  prompt?: Maybe<Scalars['String']['output']>;
-};
-
-export type LlmConditionsField = {
-  __typename?: 'llmConditionsField';
-  lastSuccessfulTime?: Maybe<Scalars['String']['output']>;
-  lastTransitionTime: Scalars['String']['output'];
-  message?: Maybe<Scalars['String']['output']>;
-  reason: Scalars['String']['output'];
-  status: Scalars['String']['output'];
-  type: Scalars['String']['output'];
-};
-
-export type LlmStatusModelField = {
-  __typename?: 'llmStatusModelField';
-  conditions?: Maybe<Array<LlmConditionsField>>;
-};
-
-export type ObjectValModelField = {
-  __typename?: 'objectValModelField';
-  key?: Maybe<Scalars['String']['output']>;
-};
-
-export type PipelineParamsModel = {
-  __typename?: 'pipelineParamsModel';
-  arrayVal?: Maybe<Array<Scalars['String']['output']>>;
-  default?: Maybe<Scalars['String']['output']>;
-  description: Scalars['String']['output'];
-  name: Scalars['String']['output'];
-  objectVal?: Maybe<Scalars['JSON']['output']>;
-  stringVal?: Maybe<Scalars['String']['output']>;
-  type: Scalars['String']['output'];
-};
-
-export type PipelineRunsField = {
-  __typename?: 'pipelineRunsField';
-  reliability?: Maybe<PipelineRunsReliabilityField>;
-};
-
-export type PipelineRunsReliabilityField = {
-  __typename?: 'pipelineRunsReliabilityField';
-  pipelineName: Scalars['String']['output'];
-  pipelinerunName: Scalars['String']['output'];
-};
-
-export type PromptModelField = {
-  __typename?: 'promptModelField';
-  conditions?: Maybe<Array<ConditionsField>>;
-  data: Scalars['String']['output'];
-};
-
-export type RatingConditionsField = {
-  __typename?: 'ratingConditionsField';
-  lastTransitionTime?: Maybe<Scalars['String']['output']>;
-  message?: Maybe<Scalars['String']['output']>;
-  reason: Scalars['String']['output'];
-  status: Scalars['String']['output'];
-  type: Scalars['String']['output'];
-};
-
-export type RatingModelPromptField = {
-  __typename?: 'ratingModelPromptField';
-  conditions?: Maybe<Array<RatingConditionsField>>;
-  evaluations?: Maybe<EvaluationsField>;
-  pipelineRuns?: Maybe<PipelineRunsField>;
 };
 
 export type GetComponentplansPagedQueryVariables = Exact<{
@@ -1387,9 +1387,9 @@ export type GetLlmQuery = {
     name: string;
     creationTimestamp: string;
     status?: {
-      __typename?: 'llmStatusModelField';
+      __typename?: 'LlmStatusModelField';
       conditions?: Array<{
-        __typename?: 'llmConditionsField';
+        __typename?: 'LlmConditionsField';
         lastSuccessfulTime?: string | null;
         lastTransitionTime: string;
         message?: string | null;
@@ -1413,7 +1413,7 @@ export type GetPipelineListQuery = {
     name: string;
     creationTimestamp: string;
     params: Array<{
-      __typename?: 'pipelineParamsModel';
+      __typename?: 'PipelineParamsModel';
       name: string;
       description: string;
       type: string;
@@ -1438,10 +1438,10 @@ export type GetPromptQuery = {
     name: string;
     creationTimestamp: string;
     prompt?: {
-      __typename?: 'promptModelField';
+      __typename?: 'PromptModelField';
       data: string;
       conditions?: Array<{
-        __typename?: 'conditionsField';
+        __typename?: 'ConditionsField';
         lastTransitionTime?: string | null;
         message?: string | null;
         reason: string;
@@ -1494,9 +1494,9 @@ export type GetRatingQuery = {
     repository: string;
     componentName: string;
     prompt?: {
-      __typename?: 'ratingModelPromptField';
+      __typename?: 'RatingModelPromptField';
       conditions?: Array<{
-        __typename?: 'ratingConditionsField';
+        __typename?: 'RatingConditionsField';
         lastTransitionTime?: string | null;
         message?: string | null;
         reason: string;
@@ -1504,13 +1504,13 @@ export type GetRatingQuery = {
         type: string;
       }> | null;
       evaluations?: {
-        __typename?: 'evaluationsField';
+        __typename?: 'EvaluationsField';
         reliability?: {
-          __typename?: 'evaluationsReliabilityField';
+          __typename?: 'EvaluationsReliabilityField';
           prompt?: string | null;
           data?: string | null;
           conditions?: Array<{
-            __typename?: 'ratingConditionsField';
+            __typename?: 'RatingConditionsField';
             lastTransitionTime?: string | null;
             message?: string | null;
             reason: string;
@@ -1520,9 +1520,9 @@ export type GetRatingQuery = {
         } | null;
       } | null;
       pipelineRuns?: {
-        __typename?: 'pipelineRunsField';
+        __typename?: 'PipelineRunsField';
         reliability?: {
-          __typename?: 'pipelineRunsReliabilityField';
+          __typename?: 'PipelineRunsReliabilityField';
           pipelineName: string;
           pipelinerunName: string;
         } | null;

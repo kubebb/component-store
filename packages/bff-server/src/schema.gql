@@ -225,6 +225,14 @@ input ComponentplanImageInput {
   tag: String
 }
 
+type ConditionsField {
+  lastTransitionTime: String
+  message: String
+  reason: String!
+  status: String!
+  type: String!
+}
+
 type Configmap {
   """binaryData"""
   binaryData: JSON
@@ -361,6 +369,16 @@ input DownloadComponentInput {
   version: String!
 }
 
+type EvaluationsField {
+  reliability: EvaluationsReliabilityField
+}
+
+type EvaluationsReliabilityField {
+  conditions: [RatingConditionsField!]
+  data: String
+  prompt: String
+}
+
 """组件状态"""
 enum ExportComponentplanStatus {
   """安装失败"""
@@ -401,7 +419,20 @@ type Llm {
   name: ID!
 
   """status"""
-  status: llmStatusModelField
+  status: LlmStatusModelField
+}
+
+type LlmConditionsField {
+  lastSuccessfulTime: String
+  lastTransitionTime: String!
+  message: String
+  reason: String!
+  status: String!
+  type: String!
+}
+
+type LlmStatusModelField {
+  conditions: [LlmConditionsField!]
 }
 
 type Mutation {
@@ -563,7 +594,26 @@ type Pipeline {
   name: ID!
 
   """params *"""
-  params: [pipelineParamsModel!]!
+  params: [PipelineParamsModel!]!
+}
+
+type PipelineParamsModel {
+  arrayVal: [String!]
+  default: String
+  description: String!
+  name: String!
+  objectVal: JSON
+  stringVal: String
+  type: String!
+}
+
+type PipelineRunsField {
+  reliability: PipelineRunsReliabilityField
+}
+
+type PipelineRunsReliabilityField {
+  pipelineName: String!
+  pipelinerunName: String!
 }
 
 type Prompt {
@@ -574,7 +624,12 @@ type Prompt {
   name: ID!
 
   """prompt报告"""
-  prompt: promptModelField
+  prompt: PromptModelField
+}
+
+type PromptModelField {
+  conditions: [ConditionsField!]
+  data: String!
 }
 
 type Query {
@@ -833,13 +888,27 @@ type Rating {
   name: ID
 
   """prompt"""
-  prompt: ratingModelPromptField
+  prompt: RatingModelPromptField
 
   """RBAC"""
   rbac: Configmap
 
   """仓库名称"""
   repository: String!
+}
+
+type RatingConditionsField {
+  lastTransitionTime: String
+  message: String
+  reason: String!
+  status: String!
+  type: String!
+}
+
+type RatingModelPromptField {
+  conditions: [RatingConditionsField!]
+  evaluations: EvaluationsField
+  pipelineRuns: PipelineRunsField
 }
 
 type Repository {
@@ -1133,76 +1202,3 @@ input UpdateRepositoryInput {
 
 """The `Upload` scalar type represents a file upload."""
 scalar Upload
-
-type conditionsField {
-  lastTransitionTime: String
-  message: String
-  reason: String!
-  status: String!
-  type: String!
-}
-
-type evaluationsField {
-  reliability: evaluationsReliabilityField
-}
-
-type evaluationsReliabilityField {
-  conditions: [ratingConditionsField!]
-  data: String
-  prompt: String
-}
-
-type llmConditionsField {
-  lastSuccessfulTime: String
-  lastTransitionTime: String!
-  message: String
-  reason: String!
-  status: String!
-  type: String!
-}
-
-type llmStatusModelField {
-  conditions: [llmConditionsField!]
-}
-
-type objectValModelField {
-  key: String
-}
-
-type pipelineParamsModel {
-  arrayVal: [String!]
-  default: String
-  description: String!
-  name: String!
-  objectVal: JSON
-  stringVal: String
-  type: String!
-}
-
-type pipelineRunsField {
-  reliability: pipelineRunsReliabilityField
-}
-
-type pipelineRunsReliabilityField {
-  pipelineName: String!
-  pipelinerunName: String!
-}
-
-type promptModelField {
-  conditions: [conditionsField!]
-  data: String!
-}
-
-type ratingConditionsField {
-  lastTransitionTime: String
-  message: String
-  reason: String!
-  status: String!
-  type: String!
-}
-
-type ratingModelPromptField {
-  conditions: [ratingConditionsField!]
-  evaluations: evaluationsField
-  pipelineRuns: pipelineRunsField
-}

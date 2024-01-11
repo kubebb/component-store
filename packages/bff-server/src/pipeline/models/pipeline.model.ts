@@ -2,7 +2,7 @@ import { AnyObj } from '@/types';
 import { Field, ID, ObjectType } from '@nestjs/graphql';
 
 @ObjectType()
-class pipelineParamsModel {
+class PipelineParamsModel {
   arrayVal?: string[];
   @Field(() => JSON)
   objectVal?: AnyObj;
@@ -21,5 +21,5 @@ export class Pipeline {
   /** 创建时间 */
   creationTimestamp: string;
   /** params **/
-  params: pipelineParamsModel[];
+  params: PipelineParamsModel[];
 }

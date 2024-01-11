@@ -3,7 +3,7 @@
  * !!! 请不要修改 !!!
  */
 import { V1ListMeta } from '@kubernetes/client-node';
-import { LLM } from './l-l-m';
+import { LLM } from './llm';
 
 /**
  * LLMList is a list of LLMs.
@@ -14,7 +14,7 @@ export declare class LLMList {
    */
   apiVersion?: string;
   /**
-   * List of l-l-ms. More info: https://git.k8s.io/community/contributors/devel/sig-architecture/api-conventions.md
+   * List of llms. More info: https://git.k8s.io/community/contributors/devel/sig-architecture/api-conventions.md
    */
   items: Array<LLM>;
   /**
