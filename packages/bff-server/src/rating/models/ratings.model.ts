@@ -1,29 +1,4 @@
-import { Configmap } from '@/configmap/models/configmap.model';
 import { Field, ID, ObjectType } from '@nestjs/graphql';
-
-@ObjectType()
-class EvaluationsReliabilityField {
-  conditions?: RatingConditionsField[];
-  prompt?: string;
-  data?: string;
-  [k: string]: any;
-}
-
-@ObjectType()
-class EvaluationsField {
-  reliability?: EvaluationsReliabilityField;
-}
-
-@ObjectType()
-class PipelineRunsReliabilityField {
-  pipelineName: string;
-  pipelinerunName: string;
-  [k: string]: any;
-}
-@ObjectType()
-class PipelineRunsField {
-  reliability?: PipelineRunsReliabilityField;
-}
 
 @ObjectType()
 class RatingConditionsField {
@@ -35,10 +10,38 @@ class RatingConditionsField {
 }
 
 @ObjectType()
+class AIRatingResultField {
+  score: number;
+  suggestions: string[];
+  problems: string[];
+}
+
+@ObjectType()
+class AIRatingTypeField {
+  chinese: AIRatingResultField;
+  english: AIRatingResultField;
+}
+
+@ObjectType()
+class RatingResultField {
+  type: string;
+  status?: RatingConditionsField;
+  prompt?: string;
+  data?: AIRatingTypeField;
+  taskName: string;
+  pipelineName: string;
+}
+
+@ObjectType()
 class RatingModelPromptField {
-  conditions?: RatingConditionsField[];
-  evaluations?: EvaluationsField;
-  pipelineRuns?: PipelineRunsField;
+  status?: RatingConditionsField;
+  ratingResult?: RatingResultField[];
+}
+
+@ObjectType()
+class RbacModelField {
+  name: string;
+  digraph: string;
 }
 
 @ObjectType({ description: '组件评测' })
@@ -53,8 +56,7 @@ export class Rating {
   /** 创建时间 */
   creationTimestamp: string;
   /** prompt */
-  @Field(() => RatingModelPromptField)
   prompt?: RatingModelPromptField;
   /** RBAC */
-  rbac?: Configmap;
+  rbac?: RbacModelField;
 }

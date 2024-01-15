@@ -31,7 +31,10 @@ export class RatingsService {
       creationTimestamp: new Date(c.metadata?.creationTimestamp).toISOString(),
       componentName: c.spec?.componentName,
       repository: c.metadata?.labels['rating.repository'],
-      prompt: c.status,
+      prompt: {
+        ...(c.status || {}),
+        status: c.status?.conditions?.[0],
+      },
     };
   }
 
@@ -68,7 +71,7 @@ export class RatingsService {
     );
     const pipelineParams = pipelines?.map(pipeline => ({
       pipelineName: pipeline?.name,
-      dimension: pipeline?.name?.split('-')?.pop(),
+      dimension: pipeline?.dimension,
       params: pipeline?.params?.map(({ name, type }) => {
         const param = {
           COMPONENT_NAME: componentName,

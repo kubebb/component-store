@@ -22,41 +22,47 @@ query getRating($name: String, $namespace: String, $version: String!, $cluster: 
     repository
     componentName
     prompt {
-      conditions {
+      status {
         lastTransitionTime
         message
         reason
         status
         type
       }
-      evaluations {
-        reliability {
-          conditions {
-            lastTransitionTime
-            message
-            reason
-            status
-            type
-          }
-          prompt
-          data
+      ratingResult {
+        status {
+          lastTransitionTime
+          message
+          reason
+          status
+          type
         }
-      }
-      pipelineRuns {
-        reliability {
-          pipelineName
-          pipelinerunName
+        type
+        prompt
+        taskName
+        pipelineName
+        data {
+          chinese {
+            score
+            suggestions
+            problems
+          }
+          english {
+            score
+            suggestions
+            problems
+          }
         }
       }
     }
     rbac {
       name
-      binaryData
+      digraph
     }
   }
 }
 
-# 创建
+# 创建组件评测
 mutation createRating($createRatingsInput: CreateRatingsInput!, $cluster: String){
   ratingCreate(createRatingsInput: $createRatingsInput, cluster: $cluster)
 }

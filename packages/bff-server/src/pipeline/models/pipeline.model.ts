@@ -20,6 +20,8 @@ export class Pipeline {
   name: string;
   /** 创建时间 */
   creationTimestamp: string;
+  /** dimension */
+  dimension: string;
   /** params **/
   params: PipelineParamsModel[];
 }
