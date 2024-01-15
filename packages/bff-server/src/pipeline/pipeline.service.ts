@@ -10,6 +10,7 @@ export class PipelineService {
       name: c.metadata?.name,
       creationTimestamp: new Date(c.metadata?.creationTimestamp).toISOString(),
       params: c.spec?.params || [],
+      dimension: c.metadata?.annotations?.['core.kubebb.k8s.com.cn/dimension'],
     };
   }
   async list(auth: JwtAuth, namespace: string, cluster?: string): Promise<Pipeline[]> {

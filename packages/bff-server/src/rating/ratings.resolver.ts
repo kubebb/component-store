@@ -5,7 +5,7 @@ import { ConfigmapService } from '@/configmap/configmap.service';
 import { LlmService } from '@/llm/llm.service';
 import { PromptService } from '@/prompt/prompt.service';
 import { JwtAuth } from '@/types';
-import { Inject } from '@nestjs/common';
+import { Inject, Logger } from '@nestjs/common';
 import { ConfigType } from '@nestjs/config';
 import { Args, Mutation, Query, Resolver } from '@nestjs/graphql';
 import { CreateRatingsInput } from './dto/create-ratings.input';
@@ -71,9 +71,10 @@ export class RatingsResolver {
       const ratingList = await this.ratingsService.getRatingList(auth, namespace, cluster);
       rating = ratingList[0];
     }
-
+    const ratingResult = [];
     try {
       const evaluations = rating.prompt?.evaluations || {};
+      const pipelineRuns = rating.prompt?.pipelineRuns || {};
       if (Object.values(evaluations)?.length) {
         for (const key of Object.keys(evaluations)) {
           if (evaluations[key]?.prompt) {
@@ -83,24 +84,45 @@ export class RatingsResolver {
               namespace,
               cluster
             );
-            evaluations[key].data = decodeBase64(prompt?.data);
+            let promptData = decodeBase64(prompt?.data);
+            try {
+              promptData = JSON.parse(
+                JSON.parse(JSON.parse(promptData)?.data?.choices[0]?.content)
+              );
+            } catch (e) {
+              Logger.warn(promptData);
+              promptData = null;
+            }
+            evaluations[key].data = promptData;
+            const evaluation = {
+              type: key,
+              ...(evaluations[key] || {}),
+              ...(pipelineRuns[key] || {}),
+              status: evaluations[key]?.conditions?.[0],
+              taskName: pipelineRuns[key]?.pipelinerunName,
+            };
+            ratingResult.push(evaluation);
           }
         }
       }
     } catch (e) {}
+    rating.prompt.ratingResult = ratingResult;
 
     try {
       if (rating.repository && rating.componentName && version) {
-        const binaryData = await this.configmapService.getConfigmap(
+        const { name, binaryData } = await this.configmapService.getConfigmap(
           auth,
           `${rating.repository}.${rating.componentName}.${version}`,
           namespace,
           cluster
         );
-        if (binaryData?.binaryData?.r) {
-          binaryData.binaryData.r = decodeBase64(binaryData.binaryData.r);
+        if (binaryData?.r) {
+          binaryData.r = decodeBase64(binaryData.r);
         }
-        rating.rbac = binaryData;
+        rating.rbac = {
+          name,
+          digraph: binaryData?.r,
+        };
       }
     } catch (e) {}
     return rating;

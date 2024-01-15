@@ -29,6 +29,19 @@ export type Scalars = {
   Upload: { input: any; output: any };
 };
 
+export type AiRatingResultField = {
+  __typename?: 'AIRatingResultField';
+  problems: Array<Scalars['String']['output']>;
+  score: Scalars['Float']['output'];
+  suggestions: Array<Scalars['String']['output']>;
+};
+
+export type AiRatingTypeField = {
+  __typename?: 'AIRatingTypeField';
+  chinese: AiRatingResultField;
+  english: AiRatingResultField;
+};
+
 /** 组件 */
 export type Component = {
   __typename?: 'Component';
@@ -227,16 +240,6 @@ export type ConditionsField = {
   type: Scalars['String']['output'];
 };
 
-export type Configmap = {
-  __typename?: 'Configmap';
-  /** binaryData */
-  binaryData?: Maybe<Scalars['JSON']['output']>;
-  /** data */
-  data?: Maybe<Scalars['JSON']['output']>;
-  /** name */
-  name: Scalars['ID']['output'];
-};
-
 /** 上传组件 */
 export type CreateComponentInput = {
   /** 组件helm包 */
@@ -329,18 +332,6 @@ export type DownloadComponentInput = {
   repository: Scalars['String']['input'];
   /** Chart版本 */
   version: Scalars['String']['input'];
-};
-
-export type EvaluationsField = {
-  __typename?: 'EvaluationsField';
-  reliability?: Maybe<EvaluationsReliabilityField>;
-};
-
-export type EvaluationsReliabilityField = {
-  __typename?: 'EvaluationsReliabilityField';
-  conditions?: Maybe<Array<RatingConditionsField>>;
-  data?: Maybe<Scalars['String']['output']>;
-  prompt?: Maybe<Scalars['String']['output']>;
 };
 
 /** 组件状态 */
@@ -501,11 +492,6 @@ export type MutationSubscriptionRemoveArgs = {
   namespace: Scalars['String']['input'];
 };
 
-export type ObjectValModelField = {
-  __typename?: 'ObjectValModelField';
-  key?: Maybe<Scalars['String']['output']>;
-};
-
 /** 分页 */
 export type PaginatedComponent = {
   __typename?: 'PaginatedComponent';
@@ -554,6 +540,8 @@ export type Pipeline = {
   __typename?: 'Pipeline';
   /** 创建时间 */
   creationTimestamp: Scalars['String']['output'];
+  /** dimension */
+  dimension: Scalars['String']['output'];
   /** pipeline名称 */
   name: Scalars['ID']['output'];
   /** params * */
@@ -569,17 +557,6 @@ export type PipelineParamsModel = {
   objectVal?: Maybe<Scalars['JSON']['output']>;
   stringVal?: Maybe<Scalars['String']['output']>;
   type: Scalars['String']['output'];
-};
-
-export type PipelineRunsField = {
-  __typename?: 'PipelineRunsField';
-  reliability?: Maybe<PipelineRunsReliabilityField>;
-};
-
-export type PipelineRunsReliabilityField = {
-  __typename?: 'PipelineRunsReliabilityField';
-  pipelineName: Scalars['String']['output'];
-  pipelinerunName: Scalars['String']['output'];
 };
 
 export type Prompt = {
@@ -766,7 +743,7 @@ export type Rating = {
   /** prompt */
   prompt?: Maybe<RatingModelPromptField>;
   /** RBAC */
-  rbac?: Maybe<Configmap>;
+  rbac?: Maybe<RbacModelField>;
   /** 仓库名称 */
   repository: Scalars['String']['output'];
 };
@@ -782,9 +759,24 @@ export type RatingConditionsField = {
 
 export type RatingModelPromptField = {
   __typename?: 'RatingModelPromptField';
-  conditions?: Maybe<Array<RatingConditionsField>>;
-  evaluations?: Maybe<EvaluationsField>;
-  pipelineRuns?: Maybe<PipelineRunsField>;
+  ratingResult?: Maybe<Array<RatingResultField>>;
+  status?: Maybe<RatingConditionsField>;
+};
+
+export type RatingResultField = {
+  __typename?: 'RatingResultField';
+  data?: Maybe<AiRatingTypeField>;
+  pipelineName: Scalars['String']['output'];
+  prompt?: Maybe<Scalars['String']['output']>;
+  status?: Maybe<RatingConditionsField>;
+  taskName: Scalars['String']['output'];
+  type: Scalars['String']['output'];
+};
+
+export type RbacModelField = {
+  __typename?: 'RbacModelField';
+  digraph: Scalars['String']['output'];
+  name: Scalars['String']['output'];
 };
 
 export type Repository = {
@@ -1495,40 +1487,46 @@ export type GetRatingQuery = {
     componentName: string;
     prompt?: {
       __typename?: 'RatingModelPromptField';
-      conditions?: Array<{
+      status?: {
         __typename?: 'RatingConditionsField';
         lastTransitionTime?: string | null;
         message?: string | null;
         reason: string;
         status: string;
         type: string;
+      } | null;
+      ratingResult?: Array<{
+        __typename?: 'RatingResultField';
+        type: string;
+        prompt?: string | null;
+        taskName: string;
+        pipelineName: string;
+        status?: {
+          __typename?: 'RatingConditionsField';
+          lastTransitionTime?: string | null;
+          message?: string | null;
+          reason: string;
+          status: string;
+          type: string;
+        } | null;
+        data?: {
+          __typename?: 'AIRatingTypeField';
+          chinese: {
+            __typename?: 'AIRatingResultField';
+            score: number;
+            suggestions: Array<string>;
+            problems: Array<string>;
+          };
+          english: {
+            __typename?: 'AIRatingResultField';
+            score: number;
+            suggestions: Array<string>;
+            problems: Array<string>;
+          };
+        } | null;
       }> | null;
-      evaluations?: {
-        __typename?: 'EvaluationsField';
-        reliability?: {
-          __typename?: 'EvaluationsReliabilityField';
-          prompt?: string | null;
-          data?: string | null;
-          conditions?: Array<{
-            __typename?: 'RatingConditionsField';
-            lastTransitionTime?: string | null;
-            message?: string | null;
-            reason: string;
-            status: string;
-            type: string;
-          }> | null;
-        } | null;
-      } | null;
-      pipelineRuns?: {
-        __typename?: 'PipelineRunsField';
-        reliability?: {
-          __typename?: 'PipelineRunsReliabilityField';
-          pipelineName: string;
-          pipelinerunName: string;
-        } | null;
-      } | null;
     } | null;
-    rbac?: { __typename?: 'Configmap'; name: string; binaryData?: any | null } | null;
+    rbac?: { __typename?: 'RbacModelField'; name: string; digraph: string } | null;
   };
 };
 
@@ -2198,36 +2196,42 @@ export const GetRatingDocument = gql`
       repository
       componentName
       prompt {
-        conditions {
+        status {
           lastTransitionTime
           message
           reason
           status
           type
         }
-        evaluations {
-          reliability {
-            conditions {
-              lastTransitionTime
-              message
-              reason
-              status
-              type
-            }
-            prompt
-            data
+        ratingResult {
+          status {
+            lastTransitionTime
+            message
+            reason
+            status
+            type
           }
-        }
-        pipelineRuns {
-          reliability {
-            pipelineName
-            pipelinerunName
+          type
+          prompt
+          taskName
+          pipelineName
+          data {
+            chinese {
+              score
+              suggestions
+              problems
+            }
+            english {
+              score
+              suggestions
+              problems
+            }
           }
         }
       }
       rbac {
         name
-        binaryData
+        digraph
       }
     }
   }

@@ -4,6 +4,17 @@
 
 directive @upper on FIELD_DEFINITION
 
+type AIRatingResultField {
+  problems: [String!]!
+  score: Float!
+  suggestions: [String!]!
+}
+
+type AIRatingTypeField {
+  chinese: AIRatingResultField!
+  english: AIRatingResultField!
+}
+
 """组件"""
 type Component {
   chart(version: String!): ComponentChart
@@ -233,17 +244,6 @@ type ConditionsField {
   type: String!
 }
 
-type Configmap {
-  """binaryData"""
-  binaryData: JSON
-
-  """data"""
-  data: JSON
-
-  """name"""
-  name: ID!
-}
-
 """上传组件"""
 input CreateComponentInput {
   """组件helm包"""
@@ -367,16 +367,6 @@ input DownloadComponentInput {
 
   """Chart版本"""
   version: String!
-}
-
-type EvaluationsField {
-  reliability: EvaluationsReliabilityField
-}
-
-type EvaluationsReliabilityField {
-  conditions: [RatingConditionsField!]
-  data: String
-  prompt: String
 }
 
 """组件状态"""
@@ -590,6 +580,9 @@ type Pipeline {
   """创建时间"""
   creationTimestamp: String!
 
+  """dimension"""
+  dimension: String!
+
   """pipeline名称"""
   name: ID!
 
@@ -605,15 +598,6 @@ type PipelineParamsModel {
   objectVal: JSON
   stringVal: String
   type: String!
-}
-
-type PipelineRunsField {
-  reliability: PipelineRunsReliabilityField
-}
-
-type PipelineRunsReliabilityField {
-  pipelineName: String!
-  pipelinerunName: String!
 }
 
 type Prompt {
@@ -891,7 +875,7 @@ type Rating {
   prompt: RatingModelPromptField
 
   """RBAC"""
-  rbac: Configmap
+  rbac: RbacModelField
 
   """仓库名称"""
   repository: String!
@@ -906,9 +890,22 @@ type RatingConditionsField {
 }
 
 type RatingModelPromptField {
-  conditions: [RatingConditionsField!]
-  evaluations: EvaluationsField
-  pipelineRuns: PipelineRunsField
+  ratingResult: [RatingResultField!]
+  status: RatingConditionsField
+}
+
+type RatingResultField {
+  data: AIRatingTypeField
+  pipelineName: String!
+  prompt: String
+  status: RatingConditionsField
+  taskName: String!
+  type: String!
+}
+
+type RbacModelField {
+  digraph: String!
+  name: String!
 }
 
 type Repository {
