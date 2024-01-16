@@ -3,12 +3,21 @@ import { ConfigmapModule } from '@/configmap/configmap.module';
 import { LlmModule } from '@/llm/llm.module';
 import { PipelineModule } from '@/pipeline/pipeline.module';
 import { PromptModule } from '@/prompt/prompt.module';
-import { Module } from '@nestjs/common';
+import { RepositoryModule } from '@/repository/repository.module';
+import { forwardRef, Module } from '@nestjs/common';
 import { RatingsResolver } from './ratings.resolver';
 import { RatingsService } from './ratings.service';
 
 @Module({
   providers: [RatingsService, RatingsResolver],
-  imports: [LlmModule, ComponentsModule, PipelineModule, PromptModule, ConfigmapModule],
+  exports: [RatingsService],
+  imports: [
+    LlmModule,
+    forwardRef(() => ComponentsModule),
+    PipelineModule,
+    PromptModule,
+    ConfigmapModule,
+    RepositoryModule,
+  ],
 })
 export class RatingsModule {}

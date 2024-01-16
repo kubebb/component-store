@@ -17,6 +17,7 @@ query getComponents($page: Float = 1, $pageSize: Float = 20, $name: String, $cha
       status
       source
       latestVersion
+      latestScore
       isNewer
       classification
       versions {
@@ -49,6 +50,7 @@ query getComponentsAll {
       status
       source
       latestVersion
+      latestScore
       versions {
         createdAt
         updatedAt
