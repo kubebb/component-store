@@ -1,6 +1,6 @@
 {
   "name": "@tenx-ui/component-store-bff-client",
-  "version": "0.0.39",
+  "version": "0.0.41",
   "description": "client for component-store-bff-server api",
   "keywords": [],
   "main": "dist/cjs/index.js",
@@ -44,8 +44,7 @@
     "umd": {
       "library": "ComponentStoreBffClient",
       "entry": [
-        "/dist/ComponentStoreBffClient.js",
-        "/dist/ComponentStoreBffClient.css"
+        "/dist/umd/component-store-bff-client.min.js"
       ]
     }
   }
