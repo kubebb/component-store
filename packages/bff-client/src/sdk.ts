@@ -29,19 +29,6 @@ export type Scalars = {
   Upload: { input: any; output: any };
 };
 
-export type AiRatingResultField = {
-  __typename?: 'AIRatingResultField';
-  problems: Array<Scalars['String']['output']>;
-  score: Scalars['Float']['output'];
-  suggestions: Array<Scalars['String']['output']>;
-};
-
-export type AiRatingTypeField = {
-  __typename?: 'AIRatingTypeField';
-  chinese: AiRatingResultField;
-  english: AiRatingResultField;
-};
-
 /** 组件 */
 export type Component = {
   __typename?: 'Component';
@@ -66,6 +53,8 @@ export type Component = {
   isNewer?: Maybe<Scalars['Boolean']['output']>;
   /** 关键词 */
   keywords?: Maybe<Array<Scalars['String']['output']>>;
+  /** 最新评分 */
+  latestScore?: Maybe<Scalars['Float']['output']>;
   /** 最新版本 */
   latestVersion?: Maybe<Scalars['String']['output']>;
   /** 维护者 */
@@ -229,15 +218,6 @@ export type ComponentplanImageInput = {
   path: Scalars['String']['input'];
   registry: Scalars['String']['input'];
   tag?: InputMaybe<Scalars['String']['input']>;
-};
-
-export type ConditionsField = {
-  __typename?: 'ConditionsField';
-  lastTransitionTime?: Maybe<Scalars['String']['output']>;
-  message?: Maybe<Scalars['String']['output']>;
-  reason: Scalars['String']['output'];
-  status: Scalars['String']['output'];
-  type: Scalars['String']['output'];
 };
 
 /** 上传组件 */
@@ -563,17 +543,42 @@ export type Prompt = {
   __typename?: 'Prompt';
   /** 创建时间 */
   creationTimestamp: Scalars['String']['output'];
-  /** 组件名称 */
+  /** 类型名称 */
+  dimension: Scalars['String']['output'];
+  /** prompt名称 */
   name: Scalars['ID']['output'];
-  /** prompt报告 */
-  prompt?: Maybe<PromptModelField>;
+  /** 任务名称 */
+  pipelinerun: Scalars['String']['output'];
+  /** 问题 */
+  problems: Scalars['String']['output'];
+  /** rating名称 */
+  ratingName: Scalars['String']['output'];
+  /** 评分 */
+  score: Scalars['Float']['output'];
+  /** status */
+  status?: Maybe<PromptConditionsField>;
+  /** 建议 */
+  suggestions: Scalars['String']['output'];
 };
 
-export type PromptModelField = {
-  __typename?: 'PromptModelField';
-  conditions?: Maybe<Array<ConditionsField>>;
-  data: Scalars['String']['output'];
+export type PromptConditionsField = {
+  __typename?: 'PromptConditionsField';
+  /** 结束时间 */
+  lastTransitionTime?: Maybe<Scalars['String']['output']>;
+  message?: Maybe<Scalars['String']['output']>;
+  reason?: Maybe<Scalars['String']['output']>;
+  /** 状态 */
+  status?: Maybe<PromptStatus>;
+  type?: Maybe<Scalars['String']['output']>;
 };
+
+/** Prompt状态 */
+export enum PromptStatus {
+  /** 执行中 */
+  ReconcileRunning = 'ReconcileRunning',
+  /** 完成 */
+  ReconcileSuccess = 'ReconcileSuccess',
+}
 
 export type Query = {
   __typename?: 'Query';
@@ -591,16 +596,16 @@ export type Query = {
   componentsAll: Array<Component>;
   /** llm详情 */
   llm: Llm;
-  /** 列表（分页） */
+  /** pipelines列表 */
   pipelines: Array<Pipeline>;
-  /** 详情 */
+  /** prompt详情 */
   prompt: Prompt;
+  /** prompt列表 */
+  prompts: Array<Prompt>;
   /** 组件评测详情 */
-  rating: Rating;
+  rating?: Maybe<Rating>;
   /** 组件评测部署状态 */
   ratingDeploymentStatus: Scalars['Boolean']['output'];
-  /** 安装组件列表 */
-  ratings: Array<Rating>;
   /** 组件仓库列表（分页） */
   repositories: PaginatedRepository;
   /** 组件仓库列表 */
@@ -677,21 +682,21 @@ export type QueryPromptArgs = {
   namespace: Scalars['String']['input'];
 };
 
+export type QueryPromptsArgs = {
+  cluster?: InputMaybe<Scalars['String']['input']>;
+  namespace?: InputMaybe<Scalars['String']['input']>;
+};
+
 export type QueryRatingArgs = {
   cluster?: InputMaybe<Scalars['String']['input']>;
+  componentName?: InputMaybe<Scalars['String']['input']>;
   name?: InputMaybe<Scalars['String']['input']>;
   namespace?: InputMaybe<Scalars['String']['input']>;
-  page?: InputMaybe<Scalars['Float']['input']>;
-  pageSize?: InputMaybe<Scalars['Float']['input']>;
-  version: Scalars['String']['input'];
+  repository?: InputMaybe<Scalars['String']['input']>;
+  version?: InputMaybe<Scalars['String']['input']>;
 };
 
 export type QueryRatingDeploymentStatusArgs = {
-  cluster?: InputMaybe<Scalars['String']['input']>;
-  namespace?: InputMaybe<Scalars['String']['input']>;
-};
-
-export type QueryRatingsArgs = {
   cluster?: InputMaybe<Scalars['String']['input']>;
   namespace?: InputMaybe<Scalars['String']['input']>;
 };
@@ -736,48 +741,31 @@ export type Rating = {
   __typename?: 'Rating';
   /** 组件名称 */
   componentName: Scalars['String']['output'];
-  /** 创建时间 */
+  /** 最近评测时间 */
   creationTimestamp: Scalars['String']['output'];
   /** 名称 */
   name?: Maybe<Scalars['ID']['output']>;
-  /** prompt */
-  prompt?: Maybe<RatingModelPromptField>;
+  /** namespace */
+  namespace: Scalars['String']['output'];
+  /** prompts */
+  prompts?: Maybe<Array<Prompt>>;
   /** RBAC */
-  rbac?: Maybe<RbacModelField>;
+  rbac?: Maybe<Scalars['String']['output']>;
   /** 仓库名称 */
   repository: Scalars['String']['output'];
+  /** 评测状态 */
+  status?: Maybe<RatingStatus>;
+  /** 版本 */
+  version?: Maybe<Scalars['String']['output']>;
 };
 
-export type RatingConditionsField = {
-  __typename?: 'RatingConditionsField';
-  lastTransitionTime?: Maybe<Scalars['String']['output']>;
-  message?: Maybe<Scalars['String']['output']>;
-  reason: Scalars['String']['output'];
-  status: Scalars['String']['output'];
-  type: Scalars['String']['output'];
-};
-
-export type RatingModelPromptField = {
-  __typename?: 'RatingModelPromptField';
-  ratingResult?: Maybe<Array<RatingResultField>>;
-  status?: Maybe<RatingConditionsField>;
-};
-
-export type RatingResultField = {
-  __typename?: 'RatingResultField';
-  data?: Maybe<AiRatingTypeField>;
-  pipelineName: Scalars['String']['output'];
-  prompt?: Maybe<Scalars['String']['output']>;
-  status?: Maybe<RatingConditionsField>;
-  taskName: Scalars['String']['output'];
-  type: Scalars['String']['output'];
-};
-
-export type RbacModelField = {
-  __typename?: 'RbacModelField';
-  digraph: Scalars['String']['output'];
-  name: Scalars['String']['output'];
-};
+/** 评测状态 */
+export enum RatingStatus {
+  /** 完成 */
+  EvaluationSucceeded = 'EvaluationSucceeded',
+  /** 执行中 */
+  PipelineRunning = 'PipelineRunning',
+}
 
 export type Repository = {
   __typename?: 'Repository';
@@ -1213,6 +1201,7 @@ export type GetComponentsQuery = {
       status?: ComponentStatus | null;
       source?: ComponentSource | null;
       latestVersion?: string | null;
+      latestScore?: number | null;
       isNewer?: boolean | null;
       classification?: string | null;
       versions?: Array<{
@@ -1247,6 +1236,7 @@ export type GetComponentsAllQuery = {
     status?: ComponentStatus | null;
     source?: ComponentSource | null;
     latestVersion?: string | null;
+    latestScore?: number | null;
     versions?: Array<{
       __typename?: 'ComponentVersion';
       createdAt?: string | null;
@@ -1428,24 +1418,43 @@ export type GetPromptQuery = {
   prompt: {
     __typename?: 'Prompt';
     name: string;
+    dimension: string;
     creationTimestamp: string;
-    prompt?: {
-      __typename?: 'PromptModelField';
-      data: string;
-      conditions?: Array<{
-        __typename?: 'ConditionsField';
-        lastTransitionTime?: string | null;
-        message?: string | null;
-        reason: string;
-        status: string;
-        type: string;
-      }> | null;
+    pipelinerun: string;
+    score: number;
+    suggestions: string;
+    problems: string;
+    status?: {
+      __typename?: 'PromptConditionsField';
+      lastTransitionTime?: string | null;
+      message?: string | null;
+      reason?: string | null;
+      status?: PromptStatus | null;
+      type?: string | null;
     } | null;
   };
 };
 
-export type GetRatingDeploymentStatusQueryVariables = Exact<{
+export type GetPromptsQueryVariables = Exact<{
   namespace?: InputMaybe<Scalars['String']['input']>;
+  cluster?: InputMaybe<Scalars['String']['input']>;
+}>;
+
+export type GetPromptsQuery = {
+  __typename?: 'Query';
+  prompts: Array<{
+    __typename?: 'Prompt';
+    name: string;
+    dimension: string;
+    creationTimestamp: string;
+    pipelinerun: string;
+    score: number;
+    suggestions: string;
+    problems: string;
+  }>;
+};
+
+export type GetRatingDeploymentStatusQueryVariables = Exact<{
   cluster?: InputMaybe<Scalars['String']['input']>;
 }>;
 
@@ -1454,80 +1463,43 @@ export type GetRatingDeploymentStatusQuery = {
   ratingDeploymentStatus: boolean;
 };
 
-export type GetRatingListQueryVariables = Exact<{
-  namespace?: InputMaybe<Scalars['String']['input']>;
-  cluster?: InputMaybe<Scalars['String']['input']>;
-}>;
-
-export type GetRatingListQuery = {
-  __typename?: 'Query';
-  ratings: Array<{
-    __typename?: 'Rating';
-    name?: string | null;
-    creationTimestamp: string;
-    componentName: string;
-    repository: string;
-  }>;
-};
-
 export type GetRatingQueryVariables = Exact<{
   name?: InputMaybe<Scalars['String']['input']>;
-  namespace?: InputMaybe<Scalars['String']['input']>;
-  version: Scalars['String']['input'];
+  repository?: InputMaybe<Scalars['String']['input']>;
+  componentName?: InputMaybe<Scalars['String']['input']>;
+  version?: InputMaybe<Scalars['String']['input']>;
   cluster?: InputMaybe<Scalars['String']['input']>;
 }>;
 
 export type GetRatingQuery = {
   __typename?: 'Query';
-  rating: {
+  rating?: {
     __typename?: 'Rating';
     name?: string | null;
     creationTimestamp: string;
     repository: string;
+    version?: string | null;
     componentName: string;
-    prompt?: {
-      __typename?: 'RatingModelPromptField';
+    status?: RatingStatus | null;
+    rbac?: string | null;
+    prompts?: Array<{
+      __typename?: 'Prompt';
+      creationTimestamp: string;
+      dimension: string;
+      pipelinerun: string;
+      score: number;
+      suggestions: string;
+      problems: string;
       status?: {
-        __typename?: 'RatingConditionsField';
+        __typename?: 'PromptConditionsField';
         lastTransitionTime?: string | null;
         message?: string | null;
-        reason: string;
-        status: string;
-        type: string;
+        reason?: string | null;
+        status?: PromptStatus | null;
+        type?: string | null;
       } | null;
-      ratingResult?: Array<{
-        __typename?: 'RatingResultField';
-        type: string;
-        prompt?: string | null;
-        taskName: string;
-        pipelineName: string;
-        status?: {
-          __typename?: 'RatingConditionsField';
-          lastTransitionTime?: string | null;
-          message?: string | null;
-          reason: string;
-          status: string;
-          type: string;
-        } | null;
-        data?: {
-          __typename?: 'AIRatingTypeField';
-          chinese: {
-            __typename?: 'AIRatingResultField';
-            score: number;
-            suggestions: Array<string>;
-            problems: Array<string>;
-          };
-          english: {
-            __typename?: 'AIRatingResultField';
-            score: number;
-            suggestions: Array<string>;
-            problems: Array<string>;
-          };
-        } | null;
-      }> | null;
-    } | null;
-    rbac?: { __typename?: 'RbacModelField'; name: string; digraph: string } | null;
-  };
+    }> | null;
+  } | null;
 };
 
 export type CreateRatingMutationVariables = Exact<{
@@ -1997,6 +1969,7 @@ export const GetComponentsDocument = gql`
         status
         source
         latestVersion
+        latestScore
         isNewer
         classification
         versions {
@@ -2029,6 +2002,7 @@ export const GetComponentsAllDocument = gql`
       status
       source
       latestVersion
+      latestScore
       versions {
         createdAt
         updatedAt
@@ -2159,43 +2133,68 @@ export const GetPromptDocument = gql`
   query getPrompt($name: String!, $namespace: String!, $cluster: String) {
     prompt(name: $name, namespace: $namespace, cluster: $cluster) {
       name
+      dimension
       creationTimestamp
-      prompt {
-        data
-        conditions {
-          lastTransitionTime
-          message
-          reason
-          status
-          type
-        }
+      pipelinerun
+      score
+      suggestions
+      problems
+      status {
+        lastTransitionTime
+        message
+        reason
+        status
+        type
       }
     }
   }
 `;
-export const GetRatingDeploymentStatusDocument = gql`
-  query getRatingDeploymentStatus($namespace: String, $cluster: String) {
-    ratingDeploymentStatus(namespace: $namespace, cluster: $cluster)
-  }
-`;
-export const GetRatingListDocument = gql`
-  query getRatingList($namespace: String, $cluster: String) {
-    ratings(namespace: $namespace, cluster: $cluster) {
+export const GetPromptsDocument = gql`
+  query getPrompts($namespace: String, $cluster: String) {
+    prompts(namespace: $namespace, cluster: $cluster) {
       name
+      dimension
       creationTimestamp
-      componentName
-      repository
+      pipelinerun
+      score
+      suggestions
+      problems
     }
   }
 `;
+export const GetRatingDeploymentStatusDocument = gql`
+  query getRatingDeploymentStatus($cluster: String) {
+    ratingDeploymentStatus(cluster: $cluster)
+  }
+`;
 export const GetRatingDocument = gql`
-  query getRating($name: String, $namespace: String, $version: String!, $cluster: String) {
-    rating(name: $name, namespace: $namespace, version: $version, cluster: $cluster) {
+  query getRating(
+    $name: String
+    $repository: String
+    $componentName: String
+    $version: String
+    $cluster: String
+  ) {
+    rating(
+      name: $name
+      repository: $repository
+      componentName: $componentName
+      version: $version
+      cluster: $cluster
+    ) {
       name
       creationTimestamp
       repository
+      version
       componentName
-      prompt {
+      status
+      prompts {
+        creationTimestamp
+        dimension
+        pipelinerun
+        score
+        suggestions
+        problems
         status {
           lastTransitionTime
           message
@@ -2203,36 +2202,8 @@ export const GetRatingDocument = gql`
           status
           type
         }
-        ratingResult {
-          status {
-            lastTransitionTime
-            message
-            reason
-            status
-            type
-          }
-          type
-          prompt
-          taskName
-          pipelineName
-          data {
-            chinese {
-              score
-              suggestions
-              problems
-            }
-            english {
-              score
-              suggestions
-              problems
-            }
-          }
-        }
       }
-      rbac {
-        name
-        digraph
-      }
+      rbac
     }
   }
 `;
@@ -2748,6 +2719,20 @@ export function getSdk(client: GraphQLClient, withWrapper: SdkFunctionWrapper = 
         'query'
       );
     },
+    getPrompts(
+      variables?: GetPromptsQueryVariables,
+      requestHeaders?: GraphQLClientRequestHeaders
+    ): Promise<GetPromptsQuery> {
+      return withWrapper(
+        wrappedRequestHeaders =>
+          client.request<GetPromptsQuery>(GetPromptsDocument, variables, {
+            ...requestHeaders,
+            ...wrappedRequestHeaders,
+          }),
+        'getPrompts',
+        'query'
+      );
+    },
     getRatingDeploymentStatus(
       variables?: GetRatingDeploymentStatusQueryVariables,
       requestHeaders?: GraphQLClientRequestHeaders
@@ -2763,22 +2748,8 @@ export function getSdk(client: GraphQLClient, withWrapper: SdkFunctionWrapper = 
         'query'
       );
     },
-    getRatingList(
-      variables?: GetRatingListQueryVariables,
-      requestHeaders?: GraphQLClientRequestHeaders
-    ): Promise<GetRatingListQuery> {
-      return withWrapper(
-        wrappedRequestHeaders =>
-          client.request<GetRatingListQuery>(GetRatingListDocument, variables, {
-            ...requestHeaders,
-            ...wrappedRequestHeaders,
-          }),
-        'getRatingList',
-        'query'
-      );
-    },
     getRating(
-      variables: GetRatingQueryVariables,
+      variables?: GetRatingQueryVariables,
       requestHeaders?: GraphQLClientRequestHeaders
     ): Promise<GetRatingQuery> {
       return withWrapper(
@@ -3164,6 +3135,16 @@ export function getSdkWithHooks(
         config
       );
     },
+    useGetPrompts(
+      variables?: GetPromptsQueryVariables,
+      config?: SWRConfigInterface<GetPromptsQuery, ClientError>
+    ) {
+      return useSWR<GetPromptsQuery, ClientError>(
+        genKey<GetPromptsQueryVariables>('GetPrompts', variables),
+        () => sdk.getPrompts(variables),
+        config
+      );
+    },
     useGetRatingDeploymentStatus(
       variables?: GetRatingDeploymentStatusQueryVariables,
       config?: SWRConfigInterface<GetRatingDeploymentStatusQuery, ClientError>
@@ -3174,18 +3155,8 @@ export function getSdkWithHooks(
         config
       );
     },
-    useGetRatingList(
-      variables?: GetRatingListQueryVariables,
-      config?: SWRConfigInterface<GetRatingListQuery, ClientError>
-    ) {
-      return useSWR<GetRatingListQuery, ClientError>(
-        genKey<GetRatingListQueryVariables>('GetRatingList', variables),
-        () => sdk.getRatingList(variables),
-        config
-      );
-    },
     useGetRating(
-      variables: GetRatingQueryVariables,
+      variables?: GetRatingQueryVariables,
       config?: SWRConfigInterface<GetRatingQuery, ClientError>
     ) {
       return useSWR<GetRatingQuery, ClientError>(

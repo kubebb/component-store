@@ -1,13 +1,17 @@
+import { Loader } from '@/common/dataloader';
 import { Auth } from '@/common/decorators/auth.decorator';
 import { decodeBase64 } from '@/common/utils';
 import serverConfig from '@/config/server.config';
 import { ConfigmapService } from '@/configmap/configmap.service';
 import { LlmService } from '@/llm/llm.service';
+import { Prompt } from '@/prompt/models/prompt.model';
+import { PromptLoader } from '@/prompt/prompt.loader';
 import { PromptService } from '@/prompt/prompt.service';
-import { JwtAuth } from '@/types';
+import { AnyObj, JwtAuth } from '@/types';
 import { Inject, Logger } from '@nestjs/common';
 import { ConfigType } from '@nestjs/config';
-import { Args, Mutation, Query, Resolver } from '@nestjs/graphql';
+import { Args, Info, Mutation, Parent, Query, ResolveField, Resolver } from '@nestjs/graphql';
+import DataLoader from 'dataloader';
 import { CreateRatingsInput } from './dto/create-ratings.input';
 import { RatingsArgs } from './dto/ratings.args';
 import { Rating } from './models/ratings.model';
@@ -47,85 +51,13 @@ export class RatingsResolver {
     );
   }
 
-  @Query(() => [Rating], { description: '安装组件列表' })
-  async ratings(
-    @Auth() auth: JwtAuth,
-    @Args('namespace', { nullable: true }) namespace: string,
-    @Args('cluster', {
-      nullable: true,
-      description: '集群下的资源，不传则为默认集群',
-    })
-    cluster: string
-  ): Promise<Rating[]> {
-    return this.ratingsService.getRatingList(auth, namespace, cluster);
-  }
-
-  @Query(() => Rating, { description: '组件评测详情' })
+  @Query(() => Rating, { nullable: true, description: '组件评测详情' })
   async rating(@Auth() auth: JwtAuth, @Args() args: RatingsArgs): Promise<Rating> {
-    const { name, cluster, version } = args;
-    const namespace = args.namespace || this.kubebbNS;
-    let rating;
+    const { name } = args;
     if (name) {
-      rating = await this.ratingsService.getRating(auth, args);
-    } else {
-      const ratingList = await this.ratingsService.getRatingList(auth, namespace, cluster);
-      rating = ratingList[0];
+      return this.ratingsService.getRating(auth, args);
     }
-    const ratingResult = [];
-    try {
-      const evaluations = rating.prompt?.evaluations || {};
-      const pipelineRuns = rating.prompt?.pipelineRuns || {};
-      if (Object.values(evaluations)?.length) {
-        for (const key of Object.keys(evaluations)) {
-          if (evaluations[key]?.prompt) {
-            const { prompt } = await this.promptService.get(
-              auth,
-              evaluations[key]?.prompt,
-              namespace,
-              cluster
-            );
-            let promptData = decodeBase64(prompt?.data);
-            try {
-              promptData = JSON.parse(
-                JSON.parse(JSON.parse(promptData)?.data?.choices[0]?.content)
-              );
-            } catch (e) {
-              Logger.warn(promptData);
-              promptData = null;
-            }
-            evaluations[key].data = promptData;
-            const evaluation = {
-              type: key,
-              ...(evaluations[key] || {}),
-              ...(pipelineRuns[key] || {}),
-              status: evaluations[key]?.conditions?.[0],
-              taskName: pipelineRuns[key]?.pipelinerunName,
-            };
-            ratingResult.push(evaluation);
-          }
-        }
-      }
-    } catch (e) {}
-    rating.prompt.ratingResult = ratingResult;
-
-    try {
-      if (rating.repository && rating.componentName && version) {
-        const { name, binaryData } = await this.configmapService.getConfigmap(
-          auth,
-          `${rating.repository}.${rating.componentName}.${version}`,
-          namespace,
-          cluster
-        );
-        if (binaryData?.r) {
-          binaryData.r = decodeBase64(binaryData.r);
-        }
-        rating.rbac = {
-          name,
-          digraph: binaryData?.r,
-        };
-      }
-    } catch (e) {}
-    return rating;
+    return (await this.ratingsService.getRatingList(auth, args))[0];
   }
 
   @Mutation(() => Boolean, { description: '创建组件评测' })
@@ -146,5 +78,45 @@ export class RatingsResolver {
       cluster
     );
     return this.ratingsService.create(auth, data, createRatingsInput, cluster);
+  }
+
+  @ResolveField(() => String, { nullable: true, description: 'rbac权限图' })
+  async rbac(
+    @Auth() auth: JwtAuth,
+    @Info() info: AnyObj,
+    @Parent() rating: Rating
+  ): Promise<string> {
+    const {
+      variableValues: { cluster },
+    } = info;
+    const { repository, componentName, version, namespace } = rating;
+    try {
+      if (repository && componentName && version) {
+        const { binaryData } = await this.configmapService.getConfigmap(
+          auth,
+          `${repository}.${componentName}.${version}`,
+          namespace,
+          cluster
+        );
+        return decodeBase64(binaryData?.r);
+      }
+    } catch (e) {
+      Logger.warn(e);
+    }
+    return null;
+  }
+
+  @ResolveField(() => [Prompt], { nullable: true, description: 'prompts' })
+  async prompts(
+    @Info() info: AnyObj,
+    @Parent() rating: Rating,
+    @Loader(PromptLoader) promptLoader: DataLoader<Prompt['namespacedName'], Prompt>
+  ): Promise<Array<Error | Prompt>> {
+    const {
+      variableValues: { cluster },
+    } = info;
+    const { namespace, promptNames } = rating;
+    const names = promptNames.map(prompt => `${prompt}_${namespace}_${cluster || ''}`);
+    return promptLoader.loadMany(names);
   }
 }
