@@ -25,13 +25,28 @@ export class RatingsService {
   ) {}
   private kubebbNS = this.config.kubebb.namespace;
 
-  formatRating(c: CRD.Rating): Rating {
+  formatRating(c: CRD.Rating, cluster?: string): Rating {
+    const promptNames = [];
+    const evaluations = c.status?.evaluations || {};
+    Object.keys(evaluations).forEach(key => {
+      promptNames.push(evaluations[key]?.prompt);
+    });
+    const repository = c.metadata?.labels['rating.repository'];
     return {
       name: c.metadata?.name,
       creationTimestamp: new Date(c.metadata?.creationTimestamp).toISOString(),
       componentName: c.spec?.componentName,
-      repository: c.metadata?.labels['rating.repository'],
-      prompt: c.status,
+      namespace: c.metadata.namespace,
+      repository,
+      namespacedName: `${repository}_${c.spec?.componentName}_${c.metadata.namespace}_${
+        cluster || ''
+      }`,
+      promptNames,
+      prompt: {
+        ...(c.status || {}),
+        status: c.status?.conditions?.[0],
+        score: 0,
+      },
     };
   }
 
@@ -39,7 +54,7 @@ export class RatingsService {
     const k8s = await this.k8sService.getClient(auth, { cluster });
     const { body } = await k8s.rating.list(namespace || this.kubebbNS);
     return body.items
-      ?.map(item => this.formatRating(item))
+      ?.map(item => this.formatRating(item, cluster))
       ?.sort(
         (a, b) => new Date(b.creationTimestamp).valueOf() - new Date(a.creationTimestamp).valueOf()
       );
@@ -49,7 +64,7 @@ export class RatingsService {
     const { name, namespace = this.kubebbNS, cluster } = args;
     const k8s = await this.k8sService.getClient(auth, { cluster });
     const { body } = await k8s.rating.read(name, namespace);
-    return this.formatRating(body);
+    return this.formatRating(body, cluster);
   }
 
   async create(
@@ -68,7 +83,7 @@ export class RatingsService {
     );
     const pipelineParams = pipelines?.map(pipeline => ({
       pipelineName: pipeline?.name,
-      dimension: pipeline?.name?.split('-')?.pop(),
+      dimension: pipeline?.dimension,
       params: pipeline?.params?.map(({ name, type }) => {
         const param = {
           COMPONENT_NAME: componentName,

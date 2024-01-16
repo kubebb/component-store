@@ -1,10 +1,30 @@
-import { ArgsType } from '@nestjs/graphql';
-import { PaginationArgs } from 'src/common/models/pagination.args';
+import { ArgsType, registerEnumType } from '@nestjs/graphql';
+
+export enum RatingStatus {
+  Running = 'Running',
+  EvaluationSucceeded = 'EvaluationSucceeded',
+}
+
+registerEnumType(RatingStatus, {
+  name: 'RatingStatus',
+  description: '评测状态',
+  valuesMap: {
+    Running: {
+      description: '执行中',
+    },
+    EvaluationSucceeded: {
+      description: '完成',
+    },
+  },
+});
 
 @ArgsType()
-export class RatingsArgs extends PaginationArgs {
-  /** 组件名称 */
+export class RatingsArgs {
+  /** rating名称 */
   name?: string;
+
+  /** 组件名称 */
+  componentName?: string;
 
   /** 项目 */
   namespace?: string;

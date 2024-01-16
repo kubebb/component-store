@@ -4,6 +4,17 @@
 
 directive @upper on FIELD_DEFINITION
 
+type AIPromptResultField {
+  problems: [String!]!
+  score: Float!
+  suggestions: [String!]!
+}
+
+type AIPromptTypeField {
+  chinese: AIPromptResultField!
+  english: AIPromptResultField!
+}
+
 """组件"""
 type Component {
   chart(version: String!): ComponentChart
@@ -37,6 +48,9 @@ type Component {
 
   """关键词"""
   keywords: [String!]
+
+  """最新评分"""
+  latestScore: Float!
 
   """最新版本"""
   latestVersion: String
@@ -225,25 +239,6 @@ input ComponentplanImageInput {
   tag: String
 }
 
-type ConditionsField {
-  lastTransitionTime: String
-  message: String
-  reason: String!
-  status: String!
-  type: String!
-}
-
-type Configmap {
-  """binaryData"""
-  binaryData: JSON
-
-  """data"""
-  data: JSON
-
-  """name"""
-  name: ID!
-}
-
 """上传组件"""
 input CreateComponentInput {
   """组件helm包"""
@@ -367,16 +362,6 @@ input DownloadComponentInput {
 
   """Chart版本"""
   version: String!
-}
-
-type EvaluationsField {
-  reliability: EvaluationsReliabilityField
-}
-
-type EvaluationsReliabilityField {
-  conditions: [RatingConditionsField!]
-  data: String
-  prompt: String
 }
 
 """组件状态"""
@@ -590,6 +575,9 @@ type Pipeline {
   """创建时间"""
   creationTimestamp: String!
 
+  """dimension"""
+  dimension: String!
+
   """pipeline名称"""
   name: ID!
 
@@ -607,29 +595,33 @@ type PipelineParamsModel {
   type: String!
 }
 
-type PipelineRunsField {
-  reliability: PipelineRunsReliabilityField
-}
-
-type PipelineRunsReliabilityField {
-  pipelineName: String!
-  pipelinerunName: String!
-}
-
 type Prompt {
   """创建时间"""
   creationTimestamp: String!
 
-  """组件名称"""
+  """类型名称"""
+  dimension: String!
+
+  """prompt名称"""
   name: ID!
 
-  """prompt报告"""
-  prompt: PromptModelField
-}
+  """任务名称"""
+  pipelinerun: String!
 
-type PromptModelField {
-  conditions: [ConditionsField!]
-  data: String!
+  """问题"""
+  problems: String!
+
+  """prompt报告"""
+  prompt: AIPromptTypeField
+
+  """rating名称"""
+  ratingName: String!
+
+  """评分"""
+  score: Float!
+
+  """建议"""
+  suggestions: String!
 }
 
 type Query {
@@ -747,14 +739,14 @@ type Query {
     namespace: String
   ): Llm!
 
-  """列表（分页）"""
+  """pipelines列表"""
   pipelines(
     """集群下的资源，不传则为默认集群"""
     cluster: String
     namespace: String!
   ): [Pipeline!]!
 
-  """详情"""
+  """prompt详情"""
   prompt(
     """集群下的资源，不传则为默认集群"""
     cluster: String
@@ -762,22 +754,26 @@ type Query {
     namespace: String!
   ): Prompt!
 
+  """prompt列表"""
+  prompts(
+    """集群下的资源，不传则为默认集群"""
+    cluster: String
+    namespace: String
+  ): [Prompt!]!
+
   """组件评测详情"""
   rating(
     """集群"""
     cluster: String
 
     """组件名称"""
+    componentName: String
+
+    """rating名称"""
     name: String
 
     """项目"""
     namespace: String
-
-    """页码"""
-    page: Float = 1
-
-    """每页数量"""
-    pageSize: Float = 20
 
     """版本"""
     version: String!
@@ -790,7 +786,7 @@ type Query {
     namespace: String
   ): Boolean!
 
-  """安装组件列表"""
+  """组件评测列表"""
   ratings(
     """集群下的资源，不传则为默认集群"""
     cluster: String
@@ -881,34 +877,57 @@ type Rating {
   """组件名称"""
   componentName: String!
 
-  """创建时间"""
+  """最近评测时间"""
   creationTimestamp: String!
 
   """名称"""
   name: ID
 
+  """namespace"""
+  namespace: String!
+
   """prompt"""
   prompt: RatingModelPromptField
 
+  """promptNames"""
+  promptNames: [String!]
+
   """RBAC"""
-  rbac: Configmap
+  rbac: RbacModelField
 
   """仓库名称"""
   repository: String!
 }
 
 type RatingConditionsField {
+  """结束时间"""
   lastTransitionTime: String
   message: String
   reason: String!
-  status: String!
-  type: String!
+  status: String
+  type: String
 }
 
 type RatingModelPromptField {
-  conditions: [RatingConditionsField!]
-  evaluations: EvaluationsField
-  pipelineRuns: PipelineRunsField
+  ratingResult: [RatingResultField!]
+  score: Float!
+  status: RatingConditionsField
+}
+
+type RatingResultField {
+  creationTimestamp: String!
+  dimension: String!
+  pipelinerun: String!
+  problems: String!
+  prompt: String
+  score: Float!
+  status: RatingConditionsField
+  suggestions: String!
+}
+
+type RbacModelField {
+  digraph: String!
+  name: String!
 }
 
 type Repository {

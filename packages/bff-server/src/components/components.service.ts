@@ -60,6 +60,7 @@ export class ComponentsService {
       creationTimestamp: new Date(c.metadata?.creationTimestamp).toISOString(),
       updatedAt: latestVersion?.updatedAt ? new Date(latestVersion?.updatedAt).toISOString() : null,
       latestVersion: latestVersion?.version,
+      latestScore: 0,
       restrictedTenants: restrictedTenants ? restrictedTenants.split(',') : null,
       restrictedNamespaces: restrictedNamespaces ? restrictedNamespaces.split(',') : null,
       classification,

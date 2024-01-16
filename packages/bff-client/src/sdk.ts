@@ -29,6 +29,19 @@ export type Scalars = {
   Upload: { input: any; output: any };
 };
 
+export type AiPromptResultField = {
+  __typename?: 'AIPromptResultField';
+  problems: Array<Scalars['String']['output']>;
+  score: Scalars['Float']['output'];
+  suggestions: Array<Scalars['String']['output']>;
+};
+
+export type AiPromptTypeField = {
+  __typename?: 'AIPromptTypeField';
+  chinese: AiPromptResultField;
+  english: AiPromptResultField;
+};
+
 /** 组件 */
 export type Component = {
   __typename?: 'Component';
@@ -53,6 +66,8 @@ export type Component = {
   isNewer?: Maybe<Scalars['Boolean']['output']>;
   /** 关键词 */
   keywords?: Maybe<Array<Scalars['String']['output']>>;
+  /** 最新评分 */
+  latestScore: Scalars['Float']['output'];
   /** 最新版本 */
   latestVersion?: Maybe<Scalars['String']['output']>;
   /** 维护者 */
@@ -218,25 +233,6 @@ export type ComponentplanImageInput = {
   tag?: InputMaybe<Scalars['String']['input']>;
 };
 
-export type ConditionsField = {
-  __typename?: 'ConditionsField';
-  lastTransitionTime?: Maybe<Scalars['String']['output']>;
-  message?: Maybe<Scalars['String']['output']>;
-  reason: Scalars['String']['output'];
-  status: Scalars['String']['output'];
-  type: Scalars['String']['output'];
-};
-
-export type Configmap = {
-  __typename?: 'Configmap';
-  /** binaryData */
-  binaryData?: Maybe<Scalars['JSON']['output']>;
-  /** data */
-  data?: Maybe<Scalars['JSON']['output']>;
-  /** name */
-  name: Scalars['ID']['output'];
-};
-
 /** 上传组件 */
 export type CreateComponentInput = {
   /** 组件helm包 */
@@ -329,18 +325,6 @@ export type DownloadComponentInput = {
   repository: Scalars['String']['input'];
   /** Chart版本 */
   version: Scalars['String']['input'];
-};
-
-export type EvaluationsField = {
-  __typename?: 'EvaluationsField';
-  reliability?: Maybe<EvaluationsReliabilityField>;
-};
-
-export type EvaluationsReliabilityField = {
-  __typename?: 'EvaluationsReliabilityField';
-  conditions?: Maybe<Array<RatingConditionsField>>;
-  data?: Maybe<Scalars['String']['output']>;
-  prompt?: Maybe<Scalars['String']['output']>;
 };
 
 /** 组件状态 */
@@ -501,11 +485,6 @@ export type MutationSubscriptionRemoveArgs = {
   namespace: Scalars['String']['input'];
 };
 
-export type ObjectValModelField = {
-  __typename?: 'ObjectValModelField';
-  key?: Maybe<Scalars['String']['output']>;
-};
-
 /** 分页 */
 export type PaginatedComponent = {
   __typename?: 'PaginatedComponent';
@@ -554,6 +533,8 @@ export type Pipeline = {
   __typename?: 'Pipeline';
   /** 创建时间 */
   creationTimestamp: Scalars['String']['output'];
+  /** dimension */
+  dimension: Scalars['String']['output'];
   /** pipeline名称 */
   name: Scalars['ID']['output'];
   /** params * */
@@ -571,31 +552,26 @@ export type PipelineParamsModel = {
   type: Scalars['String']['output'];
 };
 
-export type PipelineRunsField = {
-  __typename?: 'PipelineRunsField';
-  reliability?: Maybe<PipelineRunsReliabilityField>;
-};
-
-export type PipelineRunsReliabilityField = {
-  __typename?: 'PipelineRunsReliabilityField';
-  pipelineName: Scalars['String']['output'];
-  pipelinerunName: Scalars['String']['output'];
-};
-
 export type Prompt = {
   __typename?: 'Prompt';
   /** 创建时间 */
   creationTimestamp: Scalars['String']['output'];
-  /** 组件名称 */
+  /** 类型名称 */
+  dimension: Scalars['String']['output'];
+  /** prompt名称 */
   name: Scalars['ID']['output'];
+  /** 任务名称 */
+  pipelinerun: Scalars['String']['output'];
+  /** 问题 */
+  problems: Scalars['String']['output'];
   /** prompt报告 */
-  prompt?: Maybe<PromptModelField>;
-};
-
-export type PromptModelField = {
-  __typename?: 'PromptModelField';
-  conditions?: Maybe<Array<ConditionsField>>;
-  data: Scalars['String']['output'];
+  prompt?: Maybe<AiPromptTypeField>;
+  /** rating名称 */
+  ratingName: Scalars['String']['output'];
+  /** 评分 */
+  score: Scalars['Float']['output'];
+  /** 建议 */
+  suggestions: Scalars['String']['output'];
 };
 
 export type Query = {
@@ -614,15 +590,17 @@ export type Query = {
   componentsAll: Array<Component>;
   /** llm详情 */
   llm: Llm;
-  /** 列表（分页） */
+  /** pipelines列表 */
   pipelines: Array<Pipeline>;
-  /** 详情 */
+  /** prompt详情 */
   prompt: Prompt;
+  /** prompt列表 */
+  prompts: Array<Prompt>;
   /** 组件评测详情 */
   rating: Rating;
   /** 组件评测部署状态 */
   ratingDeploymentStatus: Scalars['Boolean']['output'];
-  /** 安装组件列表 */
+  /** 组件评测列表 */
   ratings: Array<Rating>;
   /** 组件仓库列表（分页） */
   repositories: PaginatedRepository;
@@ -700,12 +678,16 @@ export type QueryPromptArgs = {
   namespace: Scalars['String']['input'];
 };
 
+export type QueryPromptsArgs = {
+  cluster?: InputMaybe<Scalars['String']['input']>;
+  namespace?: InputMaybe<Scalars['String']['input']>;
+};
+
 export type QueryRatingArgs = {
   cluster?: InputMaybe<Scalars['String']['input']>;
+  componentName?: InputMaybe<Scalars['String']['input']>;
   name?: InputMaybe<Scalars['String']['input']>;
   namespace?: InputMaybe<Scalars['String']['input']>;
-  page?: InputMaybe<Scalars['Float']['input']>;
-  pageSize?: InputMaybe<Scalars['Float']['input']>;
   version: Scalars['String']['input'];
 };
 
@@ -759,32 +741,55 @@ export type Rating = {
   __typename?: 'Rating';
   /** 组件名称 */
   componentName: Scalars['String']['output'];
-  /** 创建时间 */
+  /** 最近评测时间 */
   creationTimestamp: Scalars['String']['output'];
   /** 名称 */
   name?: Maybe<Scalars['ID']['output']>;
+  /** namespace */
+  namespace: Scalars['String']['output'];
   /** prompt */
   prompt?: Maybe<RatingModelPromptField>;
+  /** promptNames */
+  promptNames?: Maybe<Array<Scalars['String']['output']>>;
   /** RBAC */
-  rbac?: Maybe<Configmap>;
+  rbac?: Maybe<RbacModelField>;
   /** 仓库名称 */
   repository: Scalars['String']['output'];
 };
 
 export type RatingConditionsField = {
   __typename?: 'RatingConditionsField';
+  /** 结束时间 */
   lastTransitionTime?: Maybe<Scalars['String']['output']>;
   message?: Maybe<Scalars['String']['output']>;
   reason: Scalars['String']['output'];
-  status: Scalars['String']['output'];
-  type: Scalars['String']['output'];
+  status?: Maybe<Scalars['String']['output']>;
+  type?: Maybe<Scalars['String']['output']>;
 };
 
 export type RatingModelPromptField = {
   __typename?: 'RatingModelPromptField';
-  conditions?: Maybe<Array<RatingConditionsField>>;
-  evaluations?: Maybe<EvaluationsField>;
-  pipelineRuns?: Maybe<PipelineRunsField>;
+  ratingResult?: Maybe<Array<RatingResultField>>;
+  score: Scalars['Float']['output'];
+  status?: Maybe<RatingConditionsField>;
+};
+
+export type RatingResultField = {
+  __typename?: 'RatingResultField';
+  creationTimestamp: Scalars['String']['output'];
+  dimension: Scalars['String']['output'];
+  pipelinerun: Scalars['String']['output'];
+  problems: Scalars['String']['output'];
+  prompt?: Maybe<Scalars['String']['output']>;
+  score: Scalars['Float']['output'];
+  status?: Maybe<RatingConditionsField>;
+  suggestions: Scalars['String']['output'];
+};
+
+export type RbacModelField = {
+  __typename?: 'RbacModelField';
+  digraph: Scalars['String']['output'];
+  name: Scalars['String']['output'];
 };
 
 export type Repository = {
@@ -1221,6 +1226,7 @@ export type GetComponentsQuery = {
       status?: ComponentStatus | null;
       source?: ComponentSource | null;
       latestVersion?: string | null;
+      latestScore: number;
       isNewer?: boolean | null;
       classification?: string | null;
       versions?: Array<{
@@ -1255,6 +1261,7 @@ export type GetComponentsAllQuery = {
     status?: ComponentStatus | null;
     source?: ComponentSource | null;
     latestVersion?: string | null;
+    latestScore: number;
     versions?: Array<{
       __typename?: 'ComponentVersion';
       createdAt?: string | null;
@@ -1436,20 +1443,32 @@ export type GetPromptQuery = {
   prompt: {
     __typename?: 'Prompt';
     name: string;
+    dimension: string;
     creationTimestamp: string;
-    prompt?: {
-      __typename?: 'PromptModelField';
-      data: string;
-      conditions?: Array<{
-        __typename?: 'ConditionsField';
-        lastTransitionTime?: string | null;
-        message?: string | null;
-        reason: string;
-        status: string;
-        type: string;
-      }> | null;
-    } | null;
+    pipelinerun: string;
+    score: number;
+    suggestions: string;
+    problems: string;
   };
+};
+
+export type GetPromptsQueryVariables = Exact<{
+  namespace?: InputMaybe<Scalars['String']['input']>;
+  cluster?: InputMaybe<Scalars['String']['input']>;
+}>;
+
+export type GetPromptsQuery = {
+  __typename?: 'Query';
+  prompts: Array<{
+    __typename?: 'Prompt';
+    name: string;
+    dimension: string;
+    creationTimestamp: string;
+    pipelinerun: string;
+    score: number;
+    suggestions: string;
+    problems: string;
+  }>;
 };
 
 export type GetRatingDeploymentStatusQueryVariables = Exact<{
@@ -1473,8 +1492,29 @@ export type GetRatingListQuery = {
     __typename?: 'Rating';
     name?: string | null;
     creationTimestamp: string;
-    componentName: string;
     repository: string;
+    componentName: string;
+    prompt?: {
+      __typename?: 'RatingModelPromptField';
+      score: number;
+      status?: {
+        __typename?: 'RatingConditionsField';
+        lastTransitionTime?: string | null;
+        message?: string | null;
+        reason: string;
+        status?: string | null;
+      } | null;
+      ratingResult?: Array<{
+        __typename?: 'RatingResultField';
+        creationTimestamp: string;
+        dimension: string;
+        pipelinerun: string;
+        score: number;
+        suggestions: string;
+        problems: string;
+      }> | null;
+    } | null;
+    rbac?: { __typename?: 'RbacModelField'; name: string; digraph: string } | null;
   }>;
 };
 
@@ -1495,40 +1535,25 @@ export type GetRatingQuery = {
     componentName: string;
     prompt?: {
       __typename?: 'RatingModelPromptField';
-      conditions?: Array<{
+      score: number;
+      status?: {
         __typename?: 'RatingConditionsField';
         lastTransitionTime?: string | null;
         message?: string | null;
         reason: string;
-        status: string;
-        type: string;
+        status?: string | null;
+      } | null;
+      ratingResult?: Array<{
+        __typename?: 'RatingResultField';
+        creationTimestamp: string;
+        dimension: string;
+        pipelinerun: string;
+        score: number;
+        suggestions: string;
+        problems: string;
       }> | null;
-      evaluations?: {
-        __typename?: 'EvaluationsField';
-        reliability?: {
-          __typename?: 'EvaluationsReliabilityField';
-          prompt?: string | null;
-          data?: string | null;
-          conditions?: Array<{
-            __typename?: 'RatingConditionsField';
-            lastTransitionTime?: string | null;
-            message?: string | null;
-            reason: string;
-            status: string;
-            type: string;
-          }> | null;
-        } | null;
-      } | null;
-      pipelineRuns?: {
-        __typename?: 'PipelineRunsField';
-        reliability?: {
-          __typename?: 'PipelineRunsReliabilityField';
-          pipelineName: string;
-          pipelinerunName: string;
-        } | null;
-      } | null;
     } | null;
-    rbac?: { __typename?: 'Configmap'; name: string; binaryData?: any | null } | null;
+    rbac?: { __typename?: 'RbacModelField'; name: string; digraph: string } | null;
   };
 };
 
@@ -1999,6 +2024,7 @@ export const GetComponentsDocument = gql`
         status
         source
         latestVersion
+        latestScore
         isNewer
         classification
         versions {
@@ -2031,6 +2057,7 @@ export const GetComponentsAllDocument = gql`
       status
       source
       latestVersion
+      latestScore
       versions {
         createdAt
         updatedAt
@@ -2161,17 +2188,25 @@ export const GetPromptDocument = gql`
   query getPrompt($name: String!, $namespace: String!, $cluster: String) {
     prompt(name: $name, namespace: $namespace, cluster: $cluster) {
       name
+      dimension
       creationTimestamp
-      prompt {
-        data
-        conditions {
-          lastTransitionTime
-          message
-          reason
-          status
-          type
-        }
-      }
+      pipelinerun
+      score
+      suggestions
+      problems
+    }
+  }
+`;
+export const GetPromptsDocument = gql`
+  query getPrompts($namespace: String, $cluster: String) {
+    prompts(namespace: $namespace, cluster: $cluster) {
+      name
+      dimension
+      creationTimestamp
+      pipelinerun
+      score
+      suggestions
+      problems
     }
   }
 `;
@@ -2185,8 +2220,29 @@ export const GetRatingListDocument = gql`
     ratings(namespace: $namespace, cluster: $cluster) {
       name
       creationTimestamp
-      componentName
       repository
+      componentName
+      prompt {
+        score
+        status {
+          lastTransitionTime
+          message
+          reason
+          status
+        }
+        ratingResult {
+          creationTimestamp
+          dimension
+          pipelinerun
+          score
+          suggestions
+          problems
+        }
+      }
+      rbac {
+        name
+        digraph
+      }
     }
   }
 `;
@@ -2198,36 +2254,25 @@ export const GetRatingDocument = gql`
       repository
       componentName
       prompt {
-        conditions {
+        score
+        status {
           lastTransitionTime
           message
           reason
           status
-          type
         }
-        evaluations {
-          reliability {
-            conditions {
-              lastTransitionTime
-              message
-              reason
-              status
-              type
-            }
-            prompt
-            data
-          }
-        }
-        pipelineRuns {
-          reliability {
-            pipelineName
-            pipelinerunName
-          }
+        ratingResult {
+          creationTimestamp
+          dimension
+          pipelinerun
+          score
+          suggestions
+          problems
         }
       }
       rbac {
         name
-        binaryData
+        digraph
       }
     }
   }
@@ -2744,6 +2789,20 @@ export function getSdk(client: GraphQLClient, withWrapper: SdkFunctionWrapper = 
         'query'
       );
     },
+    getPrompts(
+      variables?: GetPromptsQueryVariables,
+      requestHeaders?: GraphQLClientRequestHeaders
+    ): Promise<GetPromptsQuery> {
+      return withWrapper(
+        wrappedRequestHeaders =>
+          client.request<GetPromptsQuery>(GetPromptsDocument, variables, {
+            ...requestHeaders,
+            ...wrappedRequestHeaders,
+          }),
+        'getPrompts',
+        'query'
+      );
+    },
     getRatingDeploymentStatus(
       variables?: GetRatingDeploymentStatusQueryVariables,
       requestHeaders?: GraphQLClientRequestHeaders
@@ -3157,6 +3216,16 @@ export function getSdkWithHooks(
       return useSWR<GetPromptQuery, ClientError>(
         genKey<GetPromptQueryVariables>('GetPrompt', variables),
         () => sdk.getPrompt(variables),
+        config
+      );
+    },
+    useGetPrompts(
+      variables?: GetPromptsQueryVariables,
+      config?: SWRConfigInterface<GetPromptsQuery, ClientError>
+    ) {
+      return useSWR<GetPromptsQuery, ClientError>(
+        genKey<GetPromptsQueryVariables>('GetPrompts', variables),
+        () => sdk.getPrompts(variables),
         config
       );
     },

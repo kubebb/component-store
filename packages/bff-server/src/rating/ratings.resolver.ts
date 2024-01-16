@@ -1,16 +1,20 @@
+import { Loader } from '@/common/dataloader';
 import { Auth } from '@/common/decorators/auth.decorator';
 import { decodeBase64 } from '@/common/utils';
 import serverConfig from '@/config/server.config';
 import { ConfigmapService } from '@/configmap/configmap.service';
 import { LlmService } from '@/llm/llm.service';
+import { Prompt } from '@/prompt/models/prompt.model';
+import { PromptLoader } from '@/prompt/prompt.loader';
 import { PromptService } from '@/prompt/prompt.service';
-import { JwtAuth } from '@/types';
-import { Inject } from '@nestjs/common';
+import { AnyObj, JwtAuth } from '@/types';
+import { Inject, Logger } from '@nestjs/common';
 import { ConfigType } from '@nestjs/config';
-import { Args, Mutation, Query, Resolver } from '@nestjs/graphql';
+import { Args, Info, Mutation, Parent, Query, ResolveField, Resolver } from '@nestjs/graphql';
+import DataLoader from 'dataloader';
 import { CreateRatingsInput } from './dto/create-ratings.input';
-import { RatingsArgs } from './dto/ratings.args';
-import { Rating } from './models/ratings.model';
+import { RatingsArgs, RatingStatus } from './dto/ratings.args';
+import { Rating, RatingConditionsField } from './models/ratings.model';
 import { RatingsService } from './ratings.service';
 
 @Resolver(() => Rating)
@@ -47,7 +51,7 @@ export class RatingsResolver {
     );
   }
 
-  @Query(() => [Rating], { description: '安装组件列表' })
+  @Query(() => [Rating], { description: '组件评测列表' })
   async ratings(
     @Auth() auth: JwtAuth,
     @Args('namespace', { nullable: true }) namespace: string,
@@ -62,45 +66,31 @@ export class RatingsResolver {
 
   @Query(() => Rating, { description: '组件评测详情' })
   async rating(@Auth() auth: JwtAuth, @Args() args: RatingsArgs): Promise<Rating> {
-    const { name, cluster, version } = args;
+    const { name, componentName, cluster, version } = args;
     const namespace = args.namespace || this.kubebbNS;
     let rating;
     if (name) {
       rating = await this.ratingsService.getRating(auth, args);
-    } else {
+    } else if (componentName) {
       const ratingList = await this.ratingsService.getRatingList(auth, namespace, cluster);
-      rating = ratingList[0];
+      rating = ratingList.filter(r => r.componentName === componentName)[0];
     }
 
     try {
-      const evaluations = rating.prompt?.evaluations || {};
-      if (Object.values(evaluations)?.length) {
-        for (const key of Object.keys(evaluations)) {
-          if (evaluations[key]?.prompt) {
-            const { prompt } = await this.promptService.get(
-              auth,
-              evaluations[key]?.prompt,
-              namespace,
-              cluster
-            );
-            evaluations[key].data = decodeBase64(prompt?.data);
-          }
-        }
-      }
-    } catch (e) {}
-
-    try {
       if (rating.repository && rating.componentName && version) {
-        const binaryData = await this.configmapService.getConfigmap(
+        const { name, binaryData } = await this.configmapService.getConfigmap(
           auth,
           `${rating.repository}.${rating.componentName}.${version}`,
           namespace,
           cluster
         );
-        if (binaryData?.binaryData?.r) {
-          binaryData.binaryData.r = decodeBase64(binaryData.binaryData.r);
+        if (binaryData?.r) {
+          binaryData.r = decodeBase64(binaryData.r);
         }
-        rating.rbac = binaryData;
+        rating.rbac = {
+          name,
+          digraph: binaryData?.r,
+        };
       }
     } catch (e) {}
     return rating;
@@ -124,5 +114,42 @@ export class RatingsResolver {
       cluster
     );
     return this.ratingsService.create(auth, data, createRatingsInput, cluster);
+  }
+
+  @ResolveField(() => [Prompt], { description: 'prompt' })
+  async prompt(
+    @Info() info: AnyObj,
+    @Parent() rating: Rating,
+    @Loader(PromptLoader) promptLoader: DataLoader<Prompt['namespacedName'], Prompt>
+  ): Promise<{
+    ratingResult: Array<Error | Prompt>;
+    status: RatingConditionsField;
+    score: number;
+  }> {
+    const {
+      variableValues: { cluster },
+    } = info;
+    const { namespace, prompt } = rating;
+    const dimensions = [];
+    const evaluations = prompt.evaluations || {};
+    Object.keys(evaluations).forEach(key => {
+      dimensions.push(`${evaluations[key]?.prompt}_${namespace}_${cluster || ''}`);
+    });
+    let ratingResult;
+    try {
+      ratingResult = await promptLoader.loadMany(dimensions);
+    } catch (e) {
+      ratingResult = [];
+      Logger.warn(e);
+    }
+    const score = Math.round(
+      ratingResult?.reduce((v, cur) => v + cur.score, 0) / (ratingResult?.length || 1)
+    );
+    prompt.status.status = RatingStatus[prompt.status?.reason];
+    return {
+      score,
+      status: prompt.status,
+      ratingResult,
+    };
   }
 }

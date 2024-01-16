@@ -1,44 +1,41 @@
-import { Configmap } from '@/configmap/models/configmap.model';
-import { Field, ID, ObjectType } from '@nestjs/graphql';
+import { AnyObj } from '@/types';
+import { Field, HideField, ID, ObjectType } from '@nestjs/graphql';
 
 @ObjectType()
-class EvaluationsReliabilityField {
-  conditions?: RatingConditionsField[];
-  prompt?: string;
-  data?: string;
-  [k: string]: any;
-}
-
-@ObjectType()
-class EvaluationsField {
-  reliability?: EvaluationsReliabilityField;
-}
-
-@ObjectType()
-class PipelineRunsReliabilityField {
-  pipelineName: string;
-  pipelinerunName: string;
-  [k: string]: any;
-}
-@ObjectType()
-class PipelineRunsField {
-  reliability?: PipelineRunsReliabilityField;
-}
-
-@ObjectType()
-class RatingConditionsField {
+export class RatingConditionsField {
+  @Field(() => String, { description: '结束时间' })
   lastTransitionTime?: string;
   message?: string;
   reason: string;
-  status: string;
-  type: string;
+  status?: string;
+  type?: string;
+}
+
+@ObjectType()
+class RatingResultField {
+  creationTimestamp: string;
+  dimension: string;
+  status?: RatingConditionsField;
+  prompt?: string;
+  score: number;
+  suggestions: string;
+  problems: string;
+  pipelinerun: string;
 }
 
 @ObjectType()
 class RatingModelPromptField {
-  conditions?: RatingConditionsField[];
-  evaluations?: EvaluationsField;
-  pipelineRuns?: PipelineRunsField;
+  @HideField()
+  evaluations?: AnyObj;
+  score: number;
+  status?: RatingConditionsField;
+  ratingResult?: RatingResultField[];
+}
+
+@ObjectType()
+class RbacModelField {
+  name: string;
+  digraph: string;
 }
 
 @ObjectType({ description: '组件评测' })
@@ -48,13 +45,19 @@ export class Rating {
   name?: string;
   /** 组件名称 */
   componentName: string;
+  /** namespace */
+  namespace: string;
+  @HideField()
+  namespacedName: string;
   /** 仓库名称 */
   repository: string;
-  /** 创建时间 */
+  /** 评测时间 */
+  @Field(() => String, { description: '最近评测时间' })
   creationTimestamp: string;
+  /** promptNames */
+  promptNames?: string[];
   /** prompt */
-  @Field(() => RatingModelPromptField)
   prompt?: RatingModelPromptField;
   /** RBAC */
-  rbac?: Configmap;
+  rbac?: RbacModelField;
 }
