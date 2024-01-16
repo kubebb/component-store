@@ -124,6 +124,9 @@ export class Component {
   /** 最新版本 */
   latestVersion?: string;
 
+  /** 最新评分 */
+  latestScore?: number;
+
   /** 指定租户 */
   restrictedTenants?: string[];
 

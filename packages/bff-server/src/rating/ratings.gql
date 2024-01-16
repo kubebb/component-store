@@ -1,27 +1,25 @@
 
 # 查询组件评测部署状态
-query getRatingDeploymentStatus($namespace: String, $cluster: String) {
-  ratingDeploymentStatus(namespace: $namespace, cluster: $cluster)
-}
-
-# 查询组件评测列表
-query getRatingList($namespace: String, $cluster: String) {
-  ratings(namespace: $namespace, cluster: $cluster) {
-    name
-    creationTimestamp
-    componentName
-    repository
-  }
+query getRatingDeploymentStatus($cluster: String) {
+  ratingDeploymentStatus(cluster: $cluster)
 }
 
 # 查询组件评测
-query getRating($name: String, $namespace: String, $version: String!, $cluster: String) {
-  rating(name: $name, namespace: $namespace, version: $version, cluster: $cluster) {
+query getRating($name: String, $repository: String, $componentName: String, $version: String, $cluster: String) {
+  rating(name: $name, repository: $repository, componentName: $componentName, version: $version, cluster: $cluster) {
     name
     creationTimestamp
     repository
+    version
     componentName
-    prompt {
+    status
+    prompts {
+      creationTimestamp
+      dimension
+      pipelinerun
+      score
+      suggestions
+      problems
       status {
         lastTransitionTime
         message
@@ -29,36 +27,8 @@ query getRating($name: String, $namespace: String, $version: String!, $cluster: 
         status
         type
       }
-      ratingResult {
-        status {
-          lastTransitionTime
-          message
-          reason
-          status
-          type
-        }
-        type
-        prompt
-        taskName
-        pipelineName
-        data {
-          chinese {
-            score
-            suggestions
-            problems
-          }
-          english {
-            score
-            suggestions
-            problems
-          }
-        }
-      }
     }
-    rbac {
-      name
-      digraph
-    }
+    rbac
   }
 }
 

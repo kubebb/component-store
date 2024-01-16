@@ -1,48 +1,6 @@
-import { Field, ID, ObjectType } from '@nestjs/graphql';
-
-@ObjectType()
-class RatingConditionsField {
-  lastTransitionTime?: string;
-  message?: string;
-  reason: string;
-  status: string;
-  type: string;
-}
-
-@ObjectType()
-class AIRatingResultField {
-  score: number;
-  suggestions: string[];
-  problems: string[];
-}
-
-@ObjectType()
-class AIRatingTypeField {
-  chinese: AIRatingResultField;
-  english: AIRatingResultField;
-}
-
-@ObjectType()
-class RatingResultField {
-  type: string;
-  status?: RatingConditionsField;
-  prompt?: string;
-  data?: AIRatingTypeField;
-  taskName: string;
-  pipelineName: string;
-}
-
-@ObjectType()
-class RatingModelPromptField {
-  status?: RatingConditionsField;
-  ratingResult?: RatingResultField[];
-}
-
-@ObjectType()
-class RbacModelField {
-  name: string;
-  digraph: string;
-}
+import { Prompt } from '@/prompt/models/prompt.model';
+import { RatingStatus } from '@/rating/models/rating.status.enum';
+import { Field, HideField, ID, ObjectType } from '@nestjs/graphql';
 
 @ObjectType({ description: '组件评测' })
 export class Rating {
@@ -51,12 +9,23 @@ export class Rating {
   name?: string;
   /** 组件名称 */
   componentName: string;
+  /** namespace */
+  namespace: string;
+  /** 版本 */
+  version?: string;
   /** 仓库名称 */
   repository: string;
-  /** 创建时间 */
+  /** 评测时间 */
+  @Field(() => String, { description: '最近评测时间' })
   creationTimestamp: string;
-  /** prompt */
-  prompt?: RatingModelPromptField;
+  /** promptNames */
+  @HideField()
+  promptNames?: string[];
+  /** 评测状态 */
+  @Field(() => RatingStatus, { description: '评测状态' })
+  status?: string;
+  /** prompts */
+  prompts?: Prompt[];
   /** RBAC */
-  rbac?: RbacModelField;
+  rbac?: string;
 }

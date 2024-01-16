@@ -1,5 +1,8 @@
 import { Loader } from '@/common/dataloader';
 import { Auth } from '@/common/decorators/auth.decorator';
+import { Prompt } from '@/prompt/models/prompt.model';
+import { PromptLoader } from '@/prompt/prompt.loader';
+import { RatingsService } from '@/rating/ratings.service';
 import { Repository, RepositoryImageOverride } from '@/repository/models/repository.model';
 import { RepositoryLoader } from '@/repository/repository.loader';
 import { AnyObj, JwtAuth } from '@/types';
@@ -16,7 +19,10 @@ import { Component, ComponentChart, PaginatedComponent } from './models/componen
 
 @Resolver(() => Component)
 export class ComponentsResolver {
-  constructor(private readonly componentsService: ComponentsService) {}
+  constructor(
+    private readonly componentsService: ComponentsService,
+    private readonly ratingsService: RatingsService
+  ) {}
 
   @Query(() => PaginatedComponent, { description: '组件列表（分页）' })
   async components(
@@ -180,5 +186,38 @@ export class ComponentsResolver {
     const { repository, namespace } = component;
     if (!repository || !namespace) return null;
     return repositoryLoader.load(`${repository}_${namespace}_${cluster || ''}`);
+  }
+
+  @ResolveField(() => Number, { description: '最新评分' })
+  async latestScore(
+    @Auth() auth: JwtAuth,
+    @Info() info: AnyObj,
+    @Parent() component: Component,
+    @Loader(PromptLoader) promptLoader: DataLoader<Prompt['namespacedName'], Prompt>
+  ): Promise<number> {
+    const {
+      variableValues: { cluster },
+    } = info;
+    const { name, repository, namespace, latestVersion } = component;
+    const ratings = await this.ratingsService.getRatingList(auth, {
+      repository,
+      componentName: name,
+      version: latestVersion,
+      namespace,
+      cluster,
+    });
+    if (ratings[0]) {
+      const { namespace, promptNames } = ratings[0];
+      const names = promptNames.map(prompt => `${prompt}_${namespace}_${cluster || ''}`);
+      let prompts = [];
+      try {
+        prompts = await promptLoader.loadMany(names);
+      } catch (e) {
+        return;
+      }
+      const score = prompts?.reduce((v, cur) => v + cur.score, 0);
+      return Math.round(score / (prompts.length || 1));
+    }
+    return;
   }
 }
