@@ -9,8 +9,29 @@ query getRatingList($namespace: String, $cluster: String) {
   ratings(namespace: $namespace, cluster: $cluster) {
     name
     creationTimestamp
-    componentName
     repository
+    componentName
+    prompt {
+      score
+      status {
+        lastTransitionTime
+        message
+        reason
+        status
+      }
+      ratingResult {
+        creationTimestamp
+        dimension
+        pipelinerun
+        score
+        suggestions
+        problems
+      }
+    }
+    rbac {
+      name
+      digraph
+    }
   }
 }
 
@@ -22,37 +43,20 @@ query getRating($name: String, $namespace: String, $version: String!, $cluster: 
     repository
     componentName
     prompt {
+      score
       status {
         lastTransitionTime
         message
         reason
         status
-        type
       }
       ratingResult {
-        status {
-          lastTransitionTime
-          message
-          reason
-          status
-          type
-        }
-        type
-        prompt
-        taskName
-        pipelineName
-        data {
-          chinese {
-            score
-            suggestions
-            problems
-          }
-          english {
-            score
-            suggestions
-            problems
-          }
-        }
+        creationTimestamp
+        dimension
+        pipelinerun
+        score
+        suggestions
+        problems
       }
     }
     rbac {

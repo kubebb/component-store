@@ -1,5 +1,9 @@
 import { Loader } from '@/common/dataloader';
 import { Auth } from '@/common/decorators/auth.decorator';
+import { Prompt } from '@/prompt/models/prompt.model';
+import { PromptLoader } from '@/prompt/prompt.loader';
+import { Rating } from '@/rating/models/ratings.model';
+import { RatingLoader } from '@/rating/rating.loader';
 import { Repository, RepositoryImageOverride } from '@/repository/models/repository.model';
 import { RepositoryLoader } from '@/repository/repository.loader';
 import { AnyObj, JwtAuth } from '@/types';
@@ -180,5 +184,33 @@ export class ComponentsResolver {
     const { repository, namespace } = component;
     if (!repository || !namespace) return null;
     return repositoryLoader.load(`${repository}_${namespace}_${cluster || ''}`);
+  }
+
+  @ResolveField(() => Number, { description: '最新评分' })
+  async latestScore(
+    @Info() info: AnyObj,
+    @Parent() component: Component,
+    @Loader(RatingLoader) ratingLoader: DataLoader<Rating['namespacedName'], Rating>,
+    @Loader(PromptLoader) promptLoader: DataLoader<Prompt['namespacedName'], Prompt>
+  ): Promise<number> {
+    const {
+      variableValues: { cluster },
+    } = info;
+    const { name, repository, namespace } = component;
+    const rating = await ratingLoader.load(`${repository}_${name}_${namespace}_${cluster || ''}`);
+    if (rating) {
+      const promptNames = rating.promptNames?.map(
+        promptName => `${promptName}_${namespace}_${cluster || ''}`
+      );
+      let promptData = [];
+      try {
+        promptData = await promptLoader.loadMany(promptNames);
+      } catch (e) {
+        return 0;
+      }
+      const score = promptData?.reduce((v, cur) => v + cur.score, 0);
+      return Math.round(score / (promptData.length || 1));
+    }
+    return 0;
   }
 }

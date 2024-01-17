@@ -1,39 +1,33 @@
-import { Field, ID, ObjectType } from '@nestjs/graphql';
+import { AnyObj } from '@/types';
+import { Field, HideField, ID, ObjectType } from '@nestjs/graphql';
 
 @ObjectType()
-class RatingConditionsField {
+export class RatingConditionsField {
+  @Field(() => String, { description: '结束时间' })
   lastTransitionTime?: string;
   message?: string;
   reason: string;
-  status: string;
-  type: string;
-}
-
-@ObjectType()
-class AIRatingResultField {
-  score: number;
-  suggestions: string[];
-  problems: string[];
-}
-
-@ObjectType()
-class AIRatingTypeField {
-  chinese: AIRatingResultField;
-  english: AIRatingResultField;
+  status?: string;
+  type?: string;
 }
 
 @ObjectType()
 class RatingResultField {
-  type: string;
+  creationTimestamp: string;
+  dimension: string;
   status?: RatingConditionsField;
   prompt?: string;
-  data?: AIRatingTypeField;
-  taskName: string;
-  pipelineName: string;
+  score: number;
+  suggestions: string;
+  problems: string;
+  pipelinerun: string;
 }
 
 @ObjectType()
 class RatingModelPromptField {
+  @HideField()
+  evaluations?: AnyObj;
+  score: number;
   status?: RatingConditionsField;
   ratingResult?: RatingResultField[];
 }
@@ -51,10 +45,17 @@ export class Rating {
   name?: string;
   /** 组件名称 */
   componentName: string;
+  /** namespace */
+  namespace: string;
+  @HideField()
+  namespacedName: string;
   /** 仓库名称 */
   repository: string;
-  /** 创建时间 */
+  /** 评测时间 */
+  @Field(() => String, { description: '最近评测时间' })
   creationTimestamp: string;
+  /** promptNames */
+  promptNames?: string[];
   /** prompt */
   prompt?: RatingModelPromptField;
   /** RBAC */

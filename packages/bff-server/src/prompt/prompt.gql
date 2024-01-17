@@ -2,16 +2,24 @@
 query getPrompt($name: String!, $namespace: String!, $cluster: String) {
   prompt(name: $name, namespace: $namespace, cluster: $cluster) {
     name
+    dimension
     creationTimestamp
-    prompt {
-      data
-      conditions {
-        lastTransitionTime
-        message
-        reason
-        status
-        type
-      }
-    }
+    pipelinerun
+    score
+    suggestions
+    problems
+  }
+}
+
+# 查询列表
+query getPrompts($namespace: String, $cluster: String) {
+  prompts(namespace: $namespace, cluster: $cluster) {
+    name
+    dimension
+    creationTimestamp
+    pipelinerun
+    score
+    suggestions
+    problems
   }
 }
