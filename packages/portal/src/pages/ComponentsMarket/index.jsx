@@ -14,6 +14,7 @@ import {
   List,
   Page,
   Radio,
+  Rate,
   Row,
   Select,
   Sort,
@@ -529,6 +530,13 @@ class ComponentsMarket$$Page extends React.Component {
                     grid={{ column: 3, gutter: 20, lg: 3, md: 3, sm: 3, xl: 4, xs: 3, xxl: 4 }}
                     gridEnable={true}
                     itemLayout="horizontal"
+                    loading={__$$eval(
+                      () =>
+                        this.props.useGetComponents?.isLoading ||
+                        this.props?.useGetComponents?.loading ||
+                        this.state.clusterLoading ||
+                        false
+                    )}
                     pagination={{
                       current: __$$eval(() => this.state.current),
                       onChange: function () {
@@ -759,15 +767,41 @@ class ComponentsMarket$$Page extends React.Component {
                                       items={[
                                         {
                                           children: (
-                                            <Typography.Text
-                                              __component_name="Typography.Text"
-                                              disabled={false}
-                                              ellipsis={{ expandable: false, rows: 1 }}
-                                              strong={false}
-                                              style={{ fontSize: '', paddingTop: '8px' }}
+                                            <Row
+                                              __component_name="Row"
+                                              justify="space-between"
+                                              style={{}}
+                                              wrap={false}
                                             >
-                                              {__$$eval(() => record?.latestVersion || '-')}
-                                            </Typography.Text>
+                                              <Col __component_name="Col">
+                                                <Typography.Text
+                                                  __component_name="Typography.Text"
+                                                  disabled={false}
+                                                  ellipsis={{ expandable: false, rows: 1 }}
+                                                  strong={false}
+                                                  style={{
+                                                    display: 'inline-block',
+                                                    paddingTop: '8px',
+                                                  }}
+                                                >
+                                                  {__$$eval(() => record?.latestVersion || '-')}
+                                                </Typography.Text>
+                                              </Col>
+                                              <Col __component_name="Col">
+                                                <Rate
+                                                  __component_name="Rate"
+                                                  allowHalf={true}
+                                                  disabled={true}
+                                                  style={{
+                                                    fontSize: '12px !important',
+                                                    verticalAlign: 'bottom',
+                                                  }}
+                                                  value={__$$eval(() =>
+                                                    Math.round((record?.latestScore || 0) / 2)
+                                                  )}
+                                                />
+                                              </Col>
+                                            </Row>
                                           ),
                                           key: 'sjhjyjnjz7',
                                           label: this.i18n('i18n-vpbgp1lj') /* 最新版本 */,

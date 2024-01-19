@@ -22,6 +22,7 @@ import {
   Rate,
   Row,
   Space,
+  Status,
   Table,
   Tabs,
   Tag,
@@ -31,6 +32,7 @@ import {
 } from '@tenx-ui/materials';
 
 import {
+  AntdIconDownloadOutlined,
   AntdIconDownOutlined,
   AntdIconHomeOutlined,
   TenxIconKubebbKeywords,
@@ -84,12 +86,18 @@ class ComponentsDetail$$Page extends React.Component {
 
     this.state = {
       cluster: undefined,
+      getRatingLoading: false,
       isOpenModal: false,
       modalLoading: false,
       modalType: 'delete',
+      rateEnabled: false,
+      rateInstall: false,
+      ratePermission: false,
+      rateResult: undefined,
+      rateStatus: undefined,
       readme: undefined,
       readmeLoading: false,
-      tab: 'tab-item-1',
+      tab: 'info',
       tenants: [],
       version: undefined,
     };
@@ -181,6 +189,60 @@ class ComponentsDetail$$Page extends React.Component {
     });
   }
 
+  async createRating() {
+    this.setState({
+      rateStatus: 'progress',
+    });
+    try {
+      await this.utils.bff.createRating({
+        createRatingsInput: {
+          version: this.getVersionInfo()?.version,
+          componentName: this.appHelper?.match?.params?.id,
+          namespace: undefined,
+          url: this.getVersionInfo()?.urls?.[0],
+        },
+        cluster: this.getCluster(),
+      });
+      this.closeModal();
+      this.utils.notification.success({
+        message: this.i18n('i18n-8u8kdjrn'),
+      });
+      this.setState({
+        modalLoading: false,
+      });
+      this.getRating();
+    } catch (error) {
+      this.setState({
+        modalLoading: false,
+      });
+      this.utils.notification.warnings({
+        message: this.i18n('i18n-bvjt8okb'),
+        errors: error?.response?.errors,
+      });
+    }
+  }
+
+  exportSVGToPng(svgId, pngFileName) {
+    const svgElement = document.getElementById(svgId);
+    const canvas = document.createElement('canvas');
+    const context = canvas.getContext('2d');
+    const viewBoxWidth = parseFloat(svgElement.viewBox.animVal?.width);
+    const viewBoxHeight = parseFloat(svgElement.viewBox.animVal?.height);
+    canvas.width = viewBoxWidth * 1.5;
+    canvas.height = viewBoxHeight * 1.5;
+    const image = new Image();
+    image.src =
+      'data:image/svg+xml,' + encodeURIComponent(new XMLSerializer().serializeToString(svgElement));
+    image.onload = function () {
+      context.drawImage(image, 0, 0);
+      const link = document.createElement('a');
+      link.href = canvas.toDataURL();
+      link.download = pngFileName || 'exported_image.png';
+      link.click();
+      document.getElementById('vizSvgContainer').innerHTML = '';
+    };
+  }
+
   form(name) {
     return this.$(name || 'formily_subscription')?.formRef?.current?.form;
   }
@@ -210,6 +272,114 @@ class ComponentsDetail$$Page extends React.Component {
     return item.chartName || '-';
   }
 
+  async getRateEnabled() {
+    const { repository } = this.props.useGetComponent?.data?.component || {};
+    if (!repository) {
+      setTimeout(() => {
+        this.getRateEnabled();
+      }, 200);
+      return;
+    }
+    try {
+      const res = await this.utils.bff.getRepository({
+        name: repository,
+        cluster: this.getCluster(),
+      });
+      this.setState({
+        rateEnabled: res?.repository?.enableRating,
+      });
+    } catch (error) {}
+  }
+
+  async getRateInstall() {
+    try {
+      const res = await this.utils.bff.getRatingDeploymentStatus({
+        namespace: undefined,
+        cluster: this.getCluster(),
+      });
+      this.setState({
+        rateInstall: !!res?.ratingDeploymentStatus,
+      });
+    } catch (error) {
+      this.setState({
+        rateInstall: true,
+      });
+    }
+  }
+
+  getRateModalName() {
+    return `${this.getName(this.props.useGetComponent?.data?.component)}(${
+      this.getVersionInfo()?.version || '-'
+    })`;
+  }
+
+  async getRatePermission() {
+    try {
+      const res = await this.utils.bffSdk.userAuthCanI({
+        cluster: this.getCluster(),
+        resource: {
+          name: 'ratings',
+          group: 'core.kubebb.k8s.com.cn',
+          version: 'v1alpha1',
+          verb: 'create',
+        },
+      });
+      this.setState({
+        ratePermission: !!res?.userAuthCanI,
+      });
+    } catch (error) {}
+  }
+
+  getRateType(type) {
+    if (type === 'security') {
+      return this.i18n('i18n-65frxbeg');
+    }
+    if (type === 'reliability') {
+      return this.i18n('i18n-g7eu2ue1');
+    }
+    return this.i18n('i18n-lr4x7c49');
+  }
+
+  async getRating() {
+    this.setState({
+      getRatingLoading: true,
+    });
+    try {
+      const res = await this.utils.bff.getRating({
+        componentName: this.appHelper?.match?.params?.id,
+        namespace: undefined,
+        // name: 'rating-6s283',
+        version: this.getVersionInfo()?.version,
+        cluster: this.getCluster(),
+        // repository: String
+      });
+
+      const getStatus = () => {
+        if (['EvaluationSucceeded'].includes(res?.rating?.status)) {
+          return 'success';
+        }
+        if (res?.rating?.status === 'PipelineRunning') {
+          return 'progress';
+        }
+        if (!res) {
+          return undefined;
+        }
+        return 'failed';
+      };
+      this.setState({
+        getRatingLoading: false,
+        rateStatus: getStatus(),
+        rateResult: res?.rating,
+      });
+    } catch (error) {
+      this.setState({
+        getRatingLoading: false,
+        rateStatus: undefined,
+        rateResult: undefined,
+      });
+    }
+  }
+
   async getReademe() {
     this.setState({
       readmeLoading: true,
@@ -230,6 +400,18 @@ class ComponentsDetail$$Page extends React.Component {
         return item.version === this.state.version;
       }) || this.props.useGetComponent?.data?.component?.versions?.[0]
     );
+  }
+
+  handleDownloadRBAC(_, { record }) {
+    const dot = record.rbac;
+    // 'digraph { a -> b }'
+    const name = record?.pipelinerun + '.png';
+    this.utils.vizInstance().then(viz => {
+      const svg = viz.renderSVGElement(dot);
+      svg.setAttribute('id', 'vizSvg');
+      document.getElementById('vizSvgContainer').appendChild(svg);
+      this.exportSVGToPng('vizSvg', name);
+    });
   }
 
   handleOprationBtnClick(e) {
@@ -283,6 +465,9 @@ class ComponentsDetail$$Page extends React.Component {
     if (v === 'READEME') {
       this.getReademe();
     }
+    if (v === 'rate') {
+      this.getRating();
+    }
   }
 
   handleVersionMenuClick(e) {
@@ -290,7 +475,10 @@ class ComponentsDetail$$Page extends React.Component {
       {
         version: e.key,
       },
-      () => this.getReademe()
+      () => {
+        this.getReademe();
+        this.getRating();
+      }
     );
   }
 
@@ -298,7 +486,7 @@ class ComponentsDetail$$Page extends React.Component {
     const version = this.getVersionInfo()?.version;
     const tab = this.appHelper?.history?.query?.tab;
     this.setState({
-      tab: tab || 'tab-item-1',
+      tab: tab || 'info',
     });
     if (!version) {
       setTimeout(() => {
@@ -348,6 +536,13 @@ class ComponentsDetail$$Page extends React.Component {
     });
   }
 
+  openRateModal() {
+    this.setState({
+      isOpenModal: true,
+      modalType: 'rate',
+    });
+  }
+
   setFormValues(values, name) {
     if (!this.form(name)) {
       if (this.state.timer) {
@@ -384,6 +579,9 @@ class ComponentsDetail$$Page extends React.Component {
     this.loadCluster();
     this.loadTenants();
     this.initTab();
+    this.getRatePermission();
+    this.getRateEnabled();
+    this.getRateInstall();
   }
 
   render() {
@@ -391,6 +589,52 @@ class ComponentsDetail$$Page extends React.Component {
     const { state } = __$$context;
     return (
       <Page>
+        <Modal
+          __component_name="Modal"
+          centered={false}
+          confirmLoading={__$$eval(() => this.state.modalLoading)}
+          destroyOnClose={true}
+          forceRender={false}
+          keyboard={true}
+          mask={true}
+          maskClosable={false}
+          onCancel={function () {
+            return this.closeModal.apply(this, Array.prototype.slice.call(arguments).concat([]));
+          }.bind(this)}
+          onOk={function () {
+            return this.createRating.apply(this, Array.prototype.slice.call(arguments).concat([]));
+          }.bind(this)}
+          open={__$$eval(() => this.state.isOpenModal && this.state.modalType === 'rate')}
+          title={this.i18n('i18n-99fynr0e') /* 发起评测 */}
+        >
+          <Typography.Text
+            __component_name="Typography.Text"
+            disabled={false}
+            ellipsis={true}
+            strong={false}
+            style={{ fontSize: '' }}
+          >
+            {this.i18n('i18n-1n7ps4dd') /* 确定为 */}
+          </Typography.Text>
+          <Typography.Text
+            __component_name="Typography.Text"
+            disabled={false}
+            ellipsis={true}
+            strong={true}
+            style={{ fontSize: '', paddingLeft: '4px', paddingRight: '4px' }}
+          >
+            {__$$eval(() => this.getRateModalName())}
+          </Typography.Text>
+          <Typography.Text
+            __component_name="Typography.Text"
+            disabled={false}
+            ellipsis={true}
+            strong={false}
+            style={{ fontSize: '' }}
+          >
+            {this.i18n('i18n-zonf0aon') /* 发起评测吗？ */}
+          </Typography.Text>
+        </Modal>
         <Modal
           __component_name="Modal"
           centered={false}
@@ -648,6 +892,7 @@ class ComponentsDetail$$Page extends React.Component {
             type="info"
           />
         </Modal>
+        <Container __component_name="Container" id="vizSvgContainer" style={{ display: 'none' }} />
         <Row __component_name="Row" wrap={true}>
           <Col __component_name="Col" span={24}>
             <Space align="center" direction="horizontal">
@@ -814,6 +1059,7 @@ class ComponentsDetail$$Page extends React.Component {
                                 }}
                                 overlayStyle={__$$eval(() => ({
                                   width: '100px',
+                                  overflow: 'hidden',
                                 }))}
                                 placement="bottomLeft"
                                 style={{}}
@@ -1505,7 +1751,7 @@ class ComponentsDetail$$Page extends React.Component {
                         </Col>
                       </Row>
                     ),
-                    key: 'tab-item-1',
+                    key: 'info',
                     label: this.i18n('i18n-f6e39rd6') /* 产品介绍 */,
                   },
                   {
@@ -1533,10 +1779,15 @@ class ComponentsDetail$$Page extends React.Component {
                                   {
                                     this.i18n(
                                       'i18n-xy8qhguk'
-                                    ) /* 使用智能 AI 对组件从安全性、可靠性、可用性三方面进行综合评测，为您的选择提供参考数据。 */
+                                    ) /* 使用智能 AI 对组件从安全性、可靠性等方面进行综合评测，为您的选择提供参考数据。 */
                                   }
                                 </Typography.Text>
-                                <UnifiedLink __component_name="UnifiedLink" target="_blank" to="">
+                                <UnifiedLink
+                                  __component_name="UnifiedLink"
+                                  inQianKun={false}
+                                  target="_blank"
+                                  to="http://kubebb.k8s.com.cn/docs/user-guid/component_rating"
+                                >
                                   评测说明
                                 </UnifiedLink>
                               </Space>
@@ -1547,64 +1798,544 @@ class ComponentsDetail$$Page extends React.Component {
                         </Col>
                         <Col __component_name="Col" span={24}>
                           <Space __component_name="Space" align="center" direction="horizontal">
-                            <Button
-                              __component_name="Button"
-                              block={false}
-                              danger={false}
-                              disabled={false}
-                              ghost={false}
-                              shape="default"
-                              type="primary"
-                            >
-                              {this.i18n('i18n-99fynr0e') /* 发起评测 */}
-                            </Button>
+                            {!!__$$eval(
+                              () =>
+                                this.state.ratePermission &&
+                                this.state.rateEnabled &&
+                                this.state.rateStatus !== 'progress'
+                            ) && (
+                              <Button
+                                __component_name="Button"
+                                block={false}
+                                danger={false}
+                                disabled={false}
+                                ghost={false}
+                                onClick={function () {
+                                  return this.openRateModal.apply(
+                                    this,
+                                    Array.prototype.slice.call(arguments).concat([])
+                                  );
+                                }.bind(this)}
+                                shape="default"
+                                type="primary"
+                              >
+                                {this.i18n('i18n-99fynr0e') /* 发起评测 */}
+                              </Button>
+                            )}
+                            {!!__$$eval(() => this.state.rateStatus === 'progress') && (
+                              <Button
+                                __component_name="Button"
+                                block={false}
+                                danger={false}
+                                disabled={false}
+                                ghost={false}
+                                loading={true}
+                                shape="default"
+                                type="primary"
+                              >
+                                {this.i18n('i18n-dzwtxz18') /* 评测中 */}
+                              </Button>
+                            )}
                           </Space>
                         </Col>
                         <Col __component_name="Col" span={24}>
-                          <Empty
-                            __component_name="Empty"
-                            description={
-                              this.i18n('i18n-q2lat5ib') /* 组件当前版本还未进行评测，请耐心等待 */
-                            }
-                          />
+                          {!!__$$eval(
+                            () =>
+                              !this.state.ratePermission &&
+                              this.state.rateEnabled &&
+                              !this.state.rateStatus
+                          ) && (
+                            <Empty
+                              __component_name="Empty"
+                              description={
+                                this.i18n(
+                                  'i18n-q2lat5ib'
+                                ) /* 组件当前版本还未进行评测，请耐心等待 */
+                              }
+                            />
+                          )}
+                          {!!__$$eval(
+                            () =>
+                              this.state.ratePermission &&
+                              this.state.rateEnabled &&
+                              !this.state.rateStatus
+                          ) && (
+                            <Empty
+                              __component_name="Empty"
+                              description={
+                                this.i18n(
+                                  'i18n-8ss1wlic'
+                                ) /* 组件当前版本还未进行评测，请开始评测吧 */
+                              }
+                            />
+                          )}
+                          {!!__$$eval(() => !this.state.rateEnabled) && (
+                            <Empty
+                              __component_name="Empty"
+                              description={
+                                this.i18n(
+                                  'i18n-mdmay8nh'
+                                ) /* 请联系管理员为当前仓库开启组件评测能力 */
+                              }
+                            />
+                          )}
+                          {!!__$$eval(() => this.state.rateStatus === 'failed') && (
+                            <Empty
+                              __component_name="Empty"
+                              description={this.i18n('i18n-uij8fxd3') /* 评测失败，请稍后重试 */}
+                            />
+                          )}
                         </Col>
                         <Col __component_name="Col" span={24}>
-                          <Descriptions
-                            __component_name="Descriptions"
-                            bordered={false}
-                            borderedBottom={false}
-                            borderedBottomDashed={false}
-                            colon={false}
-                            column={1}
-                            id=""
-                            items={[
-                              {
-                                children: (
+                          {!!__$$eval(
+                            () =>
+                              this.state.rateEnabled &&
+                              ['progress', 'success'].includes(this.state.rateStatus)
+                          ) && (
+                            <Descriptions
+                              __component_name="Descriptions"
+                              bordered={false}
+                              borderedBottom={false}
+                              borderedBottomDashed={false}
+                              colon={false}
+                              column={1}
+                              id=""
+                              items={[
+                                {
+                                  children: [
+                                    !!__$$eval(() =>
+                                      ['success'].includes(this.state.rateStatus)
+                                    ) && (
+                                      <Rate
+                                        __component_name="Rate"
+                                        style={{ fontSize: '12px' }}
+                                        value={__$$eval(() =>
+                                          Math.round(
+                                            (this.state.rateResult?.prompts?.reduce(
+                                              (v, cur) => v + cur.score,
+                                              0
+                                            ) / this.state.rateResult?.prompts?.length || 1) / 2
+                                          )
+                                        )}
+                                        key="node_oclrfzlghy7"
+                                      />
+                                    ),
+                                    !!__$$eval(() =>
+                                      ['progress'].includes(this.state.rateStatus)
+                                    ) && (
+                                      <Typography.Text
+                                        __component_name="Typography.Text"
+                                        disabled={false}
+                                        ellipsis={true}
+                                        strong={false}
+                                        style={{ fontSize: '' }}
+                                        key="node_oclrfzoy4x25"
+                                      >
+                                        {this.i18n('i18n-dzwtxz18') /* 评测中 */}
+                                      </Typography.Text>
+                                    ),
+                                  ],
+                                  key: '20vwa4mw25w',
+                                  label: this.i18n('i18n-fghbypr5') /* 组件评测得分 */,
+                                  span: 1,
+                                },
+                                {
+                                  children: [
+                                    !!__$$eval(() =>
+                                      ['success'].includes(this.state.rateStatus)
+                                    ) && (
+                                      <Typography.Time
+                                        __component_name="Typography.Time"
+                                        format=""
+                                        relativeTime={false}
+                                        time={__$$eval(
+                                          () => this.state.rateResult?.creationTimestamp
+                                        )}
+                                        key="node_oclreizx4ak"
+                                      />
+                                    ),
+                                    !!__$$eval(() =>
+                                      ['progress'].includes(this.state.rateStatus)
+                                    ) && (
+                                      <Typography.Text
+                                        __component_name="Typography.Text"
+                                        disabled={false}
+                                        ellipsis={true}
+                                        strong={false}
+                                        style={{ fontSize: '' }}
+                                        key="node_oclrfzpr7f4"
+                                      >
+                                        {this.i18n('i18n-dzwtxz18') /* 评测中 */}
+                                      </Typography.Text>
+                                    ),
+                                  ],
+                                  key: 's2sj8l83ptb',
+                                  label: this.i18n('i18n-cqhehb0a') /* 最近一次评测 */,
+                                  span: 1,
+                                },
+                                {
+                                  children: [
+                                    !!__$$eval(() =>
+                                      ['progress'].includes(this.state.rateStatus)
+                                    ) && (
+                                      <Typography.Text
+                                        __component_name="Typography.Text"
+                                        disabled={false}
+                                        ellipsis={true}
+                                        strong={false}
+                                        style={{ fontSize: '' }}
+                                        key="node_oclrfzpr7f3"
+                                      >
+                                        {this.i18n('i18n-dzwtxz18') /* 评测中 */}
+                                      </Typography.Text>
+                                    ),
+                                    !!__$$eval(() =>
+                                      ['success'].includes(this.state.rateStatus)
+                                    ) && (
+                                      <Table
+                                        __component_name="Table"
+                                        columns={[
+                                          {
+                                            dataIndex: 'dimension',
+                                            key: 'type',
+                                            render: (text, record, index) =>
+                                              (__$$context => (
+                                                <Typography.Text
+                                                  __component_name="Typography.Text"
+                                                  disabled={false}
+                                                  ellipsis={true}
+                                                  strong={false}
+                                                  style={{ fontSize: '' }}
+                                                >
+                                                  {__$$eval(
+                                                    () => __$$context.getRateType(text) || '-'
+                                                  )}
+                                                </Typography.Text>
+                                              ))(
+                                                __$$createChildContext(__$$context, {
+                                                  text,
+                                                  record,
+                                                  index,
+                                                })
+                                              ),
+                                            title: this.i18n('i18n-gyax19ni') /* 类型 */,
+                                          },
+                                          {
+                                            dataIndex: 'score',
+                                            key: 'score',
+                                            title: this.i18n('i18n-hqc66hue') /* 得分 */,
+                                          },
+                                          {
+                                            dataIndex: 'problems',
+                                            key: 'question',
+                                            render: (text, record, index) =>
+                                              (__$$context => (
+                                                <Typography.Text
+                                                  __component_name="Typography.Text"
+                                                  disabled={false}
+                                                  ellipsis={{
+                                                    rows: 1,
+                                                    tooltip: {
+                                                      _unsafe_MixedSetter_title_select:
+                                                        'VariableSetter',
+                                                      title: __$$eval(() => text || '-'),
+                                                    },
+                                                  }}
+                                                  strong={false}
+                                                  style={{ fontSize: '' }}
+                                                >
+                                                  {__$$eval(() => text || '-')}
+                                                </Typography.Text>
+                                              ))(
+                                                __$$createChildContext(__$$context, {
+                                                  text,
+                                                  record,
+                                                  index,
+                                                })
+                                              ),
+                                            title: this.i18n('i18n-vpbmbd4y') /* 问题 */,
+                                          },
+                                          {
+                                            dataIndex: 'suggestions',
+                                            key: 'jy',
+                                            render: (text, record, index) =>
+                                              (__$$context => (
+                                                <Typography.Text
+                                                  __component_name="Typography.Text"
+                                                  disabled={false}
+                                                  ellipsis={{
+                                                    tooltip: {
+                                                      _unsafe_MixedSetter_title_select:
+                                                        'VariableSetter',
+                                                      title: __$$eval(() => text || '-'),
+                                                    },
+                                                  }}
+                                                  strong={false}
+                                                  style={{ fontSize: '' }}
+                                                >
+                                                  {__$$eval(() => text || '-')}
+                                                </Typography.Text>
+                                              ))(
+                                                __$$createChildContext(__$$context, {
+                                                  text,
+                                                  record,
+                                                  index,
+                                                })
+                                              ),
+                                            title: this.i18n('i18n-r76kh4ll') /* 建议 */,
+                                          },
+                                        ]}
+                                        dataSource={__$$eval(
+                                          () => this.state.rateResult?.prompts || []
+                                        )}
+                                        expandable={{
+                                          expandedRowRender: (record, index, indent, expanded) =>
+                                            (__$$context => (
+                                              <Descriptions
+                                                __component_name="Descriptions"
+                                                bordered={false}
+                                                borderedBottom={false}
+                                                borderedBottomDashed={false}
+                                                colon={true}
+                                                column={1}
+                                                id=""
+                                                items={[
+                                                  {
+                                                    children: (
+                                                      <Typography.Text
+                                                        __component_name="Typography.Text"
+                                                        disabled={false}
+                                                        ellipsis={true}
+                                                        strong={false}
+                                                        style={{ fontSize: '' }}
+                                                      >
+                                                        {__$$eval(() => record?.pipelinerun || '-')}
+                                                      </Typography.Text>
+                                                    ),
+                                                    key: 'an2oj3zs06',
+                                                    label:
+                                                      this.i18n('i18n-jsrlhq33') /* 任务名称 */,
+                                                    span: 1,
+                                                  },
+                                                  {
+                                                    children: (
+                                                      <Status
+                                                        __component_name="Status"
+                                                        id={__$$eval(() => record?.status?.status)}
+                                                        types={[
+                                                          {
+                                                            children:
+                                                              this.i18n(
+                                                                'i18n-4djpnm56'
+                                                              ) /* 执行中 */,
+                                                            id: 'ReconcileRunning',
+                                                            type: 'info',
+                                                          },
+                                                          {
+                                                            children:
+                                                              this.i18n('i18n-45kqicup') /* 完成 */,
+                                                            id: 'ReconcileSuccess',
+                                                            type: 'success',
+                                                          },
+                                                        ]}
+                                                      />
+                                                    ),
+                                                    key: 'g8ewa2f4egw',
+                                                    label:
+                                                      this.i18n('i18n-fc7kahkh') /* 执行状态 */,
+                                                    span: 1,
+                                                  },
+                                                  {
+                                                    children: (
+                                                      <Typography.Time
+                                                        __component_name="Typography.Time"
+                                                        format=""
+                                                        relativeTime={false}
+                                                        time={__$$eval(
+                                                          () => record?.status?.lastTransitionTime
+                                                        )}
+                                                      />
+                                                    ),
+                                                    key: '8ybmrrzif4u',
+                                                    label:
+                                                      this.i18n('i18n-9c8ocdzq') /* 结束时间 */,
+                                                    span: 1,
+                                                  },
+                                                  {
+                                                    children: (
+                                                      <Typography.Text
+                                                        __component_name="Typography.Text"
+                                                        disabled={false}
+                                                        ellipsis={true}
+                                                        strong={false}
+                                                        style={{ fontSize: '' }}
+                                                      >
+                                                        {__$$eval(() => record?.status?.reason)}
+                                                      </Typography.Text>
+                                                    ),
+                                                    key: '91n8rffca9n',
+                                                    label:
+                                                      this.i18n('i18n-4uud9mle') /* 执行结果 */,
+                                                    span: 1,
+                                                  },
+                                                  {
+                                                    children: (
+                                                      <Typography.Text
+                                                        __component_name="Typography.Text"
+                                                        disabled={false}
+                                                        ellipsis={true}
+                                                        strong={false}
+                                                        style={{ fontSize: '' }}
+                                                      >
+                                                        {__$$eval(() => record?.status?.message)}
+                                                      </Typography.Text>
+                                                    ),
+                                                    key: '3u2hkongpsd',
+                                                    label:
+                                                      this.i18n('i18n-rsnjf9n7') /* 详细信息 */,
+                                                    span: 1,
+                                                  },
+                                                  {
+                                                    children: [
+                                                      !!__$$eval(() => !record?.rbac) && (
+                                                        <Typography.Text
+                                                          __component_name="Typography.Text"
+                                                          disabled={false}
+                                                          ellipsis={true}
+                                                          strong={false}
+                                                          style={{ fontSize: '' }}
+                                                          key="node_oclrkf33tu5"
+                                                        >
+                                                          {this.i18n('i18n-cba8wwos') /* 暂无 */}
+                                                        </Typography.Text>
+                                                      ),
+                                                      !!__$$eval(() => record?.rbac) && (
+                                                        <Space
+                                                          __component_name="Space"
+                                                          align="center"
+                                                          direction="horizontal"
+                                                          size={4}
+                                                          key="node_oclrkat70p3"
+                                                        >
+                                                          <Typography.Text
+                                                            __component_name="Typography.Text"
+                                                            disabled={false}
+                                                            ellipsis={true}
+                                                            strong={false}
+                                                            style={{ fontSize: '' }}
+                                                          >
+                                                            {
+                                                              this.i18n(
+                                                                'i18n-r4bsaa82'
+                                                              ) /*  RBAC权限图 */
+                                                            }
+                                                          </Typography.Text>
+                                                          <AntdIconDownloadOutlined
+                                                            __component_name="AntdIconDownloadOutlined"
+                                                            onClick={function () {
+                                                              return this.handleDownloadRBAC.apply(
+                                                                this,
+                                                                Array.prototype.slice
+                                                                  .call(arguments)
+                                                                  .concat([
+                                                                    {
+                                                                      record: record,
+                                                                    },
+                                                                  ])
+                                                              );
+                                                            }.bind(__$$context)}
+                                                            style={{
+                                                              color: '#4461eb',
+                                                              cursor: 'pointer',
+                                                            }}
+                                                          />
+                                                        </Space>
+                                                      ),
+                                                    ],
+                                                    key: 'mg8cdkw8ue',
+                                                    label: this.i18n('i18n-ns3y7tuh') /* 附件 */,
+                                                    span: 1,
+                                                  },
+                                                ]}
+                                                labelStyle={{ width: 100 }}
+                                                layout="horizontal"
+                                                size="default"
+                                                title={
+                                                  this.i18n('i18n-whl68z2v') /* 评测任务执行结果 */
+                                                }
+                                              >
+                                                <Descriptions.Item
+                                                  key="an2oj3zs06"
+                                                  label="标签项"
+                                                  span={1}
+                                                >
+                                                  {null}
+                                                </Descriptions.Item>
+                                              </Descriptions>
+                                            ))(
+                                              __$$createChildContext(__$$context, {
+                                                record,
+                                                index,
+                                                indent,
+                                                expanded,
+                                              })
+                                            ),
+                                        }}
+                                        pagination={false}
+                                        rowKey="type"
+                                        scroll={{ scrollToFirstRowOnChange: true }}
+                                        showHeader={true}
+                                        size="middle"
+                                        style={{ width: '100%' }}
+                                        key="node_oclreizx4am"
+                                      />
+                                    ),
+                                  ],
+                                  key: 'fyzu14bnuei',
+                                  label: this.i18n('i18n-gipku83c') /* 组件评测报告 */,
+                                  span: 1,
+                                },
+                              ]}
+                              labelStyle={{ width: 100 }}
+                              layout="horizontal"
+                              size="default"
+                              style={{}}
+                              title=""
+                            >
+                              <Descriptions.Item
+                                key="20vwa4mw25w"
+                                label={this.i18n('i18n-fghbypr5') /* 组件评测得分 */}
+                                span={1}
+                              >
+                                {
                                   <Rate
                                     __component_name="Rate"
                                     style={{ fontSize: '12px' }}
                                     value={2}
                                   />
-                                ),
-                                key: '20vwa4mw25w',
-                                label: this.i18n('i18n-fghbypr5') /* 组件评测得分 */,
-                                span: 1,
-                              },
-                              {
-                                children: (
+                                }
+                              </Descriptions.Item>
+                              <Descriptions.Item
+                                key="s2sj8l83ptb"
+                                label={this.i18n('i18n-cqhehb0a') /* 最近一次评测 */}
+                                span={1}
+                              >
+                                {
                                   <Typography.Time
                                     __component_name="Typography.Time"
                                     format=""
                                     relativeTime={false}
                                     time=""
                                   />
-                                ),
-                                key: 's2sj8l83ptb',
-                                label: this.i18n('i18n-cqhehb0a') /* 最近一次评测 */,
-                                span: 1,
-                              },
-                              {
-                                children: (
+                                }
+                              </Descriptions.Item>
+                              <Descriptions.Item
+                                key="fyzu14bnuei"
+                                label={this.i18n('i18n-gipku83c') /* 组件评测报告 */}
+                                span={1}
+                                style={{}}
+                              >
+                                {
                                   <Table
                                     __component_name="Table"
                                     columns={[
@@ -1681,139 +2412,17 @@ class ComponentsDetail$$Page extends React.Component {
                                     scroll={{ scrollToFirstRowOnChange: true }}
                                     showHeader={true}
                                     size="middle"
+                                    style={{ width: '1000px' }}
                                   />
-                                ),
-                                key: 'fyzu14bnuei',
-                                label: this.i18n('i18n-gipku83c') /* 组件评测报告 */,
-                                span: 1,
-                              },
-                            ]}
-                            labelStyle={{ width: 100 }}
-                            layout="horizontal"
-                            size="default"
-                            style={{}}
-                            title=""
-                          >
-                            <Descriptions.Item
-                              key="20vwa4mw25w"
-                              label={this.i18n('i18n-fghbypr5') /* 组件评测得分 */}
-                              span={1}
-                            >
-                              {
-                                <Rate
-                                  __component_name="Rate"
-                                  style={{ fontSize: '12px' }}
-                                  value={2}
-                                />
-                              }
-                            </Descriptions.Item>
-                            <Descriptions.Item
-                              key="s2sj8l83ptb"
-                              label={this.i18n('i18n-cqhehb0a') /* 最近一次评测 */}
-                              span={1}
-                            >
-                              {
-                                <Typography.Time
-                                  __component_name="Typography.Time"
-                                  format=""
-                                  relativeTime={false}
-                                  time=""
-                                />
-                              }
-                            </Descriptions.Item>
-                            <Descriptions.Item
-                              key="fyzu14bnuei"
-                              label={this.i18n('i18n-gipku83c') /* 组件评测报告 */}
-                              span={1}
-                              style={{}}
-                            >
-                              {
-                                <Table
-                                  __component_name="Table"
-                                  columns={[
-                                    { dataIndex: 'name', key: 'name', title: '姓名' },
-                                    { dataIndex: 'age', key: 'age', title: '年龄' },
-                                    { title: '标题' },
-                                    { title: '标题' },
-                                  ]}
-                                  dataSource={[
-                                    {
-                                      address: '西湖区湖底公园1号',
-                                      age: 32,
-                                      id: '1',
-                                      name: '胡彦斌',
-                                    },
-                                    {
-                                      address: '滨江区网商路699号',
-                                      age: 28,
-                                      id: '2',
-                                      name: '王一博',
-                                    },
-                                  ]}
-                                  expandable={{
-                                    expandedRowRender: (record, index, indent, expanded) =>
-                                      (__$$context => (
-                                        <Descriptions
-                                          __component_name="Descriptions"
-                                          bordered={false}
-                                          borderedBottom={false}
-                                          borderedBottomDashed={false}
-                                          colon={true}
-                                          column={3}
-                                          id=""
-                                          items={[
-                                            {
-                                              children: null,
-                                              key: 'an2oj3zs06',
-                                              label: '标签项',
-                                              span: 1,
-                                            },
-                                          ]}
-                                          labelStyle={{ width: 100 }}
-                                          layout="horizontal"
-                                          size="default"
-                                          title="用户信息"
-                                        >
-                                          <Descriptions.Item
-                                            key="an2oj3zs06"
-                                            label="标签项"
-                                            span={1}
-                                          >
-                                            {null}
-                                          </Descriptions.Item>
-                                        </Descriptions>
-                                      ))(
-                                        __$$createChildContext(__$$context, {
-                                          record,
-                                          index,
-                                          indent,
-                                          expanded,
-                                        })
-                                      ),
-                                  }}
-                                  pagination={{
-                                    current: 1,
-                                    pageSize: 10,
-                                    showQuickJumper: false,
-                                    showSizeChanger: false,
-                                    simple: false,
-                                    size: 'default',
-                                    total: 15,
-                                  }}
-                                  rowKey="id"
-                                  scroll={{ scrollToFirstRowOnChange: true }}
-                                  showHeader={true}
-                                  size="middle"
-                                  style={{ width: '1000px' }}
-                                />
-                              }
-                            </Descriptions.Item>
-                          </Descriptions>
+                                }
+                              </Descriptions.Item>
+                            </Descriptions>
+                          )}
                         </Col>
                       </Row>
                     ),
-                    hidden: true,
-                    key: 'tab-item-2',
+                    hidden: __$$eval(() => !this.state.rateInstall),
+                    key: 'rate',
                     label: this.i18n('i18n-thxp526w') /* 组件评测 */,
                   },
                   {
