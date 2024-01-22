@@ -95,6 +95,7 @@ class ComponentsDetail$$Page extends React.Component {
       ratePermission: false,
       rateResult: undefined,
       rateStatus: undefined,
+      rateTimer: undefined,
       readme: undefined,
       readmeLoading: false,
       tab: 'info',
@@ -210,7 +211,9 @@ class ComponentsDetail$$Page extends React.Component {
       this.setState({
         modalLoading: false,
       });
-      this.getRating();
+      setTimeout(() => {
+        this.getRating();
+      }, 1000);
     } catch (error) {
       this.setState({
         modalLoading: false,
@@ -359,9 +362,17 @@ class ComponentsDetail$$Page extends React.Component {
           return 'success';
         }
         if (res?.rating?.status === 'PipelineRunning') {
+          if (this.state.rateTimer) {
+            clearTimeout(this.state.rateTimer);
+          }
+          this.setState({
+            rateTimer: setTimeout(() => {
+              this.getRating();
+            }, 1000 * 10),
+          });
           return 'progress';
         }
-        if (!res) {
+        if (!res?.rating) {
           return undefined;
         }
         return 'failed';
@@ -374,7 +385,7 @@ class ComponentsDetail$$Page extends React.Component {
     } catch (error) {
       this.setState({
         getRatingLoading: false,
-        rateStatus: undefined,
+        rateStatus: 'failed',
         rateResult: undefined,
       });
     }
@@ -1908,6 +1919,7 @@ class ComponentsDetail$$Page extends React.Component {
                                     ) && (
                                       <Rate
                                         __component_name="Rate"
+                                        disabled={true}
                                         style={{ fontSize: '12px' }}
                                         value={__$$eval(() =>
                                           Math.round(
@@ -1917,7 +1929,7 @@ class ComponentsDetail$$Page extends React.Component {
                                             ) / this.state.rateResult?.prompts?.length || 1) / 2
                                           )
                                         )}
-                                        key="node_oclrfzlghy7"
+                                        key="node_oclroimdr94"
                                       />
                                     ),
                                     !!__$$eval(() =>
@@ -1929,7 +1941,7 @@ class ComponentsDetail$$Page extends React.Component {
                                         ellipsis={true}
                                         strong={false}
                                         style={{ fontSize: '' }}
-                                        key="node_oclrfzoy4x25"
+                                        key="node_oclroimdr95"
                                       >
                                         {this.i18n('i18n-dzwtxz18') /* 评测中 */}
                                       </Typography.Text>
@@ -2282,7 +2294,7 @@ class ComponentsDetail$$Page extends React.Component {
                                             ),
                                         }}
                                         pagination={false}
-                                        rowKey="type"
+                                        rowKey="dimension"
                                         scroll={{ scrollToFirstRowOnChange: true }}
                                         showHeader={true}
                                         size="middle"
