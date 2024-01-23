@@ -71,7 +71,13 @@ class ComponentsWarehouseCreate$$Page extends React.Component {
 
     __$$i18n._inject2(this);
 
-    this.state = { cluster: undefined, creating: false, isCreate: true, name: undefined };
+    this.state = {
+      cluster: undefined,
+      creating: false,
+      hasRatingDeployed: false,
+      isCreate: true,
+      name: undefined,
+    };
   }
 
   $ = refName => {
@@ -97,6 +103,18 @@ class ComponentsWarehouseCreate$$Page extends React.Component {
 
   getClusterInfo() {
     return this.state.cluster;
+  }
+
+  async getRatingStatus() {
+    try {
+      const res = await this.props.appHelper?.utils?.bff?.getRatingDeploymentStatus({
+        namespace: undefined,
+        cluster: this.getCluster(),
+      });
+      this.setState({
+        hasRatingDeployed: !!res?.ratingDeploymentStatus,
+      });
+    } catch (e) {}
   }
 
   initCreate() {
@@ -187,6 +205,7 @@ class ComponentsWarehouseCreate$$Page extends React.Component {
         imageOverride: {
           value: v.imageOverride,
         },
+        enableRating: !!v.enableRating,
       });
       this.initDisabled();
       return;
@@ -236,6 +255,7 @@ class ComponentsWarehouseCreate$$Page extends React.Component {
           versions: item.versions && [item.versions],
         })),
         imageOverride: v.imageOverride?.value,
+        enableRating: !!v.enableRating,
       };
       if (!isCreate) {
         delete params.repositoryType;
@@ -427,6 +447,7 @@ class ComponentsWarehouseCreate$$Page extends React.Component {
   }
 
   componentDidMount() {
+    this.getRatingStatus();
     this.loadCluster();
     const isCreate = this.props.appHelper?.match?.params?.id === 'create';
     this.setState(
@@ -986,6 +1007,7 @@ class ComponentsWarehouseCreate$$Page extends React.Component {
                       asterisk: true,
                       colon: false,
                       labelAlign: 'left',
+                      labelEllipsis: true,
                       labelWidth: '145px',
                       wrapperAlign: 'left',
                     },
@@ -1473,6 +1495,7 @@ class ComponentsWarehouseCreate$$Page extends React.Component {
                             fieldProps={{
                               name: 'imageOverride',
                               title: this.i18n('i18n-guv8z978') /* 镜像仓库替换 */,
+                              type: 'object',
                               'x-component': 'FormilyFormItem',
                               'x-validator': [],
                             }}
@@ -1689,7 +1712,7 @@ class ComponentsWarehouseCreate$$Page extends React.Component {
                               </Space>
                             </FormilyArrayCards>
                           </FormilyFormItem>
-                          {!!false && (
+                          {!!__$$eval(() => this.state.hasRatingDeployed) && (
                             <FormilySwitch
                               __component_name="FormilySwitch"
                               componentProps={{
@@ -1700,12 +1723,51 @@ class ComponentsWarehouseCreate$$Page extends React.Component {
                                 description:
                                   this.i18n(
                                     'i18n-hm90oqjw'
-                                  ) /* 开启后，进入组件市场，对仓库内组件发起评测。将从安全性、可靠性、可用性三个方面对组件给出评测结果及建议，供您参考 */,
-                                name: 'pc',
+                                  ) /* 开启后，进入组件市场，对仓库内组件发起评测。将从安全性、可靠性等方面对组件给出评测结果及建议，供您参考 */,
+                                name: 'enableRating',
                                 title: this.i18n('i18n-thxp526w') /* 组件评测 */,
                                 'x-validator': [],
                               }}
                             />
+                          )}
+                          {!!__$$eval(() => !this.state.hasRatingDeployed) && (
+                            <FormilyFormItem
+                              __component_name="FormilyFormItem"
+                              decoratorProps={{ 'x-decorator-props': { labelEllipsis: true } }}
+                              fieldProps={{
+                                name: 'enableRatingWrapper',
+                                title: this.i18n('i18n-thxp526w') /* 组件评测 */,
+                                type: 'object',
+                                'x-component': 'FormilyFormItem',
+                                'x-validator': [],
+                              }}
+                            >
+                              <Tooltip
+                                __component_name="Tooltip"
+                                placement="topLeft"
+                                title={
+                                  this.i18n('i18n-xpbdirgh') /* 评测系统组件未完全部署，请检查 */
+                                }
+                              >
+                                <FormilySwitch
+                                  __component_name="FormilySwitch"
+                                  componentProps={{
+                                    'x-component-props': { disabled: true, loading: false },
+                                  }}
+                                  decoratorProps={{ 'x-decorator-props': { labelEllipsis: true } }}
+                                  fieldProps={{
+                                    description:
+                                      this.i18n(
+                                        'i18n-hm90oqjw'
+                                      ) /* 开启后，进入组件市场，对仓库内组件发起评测。将从安全性、可靠性等方面对组件给出评测结果及建议，供您参考 */,
+                                    name: 'enableRating',
+                                    title: '',
+                                    'x-pattern': 'disabled',
+                                    'x-validator': [],
+                                  }}
+                                />
+                              </Tooltip>
+                            </FormilyFormItem>
                           )}
                         </Col>
                       </Row>,
@@ -1742,6 +1804,7 @@ class ComponentsWarehouseCreate$$Page extends React.Component {
                     _unsafe_MixedSetter_title_select: 'SlotSetter',
                     name: 'FormilyFormItem1',
                     title: '',
+                    type: 'object',
                     'x-component': 'FormilyFormItem',
                     'x-validator': [],
                   }}

@@ -12,6 +12,8 @@ import { isIP } from 'validator';
 
 import dayjs from 'dayjs';
 
+import { instance as vizInstance } from '@viz-js/viz';
+
 import { createRef } from 'react';
 
 const utils = {};
@@ -563,6 +565,8 @@ utils.isIP = isIP;
 
 utils.dayjs = dayjs;
 
+utils.vizInstance = vizInstance;
+
 export class RefsManager {
   constructor() {
     this.refInsStore = {};
@@ -664,4 +668,6 @@ export default {
   isIP,
 
   dayjs,
+
+  vizInstance,
 };
