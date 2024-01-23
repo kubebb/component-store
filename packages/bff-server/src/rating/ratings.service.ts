@@ -8,6 +8,8 @@ import { Pipeline } from '@/pipeline/models/pipeline.model';
 import { PipelineService } from '@/pipeline/pipeline.service';
 import { RatingsArgs } from '@/rating/dto/ratings.args';
 import { RatingStatus } from '@/rating/models/rating.status.enum';
+import { Repository } from '@/repository/models/repository.model';
+import { RepositoryService } from '@/repository/repository.service';
 import { AnyObj, CRD, JwtAuth } from '@/types';
 import { Inject, Injectable } from '@nestjs/common';
 import { ConfigType } from '@nestjs/config';
@@ -21,6 +23,7 @@ export class RatingsService {
     private readonly pipelineService: PipelineService,
     private readonly componentsService: ComponentsService,
     private readonly configmapService: ConfigmapService,
+    private readonly repositoryService: RepositoryService,
     @Inject(serverConfig.KEY)
     private config: ConfigType<typeof serverConfig>
   ) {}
@@ -82,6 +85,8 @@ export class RatingsService {
       componentName,
       cluster
     );
+    const { repositoryType, url: repositoryUrl }: Repository =
+      await this.repositoryService.getRepository(auth, repository, cluster);
     const pipelineParams = pipelines?.map(pipeline => ({
       pipelineName: pipeline?.name,
       dimension: pipeline?.dimension,
@@ -90,7 +95,7 @@ export class RatingsService {
           COMPONENT_NAME: componentName,
           REPOSITORY_NAME: repository,
           VERSION: version,
-          URL: url,
+          URL: repositoryType === 'chartmuseum' ? `${repositoryUrl}${url}` : url,
         };
         return {
           name,
