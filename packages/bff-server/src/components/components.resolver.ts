@@ -206,8 +206,9 @@ export class ComponentsResolver {
       namespace,
       cluster,
     });
-    if (ratings[0]) {
-      const { namespace, promptNames } = ratings[0];
+    const rating = ratings.find(rating => rating.status === 'EvaluationSucceeded');
+    if (rating) {
+      const { namespace, promptNames } = rating;
       const names = promptNames.map(prompt => `${prompt}_${namespace}_${cluster || ''}`);
       let prompts = [];
       try {

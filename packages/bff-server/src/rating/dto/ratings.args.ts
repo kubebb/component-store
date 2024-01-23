@@ -19,4 +19,7 @@ export class RatingsArgs {
 
   /** 集群 */
   cluster?: string;
+
+  /** 最近一次评测 */
+  isLatestSuccessed?: boolean;
 }

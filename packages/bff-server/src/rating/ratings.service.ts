@@ -7,7 +7,9 @@ import { KubernetesService } from '@/kubernetes/kubernetes.service';
 import { Pipeline } from '@/pipeline/models/pipeline.model';
 import { PipelineService } from '@/pipeline/pipeline.service';
 import { RatingsArgs } from '@/rating/dto/ratings.args';
-import { RatingStatus } from '@/rating/models/rating.status.enum';
+import { RatingStatus, RatingTaskStatus } from '@/rating/models/rating.status.enum';
+import { Repository } from '@/repository/models/repository.model';
+import { RepositoryService } from '@/repository/repository.service';
 import { AnyObj, CRD, JwtAuth } from '@/types';
 import { Inject, Injectable } from '@nestjs/common';
 import { ConfigType } from '@nestjs/config';
@@ -21,6 +23,7 @@ export class RatingsService {
     private readonly pipelineService: PipelineService,
     private readonly componentsService: ComponentsService,
     private readonly configmapService: ConfigmapService,
+    private readonly repositoryService: RepositoryService,
     @Inject(serverConfig.KEY)
     private config: ConfigType<typeof serverConfig>
   ) {}
@@ -32,6 +35,18 @@ export class RatingsService {
     const repository = c.metadata?.labels['rating.repository'] || '';
     const version = c.metadata?.labels['rating.component.version'] || '';
     const status = RatingStatus[c.status?.conditions?.[0]?.reason];
+    const pipelineRuns = c.status?.pipelineRuns || {};
+    const tasks = Object.keys(pipelineRuns)?.reduce(
+      (prev, key) => ({
+        ...prev,
+        [key]: pipelineRuns[key]?.tasks?.map(task => ({
+          ...(task?.conditions?.[0] || {}),
+          taskRunName: task.taskRunName,
+          status: RatingTaskStatus[task?.conditions?.[0]?.reason],
+        })),
+      }),
+      {}
+    );
     return {
       name: c.metadata?.name,
       creationTimestamp: new Date(c.metadata?.creationTimestamp).toISOString(),
@@ -41,6 +56,7 @@ export class RatingsService {
       repository,
       promptNames,
       status,
+      tasks,
     };
   }
 
@@ -82,6 +98,8 @@ export class RatingsService {
       componentName,
       cluster
     );
+    const { repositoryType, url: repositoryUrl }: Repository =
+      await this.repositoryService.getRepository(auth, repository, cluster);
     const pipelineParams = pipelines?.map(pipeline => ({
       pipelineName: pipeline?.name,
       dimension: pipeline?.dimension,
@@ -90,7 +108,7 @@ export class RatingsService {
           COMPONENT_NAME: componentName,
           REPOSITORY_NAME: repository,
           VERSION: version,
-          URL: url,
+          URL: repositoryType === 'chartmuseum' ? `${repositoryUrl}/${url}` : url,
         };
         return {
           name,

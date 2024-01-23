@@ -3,6 +3,7 @@ import { ConfigmapModule } from '@/configmap/configmap.module';
 import { LlmModule } from '@/llm/llm.module';
 import { PipelineModule } from '@/pipeline/pipeline.module';
 import { PromptModule } from '@/prompt/prompt.module';
+import { RepositoryModule } from '@/repository/repository.module';
 import { forwardRef, Module } from '@nestjs/common';
 import { RatingsResolver } from './ratings.resolver';
 import { RatingsService } from './ratings.service';
@@ -16,6 +17,7 @@ import { RatingsService } from './ratings.service';
     PipelineModule,
     PromptModule,
     ConfigmapModule,
+    RepositoryModule,
   ],
 })
 export class RatingsModule {}

@@ -4,17 +4,9 @@ query getPrompt($name: String!, $namespace: String!, $cluster: String) {
     name
     dimension
     creationTimestamp
-    pipelinerun
     score
     suggestions
     problems
-    status {
-      lastTransitionTime
-      message
-      reason
-      status
-      type
-    }
   }
 }
 
@@ -24,7 +16,6 @@ query getPrompts($namespace: String, $cluster: String) {
     name
     dimension
     creationTimestamp
-    pipelinerun
     score
     suggestions
     problems

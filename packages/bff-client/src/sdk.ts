@@ -547,38 +547,17 @@ export type Prompt = {
   dimension: Scalars['String']['output'];
   /** prompt名称 */
   name: Scalars['ID']['output'];
-  /** 任务名称 */
-  pipelinerun: Scalars['String']['output'];
   /** 问题 */
   problems: Scalars['String']['output'];
   /** rating名称 */
   ratingName: Scalars['String']['output'];
   /** 评分 */
   score: Scalars['Float']['output'];
-  /** status */
-  status?: Maybe<PromptConditionsField>;
   /** 建议 */
   suggestions: Scalars['String']['output'];
+  /** taskList */
+  taskList?: Maybe<Array<RatingTaskField>>;
 };
-
-export type PromptConditionsField = {
-  __typename?: 'PromptConditionsField';
-  /** 结束时间 */
-  lastTransitionTime?: Maybe<Scalars['String']['output']>;
-  message?: Maybe<Scalars['String']['output']>;
-  reason?: Maybe<Scalars['String']['output']>;
-  /** 状态 */
-  status?: Maybe<PromptStatus>;
-  type?: Maybe<Scalars['String']['output']>;
-};
-
-/** Prompt状态 */
-export enum PromptStatus {
-  /** 执行中 */
-  ReconcileRunning = 'ReconcileRunning',
-  /** 完成 */
-  ReconcileSuccess = 'ReconcileSuccess',
-}
 
 export type Query = {
   __typename?: 'Query';
@@ -690,6 +669,7 @@ export type QueryPromptsArgs = {
 export type QueryRatingArgs = {
   cluster?: InputMaybe<Scalars['String']['input']>;
   componentName?: InputMaybe<Scalars['String']['input']>;
+  isLatestSuccessed?: InputMaybe<Scalars['Boolean']['input']>;
   name?: InputMaybe<Scalars['String']['input']>;
   namespace?: InputMaybe<Scalars['String']['input']>;
   repository?: InputMaybe<Scalars['String']['input']>;
@@ -736,35 +716,65 @@ export type QuerySubscriptionsPagedArgs = {
   sortField?: InputMaybe<Scalars['String']['input']>;
 };
 
-/** 组件评测 */
 export type Rating = {
   __typename?: 'Rating';
   /** 组件名称 */
   componentName: Scalars['String']['output'];
   /** 最近评测时间 */
   creationTimestamp: Scalars['String']['output'];
-  /** 名称 */
+  /** rating名称 */
   name?: Maybe<Scalars['ID']['output']>;
   /** namespace */
   namespace: Scalars['String']['output'];
   /** prompts */
   prompts?: Maybe<Array<Prompt>>;
-  /** RBAC */
+  /** RBAC权限图 */
   rbac?: Maybe<Scalars['String']['output']>;
   /** 仓库名称 */
   repository: Scalars['String']['output'];
   /** 评测状态 */
   status?: Maybe<RatingStatus>;
+  /** tasks * */
+  tasks?: Maybe<RatingTaskMapField>;
   /** 版本 */
   version?: Maybe<Scalars['String']['output']>;
 };
 
 /** 评测状态 */
 export enum RatingStatus {
+  /** 已创建 */
+  Created = 'Created',
   /** 完成 */
   EvaluationSucceeded = 'EvaluationSucceeded',
   /** 执行中 */
   PipelineRunning = 'PipelineRunning',
+}
+
+export type RatingTaskField = {
+  __typename?: 'RatingTaskField';
+  /** 结束时间 */
+  lastTransitionTime?: Maybe<Scalars['String']['output']>;
+  message?: Maybe<Scalars['String']['output']>;
+  reason?: Maybe<Scalars['String']['output']>;
+  /** 任务状态 */
+  status?: Maybe<RatingTaskStatus>;
+  /** 任务名称 */
+  taskRunName?: Maybe<Scalars['String']['output']>;
+  type?: Maybe<Scalars['String']['output']>;
+};
+
+export type RatingTaskMapField = {
+  __typename?: 'RatingTaskMapField';
+  reliability?: Maybe<Array<RatingTaskField>>;
+  security?: Maybe<Array<RatingTaskField>>;
+};
+
+/** 任务状态 */
+export enum RatingTaskStatus {
+  /** 执行中 */
+  Running = 'Running',
+  /** 完成 */
+  Succeeded = 'Succeeded',
 }
 
 export type Repository = {
@@ -1420,18 +1430,9 @@ export type GetPromptQuery = {
     name: string;
     dimension: string;
     creationTimestamp: string;
-    pipelinerun: string;
     score: number;
     suggestions: string;
     problems: string;
-    status?: {
-      __typename?: 'PromptConditionsField';
-      lastTransitionTime?: string | null;
-      message?: string | null;
-      reason?: string | null;
-      status?: PromptStatus | null;
-      type?: string | null;
-    } | null;
   };
 };
 
@@ -1447,7 +1448,6 @@ export type GetPromptsQuery = {
     name: string;
     dimension: string;
     creationTimestamp: string;
-    pipelinerun: string;
     score: number;
     suggestions: string;
     problems: string;
@@ -1484,20 +1484,19 @@ export type GetRatingQuery = {
     rbac?: string | null;
     prompts?: Array<{
       __typename?: 'Prompt';
-      creationTimestamp: string;
       dimension: string;
-      pipelinerun: string;
       score: number;
       suggestions: string;
       problems: string;
-      status?: {
-        __typename?: 'PromptConditionsField';
+      taskList?: Array<{
+        __typename?: 'RatingTaskField';
+        taskRunName?: string | null;
         lastTransitionTime?: string | null;
         message?: string | null;
         reason?: string | null;
-        status?: PromptStatus | null;
+        status?: RatingTaskStatus | null;
         type?: string | null;
-      } | null;
+      }> | null;
     }> | null;
   } | null;
 };
@@ -2135,17 +2134,9 @@ export const GetPromptDocument = gql`
       name
       dimension
       creationTimestamp
-      pipelinerun
       score
       suggestions
       problems
-      status {
-        lastTransitionTime
-        message
-        reason
-        status
-        type
-      }
     }
   }
 `;
@@ -2155,7 +2146,6 @@ export const GetPromptsDocument = gql`
       name
       dimension
       creationTimestamp
-      pipelinerun
       score
       suggestions
       problems
@@ -2189,13 +2179,12 @@ export const GetRatingDocument = gql`
       componentName
       status
       prompts {
-        creationTimestamp
         dimension
-        pipelinerun
         score
         suggestions
         problems
-        status {
+        taskList {
+          taskRunName
           lastTransitionTime
           message
           reason
