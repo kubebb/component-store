@@ -53,11 +53,15 @@ export class RatingsResolver {
 
   @Query(() => Rating, { nullable: true, description: '组件评测详情' })
   async rating(@Auth() auth: JwtAuth, @Args() args: RatingsArgs): Promise<Rating> {
-    const { name } = args;
+    const { name, isLatestSuccessed } = args;
     if (name) {
       return this.ratingsService.getRating(auth, args);
     }
-    return (await this.ratingsService.getRatingList(auth, args))[0];
+    const ratings = await this.ratingsService.getRatingList(auth, args);
+    if (isLatestSuccessed) {
+      return ratings?.find(rating => rating.status === 'EvaluationSucceeded');
+    }
+    return ratings[0];
   }
 
   @Mutation(() => Boolean, { description: '创建组件评测' })
@@ -111,12 +115,16 @@ export class RatingsResolver {
     @Info() info: AnyObj,
     @Parent() rating: Rating,
     @Loader(PromptLoader) promptLoader: DataLoader<Prompt['namespacedName'], Prompt>
-  ): Promise<Array<Error | Prompt>> {
+  ): Promise<Array<AnyObj>> {
     const {
       variableValues: { cluster },
     } = info;
-    const { namespace, promptNames } = rating;
+    const { namespace, promptNames, tasks } = rating;
     const names = promptNames.map(prompt => `${prompt}_${namespace}_${cluster || ''}`);
-    return promptLoader.loadMany(names);
+    const promptItems: Array<AnyObj> = await promptLoader.loadMany(names);
+    return promptItems.map(prompt => ({
+      ...(prompt || {}),
+      taskList: tasks?.[prompt?.dimension],
+    }));
   }
 }

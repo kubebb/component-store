@@ -14,13 +14,12 @@ query getRating($name: String, $repository: String, $componentName: String, $ver
     componentName
     status
     prompts {
-      creationTimestamp
       dimension
-      pipelinerun
       score
       suggestions
       problems
-      status {
+      taskList {
+        taskRunName
         lastTransitionTime
         message
         reason

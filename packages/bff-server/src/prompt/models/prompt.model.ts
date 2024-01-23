@@ -1,16 +1,5 @@
-import { PromptStatus } from '@/prompt/models/prompt.status.enum';
+import { RatingTaskField } from '@/rating/models/ratings.model';
 import { Field, HideField, ID, ObjectType } from '@nestjs/graphql';
-
-@ObjectType()
-class PromptConditionsField {
-  @Field(() => String, { description: '结束时间' })
-  lastTransitionTime?: string;
-  message?: string;
-  reason?: string;
-  @Field(() => PromptStatus, { description: '状态' })
-  status?: string;
-  type?: string;
-}
 
 @ObjectType()
 export class Prompt {
@@ -22,9 +11,6 @@ export class Prompt {
   /** 类型名称 */
   @Field(() => String, { description: `类型名称` })
   dimension: string;
-  /** 任务名称 */
-  @Field(() => String, { description: `任务名称` })
-  pipelinerun: string;
   /** 评分 */
   @Field(() => Number, { description: '评分' })
   score: number;
@@ -38,6 +24,6 @@ export class Prompt {
   /** 问题 */
   @Field(() => String, { description: '问题' })
   problems: string;
-  /** status */
-  status?: PromptConditionsField;
+  /** taskList */
+  taskList?: RatingTaskField[];
 }

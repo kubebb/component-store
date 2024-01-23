@@ -1,4 +1,5 @@
 import { Paginated } from '@/common/models/paginated.function';
+import { Rating } from '@/rating/models/ratings.model';
 import { Repository } from '@/repository/models/repository.model';
 import { Field, HideField, ID, ObjectType } from '@nestjs/graphql';
 import { ComponentSource } from './component-source.enum';

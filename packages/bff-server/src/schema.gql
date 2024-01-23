@@ -594,9 +594,6 @@ type Prompt {
   """prompt名称"""
   name: ID!
 
-  """任务名称"""
-  pipelinerun: String!
-
   """问题"""
   problems: String!
 
@@ -606,31 +603,11 @@ type Prompt {
   """评分"""
   score: Float!
 
-  """status"""
-  status: PromptConditionsField
-
   """建议"""
   suggestions: String!
-}
 
-type PromptConditionsField {
-  """结束时间"""
-  lastTransitionTime: String
-  message: String
-  reason: String
-
-  """状态"""
-  status: PromptStatus
-  type: String
-}
-
-"""Prompt状态"""
-enum PromptStatus {
-  """执行中"""
-  ReconcileRunning
-
-  """完成"""
-  ReconcileSuccess
+  """taskList"""
+  taskList: [RatingTaskField!]
 }
 
 type Query {
@@ -778,6 +755,9 @@ type Query {
     """组件名称"""
     componentName: String
 
+    """最近一次评测"""
+    isLatestSuccessed: Boolean
+
     """rating名称"""
     name: String
 
@@ -877,7 +857,6 @@ type Query {
   ): PaginatedSubscription!
 }
 
-"""组件评测"""
 type Rating {
   """组件名称"""
   componentName: String!
@@ -885,7 +864,7 @@ type Rating {
   """最近评测时间"""
   creationTimestamp: String!
 
-  """名称"""
+  """rating名称"""
   name: ID
 
   """namespace"""
@@ -894,7 +873,7 @@ type Rating {
   """prompts"""
   prompts: [Prompt!]
 
-  """RBAC"""
+  """RBAC权限图"""
   rbac: String
 
   """仓库名称"""
@@ -903,17 +882,51 @@ type Rating {
   """评测状态"""
   status: RatingStatus
 
+  """tasks *"""
+  tasks: RatingTaskMapField
+
   """版本"""
   version: String
 }
 
 """评测状态"""
 enum RatingStatus {
+  """已创建"""
+  Created
+
   """完成"""
   EvaluationSucceeded
 
   """执行中"""
   PipelineRunning
+}
+
+type RatingTaskField {
+  """结束时间"""
+  lastTransitionTime: String
+  message: String
+  reason: String
+
+  """任务状态"""
+  status: RatingTaskStatus
+
+  """任务名称"""
+  taskRunName: String
+  type: String
+}
+
+type RatingTaskMapField {
+  reliability: [RatingTaskField!]
+  security: [RatingTaskField!]
+}
+
+"""任务状态"""
+enum RatingTaskStatus {
+  """执行中"""
+  Running
+
+  """完成"""
+  Succeeded
 }
 
 type Repository {
