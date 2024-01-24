@@ -476,7 +476,11 @@ class ComponentsWarehouseCreate$$Page extends React.Component {
               <Button.Back
                 __component_name="Button.Back"
                 name={this.i18n('i18n-86so9ago') /* 返回 */}
-                title={this.i18n('i18n-qwjrzcj4') /* 新建组件仓库 */}
+                title={__$$eval(() =>
+                  this.props.appHelper?.match?.params?.id === 'create'
+                    ? this.i18n('i18n-qwjrzcj4')
+                    : this.i18n('i18n-91t6vkff')
+                )}
                 type="primary"
               />
             </Space>
