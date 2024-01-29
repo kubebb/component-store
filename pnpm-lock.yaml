@@ -311,8 +311,8 @@ importers:
         specifier: 1.1.2
         version: 1.1.2(@babel/core@7.22.20)(antd@5.11.0)(classnames@2.2.5)(prop-types@15.8.1)(react-dom@18.1.0)(react@18.1.0)
       '@tenx-ui/component-store-bff-client':
-        specifier: 0.0.43
-        version: link:../bff-client
+        specifier: 0.0.44
+        version: 0.0.44(@tenx-ui/materials@1.5.28)(antd@5.11.0)(react@18.1.0)(swr@2.0.0)
       '@tenx-ui/editor':
         specifier: 3.0.2-beta.1
         version: 3.0.2-beta.1(antd@5.11.0)(classnames@2.2.5)(prop-types@15.8.1)(react-dom@18.1.0)(react@18.1.0)
@@ -8232,6 +8232,26 @@ packages:
       - react
       - react-dom
       - supports-color
+    dev: false
+
+  /@tenx-ui/component-store-bff-client@0.0.44(@tenx-ui/materials@1.5.28)(antd@5.11.0)(react@18.1.0)(swr@2.0.0):
+    resolution: {integrity: sha512-sZxKF/O653W3nhkmSl1MHYVL4nDYKwQvZHlT0tELqGbOW3HifjWUkj0fJrXySk/leX8AxP45I6LIAqLieuOEvA==}
+    peerDependencies:
+      '@tenx-ui/materials': '>=1.5.8'
+      antd: '>=5.4.0'
+      react: '>=16.9.0'
+      swr: '>=2.0.0'
+    dependencies:
+      '@tenx-ui/materials': 1.5.28(@ant-design/icons@5.0.0)(@types/react-dom@18.0.0)(@types/react@18.0.0)(antd@5.11.0)(dayjs@1.11.7)(lodash@4.17.21)(prop-types@15.8.1)(react-dom@18.1.0)(react-is@18.2.0)(react-router-dom@6.16.0)(react@18.1.0)(typescript@4.9.5)
+      antd: 5.11.0(react-dom@18.1.0)(react@18.1.0)
+      graphql: 16.6.0
+      graphql-request: 5.2.0(graphql@16.6.0)
+      graphql-tag: 2.12.6(graphql@16.6.0)
+      query-string: 8.1.0
+      react: 18.1.0
+      swr: 2.0.0(react@18.1.0)
+    transitivePeerDependencies:
+      - encoding
     dev: false
 
   /@tenx-ui/editor@3.0.2-beta.1(antd@5.11.0)(classnames@2.2.5)(prop-types@15.8.1)(react-dom@18.1.0)(react@18.1.0):
