@@ -1,4 +1,4 @@
-FROM 172.22.96.34/front-end/component-store:base-0.1 as builder
+FROM kubebb/component-store-base:main as builder
 LABEL maintainer="zhangpc<zhang.pengcheng3@neolink.com>"
 
 ENV NODE_ENV production
@@ -11,7 +11,7 @@ WORKDIR /usr/src/app
 # package files
 RUN nr build
 
-FROM 172.22.96.34/front-end/component-store:base-0.1-prod
+FROM kubebb/component-store-base-pro:main
 
 COPY --from=builder /usr/src/app/packages/bff-server/configs ./configs
 COPY --from=builder /usr/src/app/packages/bff-server/dist ./dist
