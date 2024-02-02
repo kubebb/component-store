@@ -18,8 +18,5 @@ ADD packages/shared-components /usr/src/app/packages/shared-components
 COPY packages/bff-server/package.json /usr/src/app/packages/bff-server
 COPY packages/portal/package.json /usr/src/app/packages/portal
 
-ARG _authToken
-
-RUN npm set //dev-npm.tenxcloud.net/:_authToken="${_authToken}" \
-  && npm i pnpm @antfu/ni -g \
+RUN --mount=type=secret,id=npmrc,target=/root/.npmrc npm i pnpm @antfu/ni -g \
   && ni
