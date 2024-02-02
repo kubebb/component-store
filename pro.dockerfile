@@ -17,6 +17,6 @@ COPY packages/bff-server/package.json /usr/src/app/packages/bff-server
 
 ARG _authToken
 
-RUN npm set //dev-npm.tenxcloud.net/:_authToken="${_authToken}" \
+RUN npm set //dev-npm.k8s.com.cn/:_authToken="${_authToken}" \
   && npm i pnpm @antfu/ni -g \
   && ni --ignore-scripts

@@ -20,6 +20,6 @@ COPY packages/portal/package.json /usr/src/app/packages/portal
 
 ARG _authToken
 
-RUN npm set //dev-npm.tenxcloud.net/:_authToken="${_authToken}" \
+RUN npm set //dev-npm.k8s.com.cn/:_authToken="${_authToken}" \
   && npm i pnpm @antfu/ni -g \
   && ni
