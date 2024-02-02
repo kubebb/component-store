@@ -31,6 +31,7 @@ jobs:
               - '.npmrc'
               - '.pnpmfile.cjs'
               - 'packages/**/package.json'
+              - 'packages/**/.npmrc'
       - name: Set Variable
         id: set-env
         run: |
