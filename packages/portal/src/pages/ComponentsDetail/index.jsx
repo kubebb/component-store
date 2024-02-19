@@ -1812,7 +1812,7 @@ class ComponentsDetail$$Page extends React.Component {
                                   __component_name="UnifiedLink"
                                   inQianKun={false}
                                   target="_blank"
-                                  to="http://kubebb.k8s.com.cn/docs/user-guid/component_rating"
+                                  to="http://kubebb.k8s.com.cn/docs/user-guide/component_rating"
                                 >
                                   评测说明
                                 </UnifiedLink>
