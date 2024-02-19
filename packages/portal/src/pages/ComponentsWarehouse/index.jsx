@@ -434,6 +434,30 @@ class ComponentsWarehouse$$Page extends React.Component {
                         title: this.i18n('i18n-iqh7qzhi') /* URL */,
                       },
                       {
+                        dataIndex: 'enableRating',
+                        key: 'enableRating',
+                        render: (text, record, index) =>
+                          (__$$context => (
+                            <Status
+                              __component_name="Status"
+                              id={__$$eval(() => record?.enableRating + '')}
+                              types={[
+                                {
+                                  children: this.i18n('i18n-3mpt014s') /* 开启 */,
+                                  id: 'true',
+                                  type: 'success',
+                                },
+                                {
+                                  children: this.i18n('i18n-qeeklbnp') /* 关闭 */,
+                                  id: 'false',
+                                  type: 'error',
+                                },
+                              ]}
+                            />
+                          ))(__$$createChildContext(__$$context, { text, record, index })),
+                        title: this.i18n('i18n-thxp526w') /* 组件评测 */,
+                      },
+                      {
                         dataIndex: 'status',
                         filters: __$$eval(() => this.utils.getComponentWarehouseStatus(this)),
                         key: 'status',
