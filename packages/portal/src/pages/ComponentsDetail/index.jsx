@@ -322,10 +322,9 @@ class ComponentsDetail$$Page extends React.Component {
       const res = await this.utils.bffSdk.userAuthCanI({
         cluster: this.getCluster(),
         resource: {
-          name: 'ratings',
-          group: 'core.kubebb.k8s.com.cn',
-          version: 'v1alpha1',
           verb: 'create',
+          group: 'core.kubebb.k8s.com.cn',
+          resource: 'ratings',
         },
       });
       this.setState({
