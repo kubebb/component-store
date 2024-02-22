@@ -113,6 +113,15 @@ class ComponentsDetail$$Page extends React.Component {
     return this._refsManager.getAll(refName);
   };
 
+  componentWillUnmount() {
+    if (this.state.rateTimer) {
+      clearTimeout(this.state.rateTimer);
+    }
+    if (this.state.timer) {
+      clearTimeout(this.state.timer);
+    }
+  }
+
   closeModal() {
     this.setState({
       isOpenModal: false,
